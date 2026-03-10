@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Colegio Harvard — Institución Educativa</title>
+  <meta name="description" content="Colegio Harvard — Institución educativa comprometida con la excelencia académica y la formación integral de nuestros estudiantes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --crimson-50: #FFF5F5; --crimson-100: #FECDD3; --crimson-500: #C62828;
+      --crimson-600: #B71C1C; --crimson-700: #991B1B; --crimson-800: #7F1D1D; --crimson-900: #631111;
+      --gold-50: #FFFDF5; --gold-100: #FEF5D4; --gold-200: #FDECB2; --gold-300: #F5D680;
+      --gold-400: #E8BF4D; --gold-500: #C5963A; --gold-600: #B8860B; --gold-700: #996F0A;
+      --cream-50: #FFFCF8; --cream-100: #FDF8F3; --cream-200: #F5EDE3; --cream-300: #EDE1D3; --cream-400: #DDD0BF;
+      --grad-gold: linear-gradient(135deg, #C5963A 0%, #E8BF4D 50%, #C5963A 100%);
+      --grad-crimson: linear-gradient(135deg, #B71C1C 0%, #C62828 50%, #991B1B 100%);
+      --shadow-gold: 0 10px 25px rgba(197,150,58,0.2), 0 4px 10px rgba(197,150,58,0.1);
+      --shadow-gold-sm: 0 1px 3px rgba(197,150,58,0.2), 0 1px 2px rgba(197,150,58,0.1);
+      --shadow-crimson: 0 4px 14px rgba(183,28,28,0.15);
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-card-hover: 0 10px 25px rgba(197,150,58,0.12), 0 4px 10px rgba(197,150,58,0.06);
+      --font-display: "Playfair Display", Georgia, serif;
+      --font-body: "DM Sans", system-ui, sans-serif;
+      --section-pad: clamp(4rem, 8vw, 7rem);
+      --container: min(1200px, 90vw);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); color: #3D2E1F; background: var(--cream-100); line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    ::selection { background: rgba(197,150,58,0.25); color: var(--crimson-800); }
+    .bg-linen { background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 0l10 10-10 10L0 10z' fill='%23C5963A' fill-opacity='0.025'/%3E%3C/svg%3E"); }
+    .bg-heraldic { background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20H30L20 10 10 20H0z' fill='%23C5963A' fill-opacity='0.02'/%3E%3C/svg%3E"); }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--cream-200); }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #C5963A, #B8860B); border-radius: 4px; }
+    .container { width: var(--container); margin: 0 auto; }
+    .gold-line { height: 2px; background: var(--grad-gold); border: none; border-radius: 1px; }
+    .gold-line-short { width: 80px; height: 3px; background: var(--grad-gold); border: none; border-radius: 2px; margin: 1rem auto; }
+    .section-label { font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-600); margin-bottom: 0.75rem; }
+    .section-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; color: var(--crimson-800); line-height: 1.15; margin-bottom: 1rem; }
+    .section-subtitle { font-size: 1.1rem; color: #6B5B4F; max-width: 600px; margin: 0 auto 3rem; line-height: 1.7; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(197,150,58,0.4); } 70% { box-shadow: 0 0 0 20px rgba(197,150,58,0); } 100% { box-shadow: 0 0 0 0 rgba(197,150,58,0); } }
+    @keyframes rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; } .reveal-delay-2 { transition-delay: 0.2s; } .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* NAVBAR */
+    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; padding: 1rem 0; transition: all 0.4s cubic-bezier(0.22,1,0.36,1); }
+    .navbar.scrolled { background: rgba(253,248,243,0.92); backdrop-filter: blur(20px); box-shadow: 0 1px 0 var(--cream-200), 0 4px 20px rgba(0,0,0,0.04); padding: 0.6rem 0; }
+    .navbar .container { display: flex; align-items: center; justify-content: space-between; }
+    .nav-brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--crimson-800); }
+    .nav-logo { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-400); box-shadow: var(--shadow-gold-sm); transition: transform 0.3s; }
+    .nav-brand:hover .nav-logo { transform: rotate(10deg) scale(1.05); }
+    .nav-brand-text { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--crimson-800); font-size: 0.875rem; font-weight: 500; position: relative; padding-bottom: 2px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: var(--grad-gold); transition: width 0.3s cubic-bezier(0.22,1,0.36,1); border-radius: 1px; }
+    .nav-links a:hover { color: var(--crimson-600); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; background: var(--grad-crimson); color: #fff !important; font-weight: 600; font-size: 0.85rem; line-height: 1; border-radius: 8px; text-decoration: none; box-shadow: var(--shadow-crimson); transition: transform 0.2s, box-shadow 0.2s; }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(183,28,28,0.25); }
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { display: block; width: 24px; height: 2px; background: var(--crimson-800); border-radius: 1px; transition: all 0.3s; }
+    .nav-mobile-actions { display: none; align-items: center; gap: 0.75rem; }
+    .nav-mobile-login { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: var(--grad-crimson); color: #fff; border-radius: 8px; text-decoration: none; box-shadow: var(--shadow-crimson); transition: transform 0.2s; }
+    .nav-mobile-login:hover { transform: translateY(-1px); }
+    @media (max-width: 768px) { .nav-mobile-actions { display: flex; } }
+
+    /* HERO */
+    .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; overflow: hidden; padding: clamp(4rem, 8vh, 6rem) 1.5rem; }
+    .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, #FDF8F3 0%, #FEF5D4 30%, #FECDD3 70%, #FDF8F3 100%); z-index: 0; }
+    .hero::after { content: ""; position: absolute; inset: 0; z-index: 0; background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30H45L30 15 15 30H0z' fill='%23C5963A' fill-opacity='0.025'/%3E%3C/svg%3E"); }
+    .hero-ornament { position: absolute; border: 1px solid rgba(197,150,58,0.12); border-radius: 4px; z-index: 0; pointer-events: none; }
+    .hero-ornament--1 { width: 300px; height: 300px; top: 10%; left: -5%; transform: rotate(15deg); animation: rotate-slow 60s linear infinite; }
+    .hero-ornament--2 { width: 200px; height: 200px; bottom: 15%; right: -3%; transform: rotate(-10deg); animation: rotate-slow 45s linear infinite reverse; }
+    .hero-content { position: relative; z-index: 1; max-width: 800px; display: flex; flex-direction: column; align-items: center; flex: 1; width: 100%; }
+    .hero-logo-wrapper { display: inline-block; position: relative; margin-top: auto; margin-bottom: auto; }
+    .hero-logo-ring { position: absolute; inset: -12px; border-radius: 50%; border: 2px solid transparent; background: var(--grad-gold) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: rotate-slow 20s linear infinite; }
+    .hero-logo-glow { position: absolute; inset: -30px; border-radius: 50%; background: radial-gradient(circle, rgba(197,150,58,0.15) 0%, transparent 70%); animation: pulse-ring 3s ease-out infinite; }
+    .hero-logo { width: clamp(130px, 28vh, 240px); height: clamp(130px, 28vh, 240px); border-radius: 50%; object-fit: cover; border: 4px solid var(--gold-400); box-shadow: var(--shadow-gold), 0 0 60px rgba(197,150,58,0.2); position: relative; z-index: 1; animation: fadeIn 1s ease-out; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid var(--gold-200); border-radius: 100px; padding: 0.4rem 1.2rem; font-size: 0.8rem; font-weight: 600; color: var(--gold-700); letter-spacing: 0.05em; margin-bottom: 2rem; animation: fadeUp 0.8s ease-out 0.3s both; }
+    .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-500); animation: pulse-ring 2s ease-out infinite; }
+    .hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 6vw, 4.2rem); font-weight: 800; color: var(--crimson-800); line-height: 1.1; margin-bottom: clamp(0.75rem, 2vh, 1.5rem); letter-spacing: -0.02em; animation: fadeUp 0.8s ease-out 0.5s both; }
+    .hero h1 em { font-style: normal; }
+    .hero-subtitle { font-size: clamp(0.95rem, 2vw, 1.25rem); color: #6B5B4F; max-width: 560px; margin: 0 auto clamp(1rem, 3vh, 2.5rem); line-height: 1.6; animation: fadeUp 0.8s ease-out 0.7s both; }
+    .hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; animation: fadeUp 0.8s ease-out 0.9s both; margin-bottom: 10vh; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 2rem; background: var(--grad-crimson); color: #fff; font-family: var(--font-body); font-weight: 600; font-size: 0.95rem; border: none; border-radius: 10px; cursor: pointer; text-decoration: none; box-shadow: var(--shadow-crimson); transition: all 0.3s cubic-bezier(0.22,1,0.36,1); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(183,28,28,0.3); }
+    .btn-gold-outline { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 2rem; background: transparent; color: var(--gold-700); font-family: var(--font-body); font-weight: 600; font-size: 0.95rem; border: 2px solid var(--gold-400); border-radius: 10px; cursor: pointer; text-decoration: none; transition: all 0.3s cubic-bezier(0.22,1,0.36,1); }
+    .btn-gold-outline:hover { background: var(--gold-50); border-color: var(--gold-500); transform: translateY(-2px); box-shadow: var(--shadow-gold-sm); }
+    .hero-scroll-hint { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--gold-600); font-size: 0.75rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; animation: fadeIn 1s ease-out 1.5s both; }
+    .hero-scroll-line { width: 1px; height: 40px; background: linear-gradient(180deg, var(--gold-400), transparent); animation: float 2s ease-in-out infinite; }
+
+    /* NIVELES */
+    .niveles-section { padding: var(--section-pad) 1.5rem; text-align: center; }
+    .niveles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .nivel-card { background: #fff; border: 1px solid var(--cream-200); border-radius: 20px; padding: 2.5rem 2rem; text-align: center; position: relative; overflow: hidden; transition: all 0.4s cubic-bezier(0.22,1,0.36,1); }
+    .nivel-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--grad-gold); }
+    .nivel-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-6px); border-color: var(--gold-200); }
+    .nivel-icon { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem; background: var(--crimson-50); color: var(--crimson-600); }
+    .nivel-card h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--crimson-800); margin-bottom: 0.75rem; }
+    .nivel-card .nivel-ages { display: inline-block; background: var(--gold-50); border: 1px solid var(--gold-200); border-radius: 100px; padding: 0.25rem 0.85rem; font-size: 0.78rem; font-weight: 600; color: var(--gold-700); margin-bottom: 1rem; }
+    .nivel-card p { font-size: 0.9rem; color: #6B5B4F; line-height: 1.7; }
+
+    /* VALORES */
+    .valores-section { padding: var(--section-pad) 1.5rem; background: var(--grad-crimson); position: relative; overflow: hidden; text-align: center; }
+    .valores-section::before { content: ""; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20H30L20 10 10 20H0z' fill='%23FFFFFF' fill-opacity='0.03'/%3E%3C/svg%3E"); }
+    .valores-section .container { position: relative; z-index: 1; }
+    .valores-section .section-label { color: var(--gold-300); }
+    .valores-section .section-title { color: #fff; }
+    .valores-section .section-subtitle { color: rgba(255,255,255,0.7); }
+    .valores-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .valor-card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem 1.5rem; transition: all 0.3s; }
+    .valor-card:hover { background: rgba(255,255,255,0.12); transform: translateY(-4px); }
+    .valor-card-icon { font-size: 2.2rem; margin-bottom: 1rem; }
+    .valor-card h4 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--gold-400); margin-bottom: 0.5rem; }
+    .valor-card p { font-size: 0.88rem; color: rgba(255,255,255,0.8); line-height: 1.6; }
+
+    /* PLATAFORMA */
+    .plataforma-section { padding: var(--section-pad) 1.5rem; text-align: center; background: var(--cream-50); }
+    .plataforma-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; text-align: left; margin-top: 3rem; }
+    .plataforma-info h3 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--crimson-800); margin-bottom: 1rem; }
+    .plataforma-info p { color: #6B5B4F; font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem; }
+    .plataforma-features { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+    .plataforma-features li { display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.9rem; color: #4A3F35; }
+    .plataforma-features li svg { width: 20px; height: 20px; min-width: 20px; color: var(--gold-500); margin-top: 2px; }
+    .plataforma-mockup { background: #fff; border: 1px solid var(--cream-200); border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow-card); position: relative; overflow: hidden; }
+    .plataforma-mockup::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--grad-gold); }
+    .mockup-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--cream-200); }
+    .mockup-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .mockup-dot--red { background: #E04848; } .mockup-dot--yellow { background: #E8BF4D; } .mockup-dot--green { background: #34D399; }
+    .mockup-title { font-family: var(--font-display); font-size: 0.85rem; font-weight: 600; color: var(--crimson-800); margin-left: 0.5rem; }
+    .mockup-kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem; }
+    .mockup-kpi { background: var(--cream-50); border: 1px solid var(--cream-200); border-radius: 10px; padding: 0.75rem; text-align: center; }
+    .mockup-kpi-number { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; }
+    .mockup-kpi-number.green { color: #059669; } .mockup-kpi-number.amber { color: #D97706; } .mockup-kpi-number.red { color: #DC2626; }
+    .mockup-kpi-label { font-size: 0.7rem; color: #8B7B6F; font-weight: 500; }
+    .mockup-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; background: var(--cream-50); border-radius: 8px; border: 1px solid var(--cream-200); margin-bottom: 0.5rem; }
+    .mockup-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--grad-gold); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #fff; }
+    .mockup-row-text { flex: 1; font-size: 0.8rem; color: #4A3F35; }
+    .mockup-badge { padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.65rem; font-weight: 600; }
+    .mockup-badge.green { background: #D1FAE5; color: #059669; } .mockup-badge.amber { background: #FEF3C7; color: #D97706; }
+
+    /* CONTACTO */
+    .contacto-section { padding: var(--section-pad) 1.5rem; text-align: center; position: relative; }
+    .contacto-section::before { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, #FDF8F3 0%, #FEF5D4 30%, #FECDD3 70%, #FDF8F3 100%); opacity: 0.5; }
+    .contacto-section .container { position: relative; z-index: 1; }
+    .contacto-card { background: #fff; border: 1px solid var(--cream-200); border-radius: 24px; padding: 3.5rem 2.5rem; max-width: 750px; margin: 0 auto; box-shadow: var(--shadow-gold); position: relative; overflow: hidden; }
+    .contacto-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--grad-gold); }
+    .contacto-card h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 700; color: var(--crimson-800); margin-bottom: 1rem; line-height: 1.2; }
+    .contacto-card h2 em { font-style: italic; background: var(--grad-gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .contacto-card > p { color: #6B5B4F; font-size: 1.05rem; margin-bottom: 2.5rem; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .contacto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; text-align: center; }
+    .contacto-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .contacto-item-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--crimson-50); color: var(--crimson-600); font-size: 1.3rem; margin-bottom: 0.25rem; }
+    .contacto-item h4 { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; color: var(--crimson-800); }
+    .contacto-item p, .contacto-item a { font-size: 0.88rem; color: #6B5B4F; text-decoration: none; transition: color 0.2s; }
+    .contacto-item a:hover { color: var(--crimson-600); }
+    .contacto-cta { margin-top: 2.5rem; }
+
+    /* FOOTER */
+    .footer { background: linear-gradient(180deg, #7F1D1D 0%, #631111 100%); color: rgba(255,255,255,0.7); padding: 3rem 1.5rem 1.5rem; position: relative; }
+    .footer::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--grad-gold); }
+    .footer .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+    .footer-brand { display: flex; align-items: center; gap: 0.75rem; }
+    .footer-logo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-500); }
+    .footer-brand-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--gold-400); }
+    .footer-copy { font-size: 0.78rem; width: 100%; text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); }
+
+    /* RESPONSIVE */
+    @media (max-height: 650px) { .hero-scroll-hint { display: none; } }
+    @media (max-width: 1024px) { .niveles-grid { grid-template-columns: repeat(2, 1fr); } .valores-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(253,248,243,0.98); backdrop-filter: blur(20px); padding: 1.5rem; gap: 1rem; border-bottom: 1px solid var(--cream-200); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+      .nav-hamburger { display: flex; }
+      .hero { min-height: 100vh; min-height: 100svh; padding: 5rem 1.5rem 3rem; }
+      .hero-logo { width: 160px; height: 160px; }
+      .hero-scroll-hint { display: none; }
+      .niveles-grid { grid-template-columns: 1fr; } .valores-grid { grid-template-columns: 1fr; }
+      .plataforma-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .contacto-grid { grid-template-columns: 1fr; } .contacto-card { padding: 2.5rem 1.5rem; }
+      .footer .container { flex-direction: column; text-align: center; } .footer-links { flex-direction: column; gap: 0.75rem; }
+    }
+    @media (max-width: 480px) { .hero-actions { flex-direction: column; width: 100%; } .hero-actions a { width: 100%; justify-content: center; } .hero-ornament { display: none; } .hero-logo { width: 130px; height: 130px; } .hero-logo-wrapper { margin-bottom: 1.5rem; } .mockup-kpi-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="#" class="nav-brand">
+        <img src="src/assets/logo-harvard.jpeg" alt="Colegio Harvard" class="nav-logo" />
+        <span class="nav-brand-text">Colegio Harvard</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#niveles">Niveles</a></li>
+        <li><a href="#nosotros">Nosotros</a></li>
+        <li><a href="#plataforma">Plataforma</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+        <li><a href="/login" class="nav-cta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Ingresar
+        </a></li>
+      </ul>
+      <div class="nav-mobile-actions">
+        <a href="/login" class="nav-mobile-login" aria-label="Ingresar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        </a>
+        <button class="nav-hamburger" id="navHamburger" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="inicio">
+    <div class="hero-ornament hero-ornament--1"></div>
+    <div class="hero-ornament hero-ornament--2"></div>
+    <div class="hero-content">
+      <div class="hero-logo-wrapper">
+        <div class="hero-logo-glow"></div>
+        <div class="hero-logo-ring"></div>
+        <img src="src/assets/logo-harvard.jpeg" alt="Escudo Colegio Harvard" class="hero-logo" />
+      </div>
+      <h1 id="hero-title">Colegio <em>Harvard</em></h1>
+      <p class="hero-subtitle" id="hero-subtitle">Formando líderes con valores, comprometidos con la excelencia académica y el desarrollo integral de cada estudiante.</p>
+      <div class="hero-actions">
+        <a href="#contacto" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Contáctanos
+        </a>
+        <a href="#niveles" class="btn-gold-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Conocer Más
+        </a>
+      </div>
+    </div>
+    <div class="hero-scroll-hint"><span>Descubre</span><div class="hero-scroll-line"></div></div>
+  </section>
+
+  <hr class="gold-line" />
+
+  <!-- NIVELES EDUCATIVOS -->
+  <section class="niveles-section bg-linen" id="niveles">
+    <div class="container">
+      <span class="section-label reveal">Oferta Educativa</span>
+      <h2 class="section-title reveal">Nuestros niveles<br/>educativos</h2>
+      <hr class="gold-line-short reveal" />
+      <p class="section-subtitle reveal">Acompañamos a nuestros estudiantes en cada etapa de su formación, con programas diseñados para potenciar sus habilidades y talentos.</p>
+      <div class="niveles-grid">
+        <div class="nivel-card reveal">
+          <div class="nivel-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <h3>Inicial</h3>
+          <span class="nivel-ages">4 a 5 años</span>
+          <p>Desarrollo de habilidades sociales, motrices y cognitivas a través del juego y la exploración. Entorno seguro y estimulante para los primeros años de aprendizaje.</p>
+        </div>
+        <div class="nivel-card reveal reveal-delay-1">
+          <div class="nivel-icon" style="background: var(--gold-50); color: var(--gold-600);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <h3>Primaria</h3>
+          <span class="nivel-ages">6 a 11 años</span>
+          <p>Consolidación de competencias fundamentales en comunicación, matemáticas, ciencias y valores. Formación integral con enfoque en el pensamiento crítico.</p>
+        </div>
+        <div class="nivel-card reveal reveal-delay-2">
+          <div class="nivel-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 6 3 12 0v-5"/></svg>
+          </div>
+          <h3>Secundaria</h3>
+          <span class="nivel-ages">12 a 16 años</span>
+          <p>Preparación académica rigurosa para la educación superior. Desarrollo del liderazgo, la responsabilidad y el compromiso social con proyección al futuro.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="gold-line" />
+
+  <!-- POR QUE ELEGIRNOS -->
+  <section class="valores-section" id="nosotros">
+    <div class="container">
+      <span class="section-label reveal">¿Por Qué Elegirnos?</span>
+      <h2 class="section-title reveal">Compromiso con la<br/>excelencia educativa</h2>
+      <hr class="gold-line-short reveal" style="background: linear-gradient(135deg, #E8BF4D 0%, #F5D680 50%, #E8BF4D 100%);" />
+      <p class="section-subtitle reveal">Más que una institución educativa, somos una comunidad dedicada al crecimiento integral de cada estudiante.</p>
+      <div class="valores-grid">
+        <div class="valor-card reveal"><div class="valor-card-icon">&#127891;</div><h4>Excelencia Académica</h4><p>Programas curriculares actualizados y metodologías pedagógicas modernas que garantizan un aprendizaje significativo.</p></div>
+        <div class="valor-card reveal reveal-delay-1"><div class="valor-card-icon">&#129309;</div><h4>Formación en Valores</h4><p>Cultivamos el respeto, la solidaridad, la honestidad y la responsabilidad como pilares de la convivencia.</p></div>
+        <div class="valor-card reveal reveal-delay-2"><div class="valor-card-icon">&#127969;</div><h4>Infraestructura</h4><p>Aulas modernas, laboratorios equipados, áreas deportivas y espacios diseñados para el aprendizaje activo.</p></div>
+        <div class="valor-card reveal reveal-delay-3"><div class="valor-card-icon">&#128187;</div><h4>Tecnología Educativa</h4><p>Plataforma digital integral para la gestión escolar, comunicación en tiempo real y seguimiento académico.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLATAFORMA DIGITAL -->
+  <section class="plataforma-section bg-heraldic" id="plataforma">
+    <div class="container">
+      <span class="section-label reveal">Plataforma Digital</span>
+      <h2 class="section-title reveal">Tecnología al servicio<br/>de la educación</h2>
+      <hr class="gold-line-short reveal" />
+      <p class="section-subtitle reveal">Contamos con un sistema de gestión escolar moderno que conecta a padres, tutores y administración en tiempo real.</p>
+      <div class="plataforma-layout">
+        <div class="plataforma-info reveal">
+          <h3>Todo conectado, todo en tiempo real</h3>
+          <p>Nuestra plataforma digital permite a los padres estar informados en todo momento sobre la asistencia, las actividades y el progreso de sus hijos.</p>
+          <ul class="plataforma-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Control de asistencia con escaneo QR y alertas automáticas</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Agenda digital con firma electrónica del padre</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Mensajería directa entre padres y tutores</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Comunicados segmentados con seguimiento de lectura</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Reportes semanales y control de pensiones</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Carnet digital con código QR para cada alumno</li>
+          </ul>
+        </div>
+        <div class="plataforma-mockup reveal reveal-delay-1">
+          <div class="mockup-header">
+            <span class="mockup-dot mockup-dot--red"></span><span class="mockup-dot mockup-dot--yellow"></span><span class="mockup-dot mockup-dot--green"></span>
+            <span class="mockup-title">Dashboard — Asistencia Hoy</span>
+          </div>
+          <div class="mockup-kpi-row">
+            <div class="mockup-kpi"><div class="mockup-kpi-number green">247</div><div class="mockup-kpi-label">Presentes</div></div>
+            <div class="mockup-kpi"><div class="mockup-kpi-number amber">12</div><div class="mockup-kpi-label">Tardes</div></div>
+            <div class="mockup-kpi"><div class="mockup-kpi-number red">3</div><div class="mockup-kpi-label">Ausentes</div></div>
+          </div>
+          <div class="mockup-row"><div class="mockup-avatar">3A</div><span class="mockup-row-text">Primaria — 3er Grado A</span><span class="mockup-badge green">96%</span></div>
+          <div class="mockup-row"><div class="mockup-avatar">5B</div><span class="mockup-row-text">Secundaria — 5to Grado B</span><span class="mockup-badge green">94%</span></div>
+          <div class="mockup-row"><div class="mockup-avatar">1A</div><span class="mockup-row-text">Inicial — 1er Grado A</span><span class="mockup-badge amber">89%</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="gold-line" />
+
+  <!-- CONTACTO -->
+  <section class="contacto-section bg-linen" id="contacto">
+    <div class="container">
+      <div class="contacto-card reveal">
+        <h2>Forma parte de nuestra<br/>comunidad <em>educativa</em></h2>
+        <p>Visítanos o escríbenos para conocer más sobre nuestro proceso de admisión y nuestra propuesta educativa.</p>
+        <div class="contacto-grid">
+          <div class="contacto-item">
+            <div class="contacto-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+            <h4>Dirección</h4>
+            <p id="contacto-direccion">Lima, Perú</p>
+          </div>
+          <div class="contacto-item">
+            <div class="contacto-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+            <h4>Teléfono</h4>
+            <p id="contacto-telefono">&mdash;</p>
+          </div>
+          <div class="contacto-item">
+            <div class="contacto-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+            <h4>Correo</h4>
+            <a href="#" id="contacto-email">&mdash;</a>
+          </div>
+        </div>
+        <div class="contacto-cta" id="contacto-whatsapp" style="display: none;">
+          <a href="#" target="_blank" class="btn-primary" id="whatsapp-link" style="background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 4px 14px rgba(37,211,102,0.3);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.553 4.12 1.522 5.855L0 24l6.335-1.652A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-1.987 0-3.875-.548-5.52-1.504l-.396-.234-3.756.98.999-3.648-.258-.41A9.72 9.72 0 012.25 12c0-5.385 4.365-9.75 9.75-9.75S21.75 6.615 21.75 12s-4.365 9.75-9.75 9.75z"/></svg>
+            Escríbenos por WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-brand">
+        <img src="src/assets/logo-harvard.jpeg" alt="Colegio Harvard" class="footer-logo" />
+        <span class="footer-brand-name">Colegio Harvard</span>
+      </div>
+      <ul class="footer-links">
+        <li><a href="#niveles">Niveles</a></li>
+        <li><a href="#nosotros">Nosotros</a></li>
+        <li><a href="#plataforma">Plataforma</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+        <li><a href="/login">Ingresar</a></li>
+      </ul>
+    </div>
+    <div class="container">
+      <p class="footer-copy">&copy; 2026 Colegio Harvard. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => { navbar.classList.toggle('scrolled', window.scrollY > 60); }, { passive: true });
+
+    // Hamburger
+    const hamburger = document.getElementById('navHamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+      const spans = hamburger.querySelectorAll('span');
+      const isOpen = navLinks.classList.contains('open');
+      spans[0].style.transform = isOpen ? 'rotate(45deg) translate(5px, 5px)' : '';
+      spans[1].style.opacity = isOpen ? '0' : '';
+      spans[2].style.transform = isOpen ? 'rotate(-45deg) translate(5px, -5px)' : '';
+    });
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        hamburger.querySelectorAll('span').forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+      });
+    });
+
+    // Scroll reveal
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); revealObserver.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const id = this.getAttribute('href');
+        if (!id.startsWith('#') || id === '#') return;
+        e.preventDefault();
+        const t = document.querySelector(id);
+        if (t) window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - navbar.offsetHeight - 20, behavior: 'smooth' });
+      });
+    });
+
+    // Fetch landing data from API
+    (async () => {
+      try {
+        const base = window.location.port === '5173' ? 'http://localhost:4000' : '';
+        const res = await fetch(base + '/api/landing');
+        if (!res.ok) return;
+        const { data } = await res.json();
+        if (!data) return;
+        if (data.lema) document.getElementById('hero-title').textContent = data.lema;
+        if (data.descripcion) document.getElementById('hero-subtitle').textContent = data.descripcion;
+        if (data.direccion) document.getElementById('contacto-direccion').textContent = data.direccion;
+        if (data.telefono) document.getElementById('contacto-telefono').textContent = data.telefono;
+        if (data.email) { const el = document.getElementById('contacto-email'); el.textContent = data.email; el.href = 'mailto:' + data.email; }
+        if (data.telefono_whatsapp) {
+          const waNum = data.telefono_whatsapp.replace(/\D/g, '');
+          if (waNum) {
+            document.getElementById('contacto-whatsapp').style.display = 'block';
+            document.getElementById('whatsapp-link').href = 'https://wa.me/' + waNum + '?text=Hola%2C%20quisiera%20informaci%C3%B3n%20sobre%20el%20colegio.';
+          }
+        }
+      } catch { /* landing works with defaults if API unavailable */ }
+    })();
+  </script>
+</body>
+</html>
