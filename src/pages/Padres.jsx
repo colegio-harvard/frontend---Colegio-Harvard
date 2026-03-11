@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
@@ -216,7 +217,7 @@ const Padres = () => {
                   {perfilData.hijos.map(hijo => (
                     <div key={hijo.id} className="flex items-center gap-3 p-3 bg-white border border-cream-200 rounded-lg">
                       {hijo.foto_url ? (
-                        <img src={hijo.foto_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gold-200" />
+                        <img src={fileUrl(hijo.foto_url)} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gold-200" />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
                           <span className="text-primary-600 text-sm font-bold">{hijo.nombre_completo?.charAt(0)}</span>

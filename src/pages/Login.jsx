@@ -107,7 +107,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 bg-crimson-gradient text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-crimson text-sm tracking-wide"
+                className="w-full py-3 px-4 bg-crimson-gradient text-white font-semibold rounded-lg hover:opacity-90 focus:ring-4 focus:ring-primary-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-crimson text-sm tracking-wide flex items-center justify-center leading-none"
               >
                 {loading ? 'Ingresando...' : 'Ingresar'}
               </button>

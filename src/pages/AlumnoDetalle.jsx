@@ -5,7 +5,7 @@ import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { obtenerAlumno } from '../services/alumnosService';
 import { HiArrowLeft, HiIdentification, HiUserGroup, HiAcademicCap, HiPhone, HiQrcode } from 'react-icons/hi';
-import { UPLOADS_BASE } from '../utils/constants';
+import { fileUrl } from '../utils/constants';
 import toast from 'react-hot-toast';
 
 const AlumnoDetalle = () => {
@@ -64,7 +64,7 @@ const AlumnoDetalle = () => {
       <Card className="mb-6">
         <div className="flex items-center gap-4">
           {alumno.foto_url ? (
-            <img src={`${UPLOADS_BASE}${alumno.foto_url}`} alt={alumno.nombre_completo}
+            <img src={fileUrl(alumno.foto_url)} alt={alumno.nombre_completo}
               className="w-20 h-20 rounded-full object-cover border-3 border-gold-300 shadow-gold" />
           ) : (
             <div className="w-20 h-20 rounded-full bg-gold-gradient flex items-center justify-center shadow-gold">

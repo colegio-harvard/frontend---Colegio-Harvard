@@ -5,6 +5,15 @@
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 export const UPLOADS_BASE = API_URL.replace(/\/api\/?$/, '');
 
+// Helper: construye URL de archivo.
+// - URLs absolutas (Wasabi) se usan tal cual.
+// - Rutas relativas legacy (/uploads/...) se prefijar con UPLOADS_BASE.
+export const fileUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${UPLOADS_BASE}${path}`;
+};
+
 export const ROLES = {
   SUPER_ADMIN: 'SUPER_ADMIN',
   ADMIN: 'ADMIN',

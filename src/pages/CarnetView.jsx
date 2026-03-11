@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import apiClient from '../services/apiClient';
 import { HiArrowLeft, HiPrinter } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import { UPLOADS_BASE } from '../utils/constants';
+import { fileUrl } from '../utils/constants';
 import logoHarvard from '../assets/insignia-harvard.jpeg';
 import { QRCodeSVG } from 'qrcode.react';
 import QRCode from 'qrcode';
@@ -96,7 +96,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => (
     <div className="flex justify-center -mt-5 relative z-10">
       <div className="w-[88px] h-[88px] rounded-full bg-gold-gradient p-[3px] shadow-gold-md">
         {alumno.foto_url ? (
-          <img src={`${UPLOADS_BASE}${alumno.foto_url}`} alt={alumno.nombre_completo}
+          <img src={fileUrl(alumno.foto_url)} alt={alumno.nombre_completo}
             className="w-full h-full rounded-full object-cover border-2 border-white" />
         ) : (
           <div className="w-full h-full rounded-full bg-cream-100 border-2 border-white flex items-center justify-center">
@@ -160,7 +160,7 @@ const CarnetView = () => {
   const handlePrint = async () => {
     if (!carnetData) return;
     const logoUrl = window.location.origin + logoHarvard;
-    const fotoUrl = carnetData.alumno.foto_url ? `${UPLOADS_BASE}${carnetData.alumno.foto_url}` : null;
+    const fotoUrl = fileUrl(carnetData.alumno.foto_url);
     const qrDataUrl = await QRCode.toDataURL(carnetData.carnet.qr_token, {
       width: 240, margin: 1, color: { dark: '#000080', light: '#FFFCF8' }
     });

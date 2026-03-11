@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ROLES } from '../utils/constants';
+import { ROLES, fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
@@ -122,7 +122,7 @@ const ReportesAlumno = () => {
           </button>
           <div className="flex items-center gap-3">
             {alumno.foto_url ? (
-              <img src={alumno.foto_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gold-200" />
+              <img src={fileUrl(alumno.foto_url)} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gold-200" />
             ) : (
               <div className="w-10 h-10 rounded-full bg-gold-gradient flex items-center justify-center shadow-gold">
                 <span className="text-white text-lg font-bold">{alumno.nombre_completo?.charAt(0)}</span>

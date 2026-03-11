@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { obtenerAula } from '../services/configEscolarService';
@@ -93,7 +94,7 @@ const ComunicadosAula = () => {
               <Card className="hover:shadow-lg hover:border-gold-300 transition-all duration-200 h-full">
                 <div className="flex items-center gap-3">
                   {alumno.foto_url ? (
-                    <img src={alumno.foto_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gold-200" />
+                    <img src={fileUrl(alumno.foto_url)} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gold-200" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-gold-gradient flex items-center justify-center shadow-gold">
                       <span className="text-white text-sm font-bold">{alumno.nombre_completo?.charAt(0)}</span>

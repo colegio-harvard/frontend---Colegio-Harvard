@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fileUrl } from '../../utils/constants';
 import Card from '../../components/ui/Card';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import Badge from '../../components/ui/Badge';
@@ -69,7 +70,7 @@ const DashboardPadre = () => {
             <Card key={hijo.id}>
               <div className="flex items-center gap-3">
                 {hijo.foto_url ? (
-                  <img src={hijo.foto_url} alt={hijo.nombre_completo} className="w-12 h-12 rounded-full object-cover border-2 border-gold-200" />
+                  <img src={fileUrl(hijo.foto_url)} alt={hijo.nombre_completo} className="w-12 h-12 rounded-full object-cover border-2 border-gold-200" />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-gold-gradient flex items-center justify-center shadow-gold">
                     <span className="text-white font-bold text-lg">{hijo.nombre_completo?.charAt(0)}</span>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ROLES, UPLOADS_BASE } from '../utils/constants';
+import { ROLES, fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -143,7 +143,7 @@ const MensajesAlumno = () => {
 
   const renderAdjunto = (msg) => {
     if (!msg.adjunto_url) return null;
-    const url = `${UPLOADS_BASE}${msg.adjunto_url}`;
+    const url = fileUrl(msg.adjunto_url);
     const nombre = msg.adjunto_nombre || 'Adjunto';
     const ext = nombre.toLowerCase().split('.').pop();
     const esImagen = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext);
@@ -293,7 +293,7 @@ const MensajesAlumno = () => {
           </button>
           <div className="flex items-center gap-3">
             {alumno.foto_url ? (
-              <img src={alumno.foto_url} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gold-200" />
+              <img src={fileUrl(alumno.foto_url)} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gold-200" />
             ) : (
               <div className="w-10 h-10 rounded-full bg-gold-gradient flex items-center justify-center shadow-gold">
                 <span className="text-white text-lg font-bold">{alumno.nombre_completo?.charAt(0)}</span>

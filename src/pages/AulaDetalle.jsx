@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
 import Badge from '../components/ui/Badge';
@@ -46,7 +47,7 @@ const AulaDetalle = () => {
     { header: 'Alumno', sortValue: (r) => r.nombre_completo, render: (r) => (
       <div className="flex items-center gap-2.5">
         {r.foto_url ? (
-          <img src={r.foto_url} alt="" className="w-8 h-8 rounded-full object-cover border border-gold-200" />
+          <img src={fileUrl(r.foto_url)} alt="" className="w-8 h-8 rounded-full object-cover border border-gold-200" />
         ) : (
           <div className="w-8 h-8 rounded-full bg-gold-gradient flex items-center justify-center shadow-gold">
             <span className="text-white text-xs font-bold">{r.nombre_completo?.charAt(0)}</span>

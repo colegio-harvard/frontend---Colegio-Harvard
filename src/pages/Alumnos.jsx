@@ -8,7 +8,7 @@ import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet } from '../
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiPrinter, HiPhotograph, HiUserAdd } from 'react-icons/hi';
-import { UPLOADS_BASE } from '../utils/constants';
+import { fileUrl } from '../utils/constants';
 import { PRINT_CSS, buildPrintHTML } from './CarnetView';
 import logoHarvard from '../assets/insignia-harvard.jpeg';
 import { QRCodeSVG } from 'qrcode.react';
@@ -143,7 +143,7 @@ const Alumnos = () => {
   const handlePrintCarnet = async () => {
     if (!carnetData) return;
     const logoUrl = window.location.origin + logoHarvard;
-    const fotoUrl = carnetData.alumno.foto_url ? `${UPLOADS_BASE}${carnetData.alumno.foto_url}` : null;
+    const fotoUrl = fileUrl(carnetData.alumno.foto_url);
     const qrDataUrl = await QRCode.toDataURL(carnetData.carnet.qr_token, {
       width: 240, margin: 1, color: { dark: '#000080', light: '#FFFCF8' }
     });
@@ -236,7 +236,7 @@ const Alumnos = () => {
       id_aula: String(a.id_aula),
     });
     setFotoFile(null);
-    setFotoPreview(a.foto_url ? `${UPLOADS_BASE}${a.foto_url}` : null);
+    setFotoPreview(fileUrl(a.foto_url));
     setPadreBusqueda('');
     setPadreResultados([]);
     setPadreSeleccionado(null);
@@ -285,7 +285,7 @@ const Alumnos = () => {
     { header: 'Foto', render: (r) => (
       <div className="flex items-center gap-2">
         {r.foto_url ? (
-          <img src={`${UPLOADS_BASE}${r.foto_url}`} alt="" className="w-8 h-8 rounded-full object-cover" />
+          <img src={fileUrl(r.foto_url)} alt="" className="w-8 h-8 rounded-full object-cover" />
         ) : (
           <div className="w-8 h-8 rounded-full bg-cream-200 flex items-center justify-center text-xs text-gold-600">
             {r.nombre_completo?.charAt(0)}
@@ -725,7 +725,7 @@ const Alumnos = () => {
               <div className="flex justify-center -mt-5 relative z-10">
                 <div className="w-[88px] h-[88px] rounded-full bg-gold-gradient p-[3px] shadow-gold-md">
                   {carnetData.alumno.foto_url ? (
-                    <img src={`${UPLOADS_BASE}${carnetData.alumno.foto_url}`} alt={carnetData.alumno.nombre_completo}
+                    <img src={fileUrl(carnetData.alumno.foto_url)} alt={carnetData.alumno.nombre_completo}
                       className="w-full h-full rounded-full object-cover border-2 border-white" />
                   ) : (
                     <div className="w-full h-full rounded-full bg-cream-100 border-2 border-white flex items-center justify-center">

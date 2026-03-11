@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ROLES } from '../utils/constants';
+import { ROLES, fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
@@ -99,7 +99,7 @@ const Mensajes = () => {
                 <Card className="hover:shadow-lg hover:border-gold-300 transition-all duration-200 h-full">
                   <div className="flex items-center gap-3">
                     {hijo.foto_url ? (
-                      <img src={hijo.foto_url} alt="" className="w-12 h-12 rounded-full object-cover border-2 border-gold-200" />
+                      <img src={fileUrl(hijo.foto_url)} alt="" className="w-12 h-12 rounded-full object-cover border-2 border-gold-200" />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gold-gradient flex items-center justify-center shadow-gold">
                         <span className="text-white text-lg font-bold">{hijo.nombre_completo?.charAt(0)}</span>
