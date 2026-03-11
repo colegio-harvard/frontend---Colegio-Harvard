@@ -49,7 +49,7 @@ const Login = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Back to landing */}
         <a
-          href="/landing.html"
+          href="/landing"
           className="inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-primary-800/70 hover:text-primary-800 transition-colors group"
         >
           <HiArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />

@@ -1,5 +1,7 @@
 {
-  "cleanUrls": false,
+  "redirects": [
+    { "source": "/", "destination": "/landing", "type": 302 }
+  ],
   "rewrites": [
     { "source": "**", "destination": "/index.html" }
   ]
