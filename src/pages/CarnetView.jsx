@@ -11,10 +11,10 @@ import { QRCodeSVG } from 'qrcode.react';
 import QRCode from 'qrcode';
 
 const PRINT_CSS = `
-  @page { size: auto; margin: 10mm; }
+  @page { size: 90mm 140mm; margin: 0; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-  body { font-family: 'DM Sans', system-ui, sans-serif; display: flex; justify-content: center; padding: 40px; background: white; margin: 0; }
-  .carnet { width: 340px; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,128,0.15); border: 1px solid #F5EDE3; }
+  html, body { width: 90mm; height: 140mm; margin: 0; padding: 0; background: white; font-family: 'DM Sans', system-ui, sans-serif; display: flex; justify-content: center; align-items: flex-start; }
+  .carnet { width: 100%; max-width: 340px; background: white; overflow: hidden; border: none; box-shadow: none; }
   .header { background: #000080 !important; background: linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%) !important; padding: 20px 24px 16px; text-align: center; }
   .logo { width: 108px; height: 108px; border-radius: 50%; object-fit: cover; border: 3px solid #E8BF4D; margin: 0 auto 10px; display: block; }
   .school-name { color: #E8BF4D; font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin: 0; }
