@@ -119,7 +119,12 @@ const Alumnos = () => {
       if (filtroNivel && a.aula?.grado?.nivel !== filtroNivel) return false;
       if (filtroGrado && a.aula?.grado?.nombre !== filtroGrado) return false;
       if (filtroSeccion && a.aula?.seccion !== filtroSeccion) return false;
-      if (filtroCodigo && !a.codigo_alumno?.toLowerCase().includes(filtroCodigo.toLowerCase())) return false;
+      if (filtroCodigo) {
+        const busqueda = filtroCodigo.toLowerCase();
+        const coincideCodigo = a.codigo_alumno?.toLowerCase().includes(busqueda);
+        const coincideNombre = a.nombre_completo?.toLowerCase().includes(busqueda);
+        if (!coincideCodigo && !coincideNombre) return false;
+      }
       return true;
     });
   }, [alumnos, filtroNivel, filtroGrado, filtroSeccion, filtroCodigo]);
@@ -359,14 +364,14 @@ const Alumnos = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-primary-800/60 mb-1">Código Alumno</label>
+              <label className="block text-xs font-medium text-primary-800/60 mb-1">Buscar Alumno</label>
               <div className="relative">
                 <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-400" />
                 <input
                   type="text"
                   value={filtroCodigo}
                   onChange={(e) => setFiltroCodigo(e.target.value)}
-                  placeholder="Buscar por código..."
+                  placeholder="Buscar por código o apellido..."
                   className="w-full pl-9 pr-3 py-2 text-sm border border-cream-300 rounded-lg outline-none bg-white"
                 />
               </div>

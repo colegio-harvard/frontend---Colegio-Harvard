@@ -5,30 +5,30 @@ import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import { listarAlumnos } from '../services/alumnosService';
-import { listarAnios, listarAulas } from '../services/configEscolarService';
+import { listarAños, listarAulas } from '../services/configEscolarService';
 import { migrarAlumnos, clonarAulas } from '../services/anioEscolarService';
 import { HiSwitchHorizontal } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
 const AnioEscolar = () => {
   const [alumnos, setAlumnos] = useState([]);
-  const [anios, setAnios] = useState([]);
+  const [años, setAños] = useState([]);
   const [aulas, setAulas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalMigrar, setModalMigrar] = useState(false);
   const [seleccion, setSeleccion] = useState({});
-  const [anioDestino, setAnioDestino] = useState('');
+  const [añoDestino, setAñoDestino] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [alumnosR, aniosR, aulasR] = await Promise.all([
+      const [alumnosR, añosR, aulasR] = await Promise.all([
         listarAlumnos(),
-        listarAnios(),
+        listarAños(),
         listarAulas(),
       ]);
       setAlumnos(alumnosR.data.data || []);
-      setAnios(aniosR.data.data || []);
+      setAños(añosR.data.data || []);
       setAulas(aulasR.data.data || []);
     } catch {
       toast.error('Error al cargar datos');
@@ -53,7 +53,7 @@ const AnioEscolar = () => {
       return;
     }
     try {
-      await migrarAlumnos({ id_anio_destino: parseInt(anioDestino), migraciones });
+      await migrarAlumnos({ id_anio_destino: parseInt(añoDestino), migraciones });
       toast.success('Migración completada');
       setModalMigrar(false);
       fetchData();
@@ -63,13 +63,13 @@ const AnioEscolar = () => {
   };
 
   const handleClonar = async () => {
-    const anioActivo = anios.find(a => a.activo);
-    if (!anioActivo) {
+    const añoActivo = años.find(a => a.activo);
+    if (!añoActivo) {
       toast.error('No hay año escolar activo');
       return;
     }
     try {
-      await clonarAulas({ id_anio_origen: anioActivo.id, id_anio_destino: parseInt(anioDestino) });
+      await clonarAulas({ id_anio_origen: añoActivo.id, id_anio_destino: parseInt(añoDestino) });
       toast.success('Aulas clonadas');
       fetchData();
     } catch (err) {
@@ -112,10 +112,10 @@ const AnioEscolar = () => {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Año Destino</label>
-            <select value={anioDestino} onChange={(e) => setAnioDestino(e.target.value)} required
+            <select value={añoDestino} onChange={(e) => setAñoDestino(e.target.value)} required
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none">
               <option value="">Seleccione...</option>
-              {anios.map(a => <option key={a.id} value={a.id}>{a.anio}</option>)}
+              {años.map(a => <option key={a.id} value={a.id}>{a.anio}</option>)}
             </select>
           </div>
           <p className="text-sm text-primary-800/70">
@@ -125,7 +125,7 @@ const AnioEscolar = () => {
             <button onClick={handleMigrar} className="w-full py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700">
               Ejecutar Migración
             </button>
-            <button onClick={handleClonar} disabled={!anioDestino} className="w-full py-2 text-sm text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50">
+            <button onClick={handleClonar} disabled={!añoDestino} className="w-full py-2 text-sm text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50">
               Clonar Aulas al Año Destino
             </button>
           </div>

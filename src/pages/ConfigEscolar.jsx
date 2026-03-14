@@ -4,7 +4,7 @@ import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
-import { listarAnios, crearAnio, activarAnio, listarNiveles, listarGrados, listarAulas, crearAula, asignarTutor, listarPuntosEscaneo, listarHorarios, guardarHorario, obtenerColegio, actualizarColegio } from '../services/configEscolarService';
+import { listarAños, crearAño, activarAño, listarNiveles, crearNivel, actualizarNivel, listarGrados, crearGrado, actualizarGrado, listarAulas, crearAula, asignarTutor, listarPuntosEscaneo, listarHorarios, guardarHorario, obtenerColegio, actualizarColegio } from '../services/configEscolarService';
 import { listarUsuarios } from '../services/usuariosService';
 import apiClient from '../services/apiClient';
 import { HiPlus, HiPencil, HiClock, HiEye, HiBell, HiGlobe, HiX, HiMenuAlt4, HiExclamation, HiInformationCircle, HiTrash, HiSpeakerphone } from 'react-icons/hi';
@@ -183,8 +183,8 @@ const PensionTab = ({ catalogoMeses, pagosActivos, setPagosActivos, pensionMeses
 
 const ConfigEscolar = () => {
   const navigate = useNavigate();
-  const [tab, setTab] = useState('aulas');
-  const [anios, setAnios] = useState([]);
+  const [tab, setTab] = useState('niveles');
+  const [años, setAños] = useState([]);
   const [niveles, setNiveles] = useState([]);
   const [grados, setGrados] = useState([]);
   const [aulas, setAulas] = useState([]);
@@ -199,8 +199,8 @@ const ConfigEscolar = () => {
   const [tutorForm, setTutorForm] = useState({ id_aula: '', id_usuario_tutor: '' });
   const [horarioForms, setHorarioForms] = useState({});
   const [savingHorario, setSavingHorario] = useState(null);
-  const [modalAnio, setModalAnio] = useState(false);
-  const [anioForm, setAnioForm] = useState({ anio: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' });
+  const [modalAño, setModalAño] = useState(false);
+  const [añoForm, setAñoForm] = useState({ año: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' });
   // Notificaciones tab state
   const [plantillas, setPlantillas] = useState([]);
   const [configPension, setConfigPension] = useState(null);
@@ -218,12 +218,19 @@ const ConfigEscolar = () => {
   // Sitio Web tab state
   const [colegioForm, setColegioForm] = useState({ lema: '', descripcion: '', direccion: '', email: '', telefono: '', telefono_whatsapp: '' });
   const [savingColegio, setSavingColegio] = useState(false);
+  // Niveles y Grados modals
+  const [modalNivel, setModalNivel] = useState(false);
+  const [nivelForm, setNivelForm] = useState({ nombre: '' });
+  const [editNivelId, setEditNivelId] = useState(null);
+  const [modalGrado, setModalGrado] = useState(false);
+  const [gradoForm, setGradoForm] = useState({ id_nivel: '', nombre: '', orden: 0 });
+  const [editGradoId, setEditGradoId] = useState(null);
 
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [aniosR, nivelesR, gradosR, aulasR, puntosR, tutoresR, pensionR, horariosR, plantillasR, configPensionR, mesesR, colegioR, notifPersR] = await Promise.all([
-        listarAnios(), listarNiveles(), listarGrados(), listarAulas(), listarPuntosEscaneo(),
+      const [añosR, nivelesR, gradosR, aulasR, puntosR, tutoresR, pensionR, horariosR, plantillasR, configPensionR, mesesR, colegioR, notifPersR] = await Promise.all([
+        listarAños(), listarNiveles(), listarGrados(), listarAulas(), listarPuntosEscaneo(),
         listarUsuarios({ rol: 'TUTOR' }),
         apiClient.get('/pensiones/plantilla').catch(() => ({ data: { data: [] } })),
         listarHorarios().catch(() => ({ data: { data: [] } })),
@@ -233,7 +240,7 @@ const ConfigEscolar = () => {
         obtenerColegio().catch(() => ({ data: { data: {} } })),
         listarNotifPersonalizadas().catch(() => ({ data: { data: [] } })),
       ]);
-      setAnios(aniosR.data.data || []);
+      setAños(añosR.data.data || []);
       setNiveles(nivelesR.data.data || []);
       setGrados(gradosR.data.data || []);
       setAulas(aulasR.data.data || []);
@@ -305,21 +312,54 @@ const ConfigEscolar = () => {
 
   useEffect(() => { fetchAll(); }, []);
 
-  const handleCrearAnio = async (e) => {
+  const handleCrearAño = async (e) => {
     e.preventDefault();
     try {
-      const idColegio = anios[0]?.id_colegio;
-      if (!idColegio) {
-        toast.error('No se pudo determinar el colegio');
-        return;
-      }
-      await crearAnio({ id_colegio: idColegio, anio: parseInt(anioForm.anio), fecha_inicio: anioForm.fecha_inicio, fecha_fin: anioForm.fecha_fin });
+      await crearAño({ anio: parseInt(añoForm.año), fecha_inicio: añoForm.fecha_inicio, fecha_fin: añoForm.fecha_fin });
       toast.success('Año escolar creado');
-      setModalAnio(false);
-      setAnioForm({ anio: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' });
+      setModalAño(false);
+      setAñoForm({ año: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' });
       fetchAll();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al crear año escolar');
+    }
+  };
+
+  const handleCrearNivel = async (e) => {
+    e.preventDefault();
+    try {
+      if (editNivelId) {
+        await actualizarNivel(editNivelId, { nombre: nivelForm.nombre.trim() });
+        toast.success('Nivel actualizado');
+      } else {
+        await crearNivel({ nombre: nivelForm.nombre.trim() });
+        toast.success('Nivel creado');
+      }
+      setModalNivel(false);
+      setNivelForm({ nombre: '' });
+      setEditNivelId(null);
+      fetchAll();
+    } catch (err) {
+      toast.error(err.response?.data?.error || (editNivelId ? 'Error al actualizar nivel' : 'Error al crear nivel'));
+    }
+  };
+
+  const handleCrearGrado = async (e) => {
+    e.preventDefault();
+    try {
+      if (editGradoId) {
+        await actualizarGrado(editGradoId, { id_nivel: gradoForm.id_nivel, nombre: gradoForm.nombre.trim(), orden: gradoForm.orden });
+        toast.success('Grado actualizado');
+      } else {
+        await crearGrado({ id_nivel: gradoForm.id_nivel, nombre: gradoForm.nombre.trim(), orden: gradoForm.orden });
+        toast.success('Grado creado');
+      }
+      setModalGrado(false);
+      setGradoForm({ id_nivel: '', nombre: '', orden: 0 });
+      setEditGradoId(null);
+      fetchAll();
+    } catch (err) {
+      toast.error(err.response?.data?.error || (editGradoId ? 'Error al actualizar grado' : 'Error al crear grado'));
     }
   };
 
@@ -376,8 +416,8 @@ const ConfigEscolar = () => {
     const form = horarioForms[nivel.id];
     if (!form) return;
 
-    const anioActivo = anios.find(a => a.activo);
-    if (!anioActivo) {
+    const añoActivo = años.find(a => a.activo);
+    if (!añoActivo) {
       toast.error('Debe tener un año escolar activo');
       return;
     }
@@ -386,7 +426,7 @@ const ConfigEscolar = () => {
     try {
       await guardarHorario({
         id_nivel: nivel.id,
-        id_anio_escolar: anioActivo.id,
+        id_anio_escolar: añoActivo.id,
         hora_inicio: form.hora_inicio,
         tolerancia_tardanza_min: form.tolerancia_tardanza_min,
         hora_limite_no_ingreso: form.hora_limite_no_ingreso,
@@ -499,9 +539,10 @@ const ConfigEscolar = () => {
     : grados;
 
   const tabs = [
+    { key: 'niveles', label: 'Niveles y Grados' },
     { key: 'aulas', label: 'Aulas' },
     { key: 'horarios', label: 'Horarios' },
-    { key: 'anios', label: 'Años Escolares' },
+    { key: 'años', label: 'Años Escolares' },
     { key: 'puntos', label: 'Puntos Escaneo' },
     { key: 'pensiones', label: 'Plantilla Pensión' },
     { key: 'notificaciones', label: 'Notificaciones' },
@@ -535,6 +576,61 @@ const ConfigEscolar = () => {
           </button>
         ))}
       </div>
+
+      {tab === 'niveles' && (
+        <Card title="Niveles y Grados" actions={
+          <div className="flex gap-2">
+            <button onClick={() => { setEditGradoId(null); setGradoForm({ id_nivel: '', nombre: '', orden: 0 }); setModalGrado(true); }}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+              disabled={niveles.length === 0}>
+              <HiPlus className="w-4 h-4" /> Nuevo Grado
+            </button>
+            <button onClick={() => { setEditNivelId(null); setNivelForm({ nombre: '' }); setModalNivel(true); }}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm">
+              <HiPlus className="w-4 h-4" /> Nuevo Nivel
+            </button>
+          </div>
+        }>
+          <p className="text-sm text-gold-600 mb-6">
+            Los niveles y grados se configuran una sola vez y se reutilizan en todos los años escolares. Luego, en la pestaña "Aulas", cree las secciones para cada año.
+          </p>
+          {niveles.length === 0 ? (
+            <p className="text-center py-8 text-cream-400">No hay niveles registrados. Cree el primer nivel para comenzar.</p>
+          ) : (
+            <div className="space-y-4">
+              {niveles.map(nivel => (
+                <div key={nivel.id} className="p-4 rounded-lg border border-cream-200 bg-cream-50/50">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-primary-800 font-display text-lg">{nivel.nombre}</h4>
+                      <button onClick={() => { setEditNivelId(nivel.id); setNivelForm({ nombre: nivel.nombre }); setModalNivel(true); }}
+                        className="p-1 text-cream-400 hover:text-gold-600 transition-colors" title="Editar nivel">
+                        <HiPencil className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <Badge variant="default">{(nivel.grados || []).length} grado(s)</Badge>
+                  </div>
+                  {(nivel.grados || []).length === 0 ? (
+                    <p className="text-sm text-cream-400 italic">Sin grados. Agregue grados a este nivel.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {(nivel.grados || []).map(grado => (
+                        <button key={grado.id} type="button"
+                          onClick={() => { setEditGradoId(grado.id); setGradoForm({ id_nivel: nivel.id, nombre: grado.nombre, orden: grado.orden }); setModalGrado(true); }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white border border-cream-200 rounded-lg text-primary-800 hover:border-gold-400 hover:shadow-sm transition-all cursor-pointer group">
+                          <span className="text-xs text-cream-400 font-mono">#{grado.orden}</span>
+                          {grado.nombre}
+                          <HiPencil className="w-3 h-3 text-cream-300 group-hover:text-gold-600 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
       {tab === 'aulas' && (
         <Card title="Aulas" actions={
@@ -605,9 +701,9 @@ const ConfigEscolar = () => {
         </Card>
       )}
 
-      {tab === 'anios' && (
+      {tab === 'años' && (
         <Card title="Años Escolares" actions={
-          <button onClick={() => { setAnioForm({ anio: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' }); setModalAnio(true); }}
+          <button onClick={() => { setAñoForm({ año: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' }); setModalAño(true); }}
             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm">
             <HiPlus className="w-4 h-4" /> Nuevo Año Escolar
           </button>
@@ -623,7 +719,7 @@ const ConfigEscolar = () => {
             { header: 'Acciones', render: (r) => (
               <div className="flex gap-2">
                 {!r.activo && (
-                  <button onClick={async () => { await activarAnio(r.id); fetchAll(); toast.success('Año activado'); }}
+                  <button onClick={async () => { await activarAño(r.id); fetchAll(); toast.success('Año activado'); }}
                     className="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">Activar</button>
                 )}
                 {r.activo && (
@@ -631,7 +727,7 @@ const ConfigEscolar = () => {
                 )}
               </div>
             )},
-          ]} data={anios} loading={loading} />
+          ]} data={años} loading={loading} />
         </Card>
       )}
 
@@ -1064,28 +1160,28 @@ const ConfigEscolar = () => {
       </Modal>
 
       {/* Modal Nuevo Año Escolar */}
-      <Modal isOpen={modalAnio} onClose={() => setModalAnio(false)} title="Nuevo Año Escolar">
-        <form onSubmit={handleCrearAnio} className="space-y-4">
+      <Modal isOpen={modalAño} onClose={() => setModalAño(false)} title="Nuevo Año Escolar">
+        <form onSubmit={handleCrearAño} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Año</label>
-            <input type="number" min="2020" max="2099" value={anioForm.anio}
-              onChange={(e) => setAnioForm({ ...anioForm, anio: e.target.value })} required
+            <input type="number" min="2020" max="2099" value={añoForm.año}
+              onChange={(e) => setAñoForm({ ...añoForm, año: e.target.value })} required
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors" />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Fecha de Inicio</label>
-            <input type="date" value={anioForm.fecha_inicio}
-              onChange={(e) => setAnioForm({ ...anioForm, fecha_inicio: e.target.value })} required
+            <input type="date" value={añoForm.fecha_inicio}
+              onChange={(e) => setAñoForm({ ...añoForm, fecha_inicio: e.target.value })} required
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors" />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Fecha de Fin</label>
-            <input type="date" value={anioForm.fecha_fin}
-              onChange={(e) => setAnioForm({ ...anioForm, fecha_fin: e.target.value })} required
+            <input type="date" value={añoForm.fecha_fin}
+              onChange={(e) => setAñoForm({ ...añoForm, fecha_fin: e.target.value })} required
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors" />
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => setModalAnio(false)}
+            <button type="button" onClick={() => setModalAño(false)}
               className="px-4 py-2 text-sm text-primary-800/80 bg-cream-100 rounded-lg hover:bg-cream-200">Cancelar</button>
             <button type="submit"
               className="px-4 py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700">Crear</button>
@@ -1101,7 +1197,7 @@ const ConfigEscolar = () => {
             <select value={aulaForm.id_anio_escolar} onChange={(e) => setAulaForm({...aulaForm, id_anio_escolar: parseInt(e.target.value)})} required
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors">
               <option value="">Seleccione...</option>
-              {anios.map(a => <option key={a.id} value={a.id}>{a.anio}{a.activo ? ' (Activo)' : ''}</option>)}
+              {años.map(a => <option key={a.id} value={a.id}>{a.anio}{a.activo ? ' (Activo)' : ''}</option>)}
             </select>
           </div>
           <div>
@@ -1158,6 +1254,60 @@ const ConfigEscolar = () => {
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => setModalTutor(false)} className="px-4 py-2 text-sm text-primary-800/80 bg-cream-100 rounded-lg hover:bg-cream-200">Cancelar</button>
             <button type="submit" className="px-4 py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700">Asignar</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Nuevo/Editar Nivel */}
+      <Modal isOpen={modalNivel} onClose={() => { setModalNivel(false); setEditNivelId(null); }} title={editNivelId ? 'Editar Nivel' : 'Nuevo Nivel'} size="sm">
+        <form onSubmit={handleCrearNivel} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-primary-800/80 mb-1">Nombre del Nivel</label>
+            <input type="text" value={nivelForm.nombre}
+              onChange={(e) => setNivelForm({ nombre: e.target.value })} required maxLength={50}
+              placeholder='Ej: "Inicial", "Primaria", "Secundaria"'
+              className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors" />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => { setModalNivel(false); setEditNivelId(null); }}
+              className="px-4 py-2 text-sm text-primary-800/80 bg-cream-100 rounded-lg hover:bg-cream-200">Cancelar</button>
+            <button type="submit"
+              className="px-4 py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700">{editNivelId ? 'Guardar' : 'Crear'}</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Nuevo/Editar Grado */}
+      <Modal isOpen={modalGrado} onClose={() => { setModalGrado(false); setEditGradoId(null); }} title={editGradoId ? 'Editar Grado' : 'Nuevo Grado'} size="sm">
+        <form onSubmit={handleCrearGrado} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-primary-800/80 mb-1">Nivel</label>
+            <select value={gradoForm.id_nivel}
+              onChange={(e) => setGradoForm({ ...gradoForm, id_nivel: parseInt(e.target.value) })} required
+              className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors">
+              <option value="">Seleccione nivel...</option>
+              {niveles.map(n => <option key={n.id} value={n.id}>{n.nombre}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-primary-800/80 mb-1">Nombre del Grado</label>
+            <input type="text" value={gradoForm.nombre}
+              onChange={(e) => setGradoForm({ ...gradoForm, nombre: e.target.value })} required maxLength={50}
+              placeholder='Ej: "1er Grado", "2do Grado"'
+              className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-primary-800/80 mb-1">Orden</label>
+            <input type="number" min="0" max="99" value={gradoForm.orden}
+              onChange={(e) => setGradoForm({ ...gradoForm, orden: parseInt(e.target.value) || 0 })}
+              className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors" />
+            <p className="text-xs text-cream-400 mt-1">Define el orden de aparición dentro del nivel (menor = primero)</p>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => { setModalGrado(false); setEditGradoId(null); }}
+              className="px-4 py-2 text-sm text-primary-800/80 bg-cream-100 rounded-lg hover:bg-cream-200">Cancelar</button>
+            <button type="submit"
+              className="px-4 py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700">{editGradoId ? 'Guardar' : 'Crear'}</button>
           </div>
         </form>
       </Modal>

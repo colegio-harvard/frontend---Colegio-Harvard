@@ -31,7 +31,7 @@ const AsistenciaPadre = () => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' }));
   });
-  const [anio, setAnio] = useState(() => {
+  const [año, setAño] = useState(() => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' }));
   });
@@ -56,7 +56,7 @@ const AsistenciaPadre = () => {
       setLoading(true);
       setDiaSeleccionado(null);
       try {
-        const { data } = await calendarioAlumno({ id_alumno: hijoSeleccionado, mes, anio });
+        const { data } = await calendarioAlumno({ id_alumno: hijoSeleccionado, mes, anio: año });
         setDatos(data.data || []);
       } catch {
         setDatos([]);
@@ -65,7 +65,7 @@ const AsistenciaPadre = () => {
       }
     };
     fetch();
-  }, [mes, anio, hijoSeleccionado]);
+  }, [mes, año, hijoSeleccionado]);
 
   const estadoColor = (estado) => {
     const conf = ESTADO_ASISTENCIA_LABELS[estado];
@@ -124,7 +124,7 @@ const AsistenciaPadre = () => {
         <select value={mes} onChange={(e) => setMes(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none">
           {Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{new Date(2000, i).toLocaleString('es-PE', { month: 'long' })}</option>)}
         </select>
-        <input type="number" value={anio} onChange={(e) => setAnio(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24" />
+        <input type="number" value={año} onChange={(e) => setAño(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24" />
       </div>
 
       {loading ? <LoadingSpinner /> : (
@@ -266,7 +266,7 @@ const AsistenciaTutor = () => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' }));
   });
-  const [calAnio, setCalAnio] = useState(() => {
+  const [calAño, setCalAño] = useState(() => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' }));
   });
@@ -306,7 +306,7 @@ const AsistenciaTutor = () => {
     const fetchCal = async () => {
       setCalLoading(true);
       try {
-        const { data } = await calendarioAlumno({ id_alumno: calAlumno.id, mes: calMes, anio: calAnio });
+        const { data } = await calendarioAlumno({ id_alumno: calAlumno.id, mes: calMes, anio: calAño });
         setCalDatos(data.data || []);
       } catch {
         setCalDatos([]);
@@ -315,12 +315,12 @@ const AsistenciaTutor = () => {
       }
     };
     fetchCal();
-  }, [calAlumno, calMes, calAnio]);
+  }, [calAlumno, calMes, calAño]);
 
   const abrirCalendario = (alumno) => {
     const now = new Date();
     setCalMes(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' })));
-    setCalAnio(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' })));
+    setCalAño(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' })));
     setCalAlumno(alumno);
     setCalDatos([]);
     setCalModal(true);
@@ -384,7 +384,7 @@ const AsistenciaTutor = () => {
           <select value={calMes} onChange={(e) => setCalMes(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
             {Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{new Date(2000, i).toLocaleString('es-PE', { month: 'long' })}</option>)}
           </select>
-          <input type="number" value={calAnio} onChange={(e) => setCalAnio(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24 text-sm" />
+          <input type="number" value={calAño} onChange={(e) => setCalAño(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24 text-sm" />
         </div>
 
         {calLoading ? <LoadingSpinner /> : calDatos.length === 0 ? (

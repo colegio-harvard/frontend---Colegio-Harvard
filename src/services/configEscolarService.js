@@ -1,17 +1,19 @@
 import apiClient from './apiClient';
 
-// Anios escolares
-export const listarAnios = () => apiClient.get('/config-escolar/anios');
-export const crearAnio = (data) => apiClient.post('/config-escolar/anios', data);
-export const activarAnio = (id) => apiClient.put(`/config-escolar/anios/${id}/activar`);
+// Años escolares
+export const listarAños = () => apiClient.get('/config-escolar/anios');
+export const crearAño = (data) => apiClient.post('/config-escolar/anios', data);
+export const activarAño = (id) => apiClient.put(`/config-escolar/anios/${id}/activar`);
 
 // Niveles
 export const listarNiveles = () => apiClient.get('/config-escolar/niveles');
 export const crearNivel = (data) => apiClient.post('/config-escolar/niveles', data);
+export const actualizarNivel = (id, data) => apiClient.put(`/config-escolar/niveles/${id}`, data);
 
 // Grados
 export const listarGrados = (params) => apiClient.get('/config-escolar/grados', { params });
 export const crearGrado = (data) => apiClient.post('/config-escolar/grados', data);
+export const actualizarGrado = (id, data) => apiClient.put(`/config-escolar/grados/${id}`, data);
 
 // Aulas
 export const listarAulas = (params) => apiClient.get('/config-escolar/aulas', { params });

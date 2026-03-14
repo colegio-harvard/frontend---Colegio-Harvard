@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
@@ -7,7 +7,7 @@ import Badge from '../components/ui/Badge';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { listarPadres, obtenerPadre, crearPadre, actualizarPadre, eliminarPadre } from '../services/padresService';
 import { formatFechaHora } from '../utils/formatters';
-import { HiPlus, HiPencil, HiTrash, HiEye, HiEyeOff, HiUser, HiPhone, HiIdentification, HiAcademicCap } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiTrash, HiEye, HiEyeOff, HiUser, HiPhone, HiIdentification, HiAcademicCap, HiSearch } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
 const Padres = () => {
@@ -21,6 +21,7 @@ const Padres = () => {
   const [perfilOpen, setPerfilOpen] = useState(false);
   const [perfilData, setPerfilData] = useState(null);
   const [perfilLoading, setPerfilLoading] = useState(false);
+  const [busqueda, setBusqueda] = useState('');
 
   const fetchData = async () => {
     setLoading(true);
@@ -89,6 +90,15 @@ const Padres = () => {
     }
   };
 
+  const padresFiltrados = useMemo(() => {
+    if (!busqueda.trim()) return padres;
+    const term = busqueda.toLowerCase().trim();
+    return padres.filter(p =>
+      p.nombre_completo?.toLowerCase().includes(term) ||
+      p.dni?.toLowerCase().includes(term)
+    );
+  }, [padres, busqueda]);
+
   const columns = [
     { header: 'ID', accessor: 'id' },
     { header: 'DNI', accessor: 'dni' },
@@ -114,8 +124,21 @@ const Padres = () => {
         </button>
       </div>
 
+      <div className="mb-4">
+        <div className="relative w-full max-w-md">
+          <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-400" />
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar por nombre o DNI..."
+            className="w-full pl-10 pr-4 py-2 border border-cream-300 rounded-lg outline-none text-sm focus:border-gold-400 focus:ring-1 focus:ring-gold-200 transition-colors"
+          />
+        </div>
+      </div>
+
       <Card>
-        <DataTable columns={columns} data={padres} loading={loading} emptyMessage="No hay padres registrados" />
+        <DataTable columns={columns} data={padresFiltrados} loading={loading} emptyMessage={busqueda ? 'No se encontraron resultados' : 'No hay padres registrados'} />
       </Card>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editando ? 'Editar Padre' : 'Nuevo Padre'}>
