@@ -14,7 +14,7 @@ export const fileUrl = (path) => {
     // Extraer la key del objeto desde la URL de Wasabi
     // Formato: https://s3.us-east-1.wasabisys.com/bucket-name/key
     const match = path.match(/wasabisys\.com\/[^/]+\/(.+)/);
-    if (match) return `${API_URL}/archivos/${match[1]}`;
+    if (match) return `${API_URL}/archivos?key=${encodeURIComponent(match[1])}`;
   }
   if (path.startsWith('http')) return path;
   return `${UPLOADS_BASE}${path}`;
