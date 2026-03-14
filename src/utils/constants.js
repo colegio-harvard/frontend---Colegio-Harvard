@@ -6,10 +6,16 @@ export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/ap
 export const UPLOADS_BASE = API_URL.replace(/\/api\/?$/, '');
 
 // Helper: construye URL de archivo.
-// - URLs absolutas (Wasabi) se usan tal cual.
-// - Rutas relativas legacy (/uploads/...) se prefijar con UPLOADS_BASE.
+// - URLs de Wasabi se redirigen al proxy del backend (/api/archivos/...).
+// - Rutas relativas legacy (/uploads/...) se prefijan con UPLOADS_BASE.
 export const fileUrl = (path) => {
   if (!path) return null;
+  if (path.includes('wasabisys.com')) {
+    // Extraer la key del objeto desde la URL de Wasabi
+    // Formato: https://s3.us-east-1.wasabisys.com/bucket-name/key
+    const match = path.match(/wasabisys\.com\/[^/]+\/(.+)/);
+    if (match) return `${API_URL}/archivos/${match[1]}`;
+  }
   if (path.startsWith('http')) return path;
   return `${UPLOADS_BASE}${path}`;
 };
