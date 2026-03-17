@@ -41,7 +41,7 @@ const Padres = () => {
     e.preventDefault();
     try {
       if (editando) {
-        await actualizarPadre(editando.id, { nombre_completo: form.nombre_completo, celular: form.celular });
+        await actualizarPadre(editando.id, { dni: form.dni, nombre_completo: form.nombre_completo, celular: form.celular });
         toast.success('Padre actualizado');
       } else {
         await crearPadre(form);
@@ -138,15 +138,15 @@ const Padres = () => {
       </div>
 
       <Card>
-        <DataTable columns={columns} data={padresFiltrados} loading={loading} emptyMessage={busqueda ? 'No se encontraron resultados' : 'No hay padres registrados'} />
+        <DataTable columns={columns} data={padresFiltrados} loading={loading} emptyMessage={busqueda ? 'No se encontraron resultados' : 'No hay padres registrados'} rowsPerPage={10} />
       </Card>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editando ? 'Editar Padre' : 'Nuevo Padre'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">DNI</label>
-            <input type="text" value={form.dni} onChange={(e) => setForm({...form, dni: e.target.value})} required disabled={!!editando}
-              className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100" maxLength={8} />
+            <input type="text" value={form.dni} onChange={(e) => setForm({...form, dni: e.target.value})} required
+              className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none" maxLength={8} />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Nombre Completo</label>

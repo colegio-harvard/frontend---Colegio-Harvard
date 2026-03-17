@@ -389,7 +389,7 @@ const Alumnos = () => {
             </div>
           )}
         </div>
-        <DataTable columns={columns} data={alumnosFiltrados} loading={loading} emptyMessage="No hay alumnos registrados" />
+        <DataTable columns={columns} data={alumnosFiltrados} loading={loading} emptyMessage="No hay alumnos registrados" rowsPerPage={10} />
       </Card>
 
       {/* ==================== MODAL CREAR / EDITAR ==================== */}
