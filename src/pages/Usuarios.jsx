@@ -128,7 +128,7 @@ const Usuarios = () => {
       </div>
 
       <Card>
-        <DataTable columns={columns} data={usuarios} loading={loading} emptyMessage="No hay usuarios registrados" />
+        <DataTable columns={columns} data={usuarios} loading={loading} emptyMessage="No hay usuarios registrados" rowsPerPage={10} />
       </Card>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editando ? 'Editar Usuario' : 'Nuevo Usuario'}>

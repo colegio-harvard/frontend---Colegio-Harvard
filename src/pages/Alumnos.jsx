@@ -4,10 +4,10 @@ import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet } from '../services/alumnosService';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
-import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiPrinter, HiPhotograph, HiUserAdd } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiPrinter, HiPhotograph, HiUserAdd, HiTrash } from 'react-icons/hi';
 import { fileUrl } from '../utils/constants';
 import { PRINT_CSS, buildPrintHTML } from './CarnetView';
 import logoHarvard from '../assets/insignia-harvard.jpeg';
@@ -50,6 +50,10 @@ const Alumnos = () => {
   const [carnetData, setCarnetData] = useState(null);
   const [carnetLoading, setCarnetLoading] = useState(false);
   const carnetRef = useRef(null);
+
+  // Modal eliminar
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [alumnoAEliminar, setAlumnoAEliminar] = useState(null);
 
   // ===================== FETCH DATA =====================
   const fetchData = async () => {
@@ -285,6 +289,25 @@ const Alumnos = () => {
     }
   };
 
+  // ===================== ELIMINAR ALUMNO =====================
+  const handleConfirmDelete = (alumno) => {
+    setAlumnoAEliminar(alumno);
+    setDeleteModalOpen(true);
+  };
+
+  const handleEliminar = async () => {
+    if (!alumnoAEliminar) return;
+    try {
+      await eliminarAlumno(alumnoAEliminar.id);
+      toast.success('Alumno eliminado');
+      setDeleteModalOpen(false);
+      setAlumnoAEliminar(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al eliminar alumno');
+    }
+  };
+
   // ===================== TABLE COLUMNS =====================
   const columns = [
     { header: 'Foto', render: (r) => (
@@ -308,6 +331,7 @@ const Alumnos = () => {
       <div className="flex gap-1">
         <button onClick={() => openEdit(row)} className="p-1.5 text-gold-600 hover:bg-gold-50 rounded" title="Editar"><HiPencil className="w-4 h-4" /></button>
         <button onClick={() => handleVerCarnet(row.id)} className="p-1.5 text-primary-600 hover:bg-primary-50 rounded" title="Ver carnet"><HiEye className="w-4 h-4" /></button>
+        <button onClick={() => handleConfirmDelete(row)} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Eliminar"><HiTrash className="w-4 h-4" /></button>
       </div>
     )},
   ];
@@ -710,6 +734,34 @@ const Alumnos = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* ==================== MODAL CONFIRMAR ELIMINACION ==================== */}
+      <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Eliminar Alumno" size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-primary-800/80">
+            ¿Está seguro que desea eliminar al alumno <strong>{alumnoAEliminar?.nombre_completo}</strong> ({alumnoAEliminar?.codigo_alumno})?
+          </p>
+          <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+            El alumno será marcado como eliminado. Su código y DNI quedarán disponibles para ser reutilizados.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setDeleteModalOpen(false)}
+              className="px-4 py-2 text-sm text-primary-800/80 bg-cream-100 rounded-lg hover:bg-cream-200 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleEliminar}
+              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
       </Modal>
 
       {/* ==================== MODAL CARNET ==================== */}

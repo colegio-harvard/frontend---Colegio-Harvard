@@ -99,7 +99,7 @@ const Auditoria = () => {
       </Card>
 
       <Card>
-        <DataTable columns={columns} data={registros} loading={loading} emptyMessage="No hay registros de auditoría" />
+        <DataTable columns={columns} data={registros} loading={loading} emptyMessage="No hay registros de auditoría" rowsPerPage={15} />
       </Card>
     </div>
   );

@@ -3,6 +3,7 @@ import apiClient from './apiClient';
 // Años escolares
 export const listarAños = () => apiClient.get('/config-escolar/anios');
 export const crearAño = (data) => apiClient.post('/config-escolar/anios', data);
+export const actualizarAño = (id, data) => apiClient.put(`/config-escolar/anios/${id}`, data);
 export const activarAño = (id) => apiClient.put(`/config-escolar/anios/${id}/activar`);
 
 // Niveles

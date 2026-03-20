@@ -184,25 +184,36 @@ const ComunicadosAlumno = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {comunicados.map(com => (
-            <Card key={com.id} onClick={() => handleVerComunicado(com)} className="cursor-pointer">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-primary-800">{com.titulo}</h3>
-                    {com.prioridad === 'ALTA' && <Badge variant="danger">ALTA</Badge>}
-                    {isPadre && !com.leido && <span className="w-2 h-2 bg-gold-500 rounded-full"></span>}
+          {comunicados.map(com => {
+            const esLeido = com.leido;
+            const cardBorder = esLeido
+              ? 'border-l-4 border-l-emerald-500 bg-emerald-50/30'
+              : 'border-l-4 border-l-red-500 bg-red-50/30';
+
+            return (
+              <Card key={com.id} onClick={() => handleVerComunicado(com)} className={`cursor-pointer ${cardBorder}`}>
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-primary-800">{com.titulo}</h3>
+                      {com.prioridad === 'ALTA' && <Badge variant="danger">ALTA</Badge>}
+                      {!esLeido && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-300">
+                          Sin leer
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gold-600">
+                      {formatFechaHora(com.publicado_en || com.date_time_registration)} - {com.creador} - Audiencia: {com.audiencia}
+                    </p>
                   </div>
-                  <p className="text-xs text-gold-600">
-                    {formatFechaHora(com.publicado_en || com.date_time_registration)} - {com.creador} - Audiencia: {com.audiencia}
-                  </p>
+                  {esLeido && <Badge variant="success">Leido</Badge>}
+                  {!isPadre && <span className="text-xs text-cream-400">{com.total_lecturas} lecturas</span>}
                 </div>
-                {com.leido && <Badge variant="success">Leido</Badge>}
-                {!isPadre && <span className="text-xs text-cream-400">{com.total_lecturas} lecturas</span>}
-              </div>
-              <p className="text-sm text-primary-800/80 whitespace-pre-wrap">{com.contenido}</p>
-            </Card>
-          ))}
+                <p className="text-sm text-primary-800/80 whitespace-pre-wrap">{com.contenido}</p>
+              </Card>
+            );
+          })}
         </div>
       )}
 

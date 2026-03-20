@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { obtenerPlantilla, obtenerEstadoPension, cuadriculaPensiones, registrarPago, obtenerDetalleMes } from '../services/pensionesService';
 import { listarNiveles, listarGrados, listarAulas } from '../services/configEscolarService';
-import { HiCheck, HiX, HiSearch, HiClock } from 'react-icons/hi';
+import { HiCheck, HiX, HiSearch, HiClock, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import { formatFecha } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
@@ -281,6 +281,18 @@ const PensionAdmin = () => {
 
   const hayFiltros = filtros.id_nivel || filtros.id_grado || filtros.id_aula || busqueda;
 
+  // Paginación
+  const ROWS_PER_PAGE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(cuadriculaFiltrada.length / ROWS_PER_PAGE));
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * ROWS_PER_PAGE;
+    return cuadriculaFiltrada.slice(start, start + ROWS_PER_PAGE);
+  }, [cuadriculaFiltrada, currentPage]);
+
+  // Reset page when filters change
+  useEffect(() => { setCurrentPage(1); }, [cuadriculaFiltrada.length]);
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -378,7 +390,7 @@ const PensionAdmin = () => {
               </tr>
             </thead>
             <tbody>
-              {cuadriculaFiltrada.map(alumno => (
+              {paginatedData.map(alumno => (
                 <tr key={alumno.id} className="border-t hover:bg-cream-50">
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-primary-800">{alumno.nombre_completo}</div>
@@ -419,6 +431,55 @@ const PensionAdmin = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-cream-200 bg-cream-50/50">
+            <span className="text-sm text-primary-800/60">
+              Mostrando {((currentPage - 1) * ROWS_PER_PAGE) + 1}–{Math.min(currentPage * ROWS_PER_PAGE, cuadriculaFiltrada.length)} de {cuadriculaFiltrada.length} registros
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-1.5 rounded-lg text-primary-800/60 hover:bg-cream-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <HiChevronLeft className="w-5 h-5" />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                .reduce((acc, page, idx, arr) => {
+                  if (idx > 0 && page - arr[idx - 1] > 1) acc.push('...');
+                  acc.push(page);
+                  return acc;
+                }, [])
+                .map((item, idx) =>
+                  item === '...' ? (
+                    <span key={`dots-${idx}`} className="px-1 text-sm text-primary-800/40">...</span>
+                  ) : (
+                    <button
+                      key={item}
+                      onClick={() => setCurrentPage(item)}
+                      className={`min-w-[2rem] h-8 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === item
+                          ? 'bg-primary-600 text-white shadow-sm'
+                          : 'text-primary-800/60 hover:bg-cream-200'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-1.5 rounded-lg text-primary-800/60 hover:bg-cream-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <HiChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Modal de pago */}

@@ -9,3 +9,4 @@ export const obtenerCarnet = (id_alumno) => apiClient.get(`/alumnos/carnet/${id_
 export const vincularPadre = (data) => apiClient.post('/alumnos/vincular', data);
 export const desvincularPadre = (id_alumno) => apiClient.delete(`/alumnos/desvincular/${id_alumno}`);
 export const reemitirCarnet = (id_alumno) => apiClient.post(`/alumnos/reemitir-carnet/${id_alumno}`);
+export const eliminarAlumno = (id) => apiClient.delete(`/alumnos/${id}`);

@@ -4,7 +4,7 @@ import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
-import { listarAños, crearAño, activarAño, listarNiveles, crearNivel, actualizarNivel, listarGrados, crearGrado, actualizarGrado, listarAulas, crearAula, asignarTutor, listarPuntosEscaneo, listarHorarios, guardarHorario, obtenerColegio, actualizarColegio } from '../services/configEscolarService';
+import { listarAños, crearAño, actualizarAño, activarAño, listarNiveles, crearNivel, actualizarNivel, listarGrados, crearGrado, actualizarGrado, listarAulas, crearAula, asignarTutor, listarPuntosEscaneo, listarHorarios, guardarHorario, obtenerColegio, actualizarColegio } from '../services/configEscolarService';
 import { listarUsuarios } from '../services/usuariosService';
 import apiClient from '../services/apiClient';
 import { HiPlus, HiPencil, HiClock, HiEye, HiBell, HiGlobe, HiX, HiMenuAlt4, HiExclamation, HiInformationCircle, HiTrash, HiSpeakerphone } from 'react-icons/hi';
@@ -200,6 +200,7 @@ const ConfigEscolar = () => {
   const [horarioForms, setHorarioForms] = useState({});
   const [savingHorario, setSavingHorario] = useState(null);
   const [modalAño, setModalAño] = useState(false);
+  const [editAñoId, setEditAñoId] = useState(null);
   const [añoForm, setAñoForm] = useState({ año: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' });
   // Notificaciones tab state
   const [plantillas, setPlantillas] = useState([]);
@@ -315,13 +316,19 @@ const ConfigEscolar = () => {
   const handleCrearAño = async (e) => {
     e.preventDefault();
     try {
-      await crearAño({ anio: parseInt(añoForm.año), fecha_inicio: añoForm.fecha_inicio, fecha_fin: añoForm.fecha_fin });
-      toast.success('Año escolar creado');
+      if (editAñoId) {
+        await actualizarAño(editAñoId, { anio: parseInt(añoForm.año), fecha_inicio: añoForm.fecha_inicio, fecha_fin: añoForm.fecha_fin });
+        toast.success('Año escolar actualizado');
+      } else {
+        await crearAño({ anio: parseInt(añoForm.año), fecha_inicio: añoForm.fecha_inicio, fecha_fin: añoForm.fecha_fin });
+        toast.success('Año escolar creado');
+      }
       setModalAño(false);
+      setEditAñoId(null);
       setAñoForm({ año: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' });
       fetchAll();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al crear año escolar');
+      toast.error(err.response?.data?.error || 'Error al guardar año escolar');
     }
   };
 
@@ -703,7 +710,7 @@ const ConfigEscolar = () => {
 
       {tab === 'años' && (
         <Card title="Años Escolares" actions={
-          <button onClick={() => { setAñoForm({ año: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' }); setModalAño(true); }}
+          <button onClick={() => { setEditAñoId(null); setAñoForm({ año: new Date().getFullYear() + 1, fecha_inicio: '', fecha_fin: '' }); setModalAño(true); }}
             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm">
             <HiPlus className="w-4 h-4" /> Nuevo Año Escolar
           </button>
@@ -718,6 +725,13 @@ const ConfigEscolar = () => {
             )},
             { header: 'Acciones', render: (r) => (
               <div className="flex gap-2">
+                <button onClick={() => {
+                  setEditAñoId(r.id);
+                  setAñoForm({ año: r.anio, fecha_inicio: r.fecha_inicio?.split('T')[0] || '', fecha_fin: r.fecha_fin?.split('T')[0] || '' });
+                  setModalAño(true);
+                }} className="px-3 py-1 text-xs bg-gold-500 text-white rounded hover:bg-gold-600">
+                  <HiPencil className="w-3.5 h-3.5 inline" /> Editar
+                </button>
                 {!r.activo && (
                   <button onClick={async () => { await activarAño(r.id); fetchAll(); toast.success('Año activado'); }}
                     className="px-3 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700">Activar</button>
@@ -1159,8 +1173,8 @@ const ConfigEscolar = () => {
         </form>
       </Modal>
 
-      {/* Modal Nuevo Año Escolar */}
-      <Modal isOpen={modalAño} onClose={() => setModalAño(false)} title="Nuevo Año Escolar">
+      {/* Modal Nuevo/Editar Año Escolar */}
+      <Modal isOpen={modalAño} onClose={() => { setModalAño(false); setEditAñoId(null); }} title={editAñoId ? 'Editar Año Escolar' : 'Nuevo Año Escolar'}>
         <form onSubmit={handleCrearAño} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Año</label>
@@ -1181,10 +1195,10 @@ const ConfigEscolar = () => {
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors" />
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => setModalAño(false)}
+            <button type="button" onClick={() => { setModalAño(false); setEditAñoId(null); }}
               className="px-4 py-2 text-sm text-primary-800/80 bg-cream-100 rounded-lg hover:bg-cream-200">Cancelar</button>
             <button type="submit"
-              className="px-4 py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700">Crear</button>
+              className="px-4 py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700">{editAñoId ? 'Guardar' : 'Crear'}</button>
           </div>
         </form>
       </Modal>

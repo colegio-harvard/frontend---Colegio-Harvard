@@ -375,7 +375,7 @@ const AsistenciaTutor = () => {
         </div>
       )}
       <Card>
-        <DataTable columns={columns} data={datos} loading={loading} emptyMessage="No hay datos de asistencia hoy" />
+        <DataTable columns={columns} data={datos} loading={loading} emptyMessage="No hay datos de asistencia hoy" rowsPerPage={15} />
       </Card>
 
       {/* Modal calendario de asistencia del alumno */}
@@ -581,7 +581,7 @@ const AsistenciaAdmin = () => {
       </Card>
 
       <Card>
-        <DataTable columns={columns} data={datos} loading={loading} emptyMessage="No hay registros para esta fecha" />
+        <DataTable columns={columns} data={datos} loading={loading} emptyMessage="No hay registros para esta fecha" rowsPerPage={15} />
       </Card>
 
       <Modal isOpen={correccionModal} onClose={() => setCorreccionModal(false)} title="Corregir Asistencia" size="sm">

@@ -105,7 +105,7 @@ const AnioEscolar = () => {
       </div>
 
       <Card title="Alumnos">
-        <DataTable columns={columns} data={alumnos.filter(a => a.estado === 'ACTIVO')} loading={false} />
+        <DataTable columns={columns} data={alumnos.filter(a => a.estado === 'ACTIVO')} loading={false} rowsPerPage={15} />
       </Card>
 
       <Modal isOpen={modalMigrar} onClose={() => setModalMigrar(false)} title="Migrar Alumnos" size="sm">
