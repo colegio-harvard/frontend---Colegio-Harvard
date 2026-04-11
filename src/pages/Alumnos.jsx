@@ -154,16 +154,26 @@ const Alumnos = () => {
     try {
       const fontCSS = await getEmbeddedFontCSS();
       const el = carnetRef.current;
-      const rect = el.getBoundingClientRect();
-      const dataUrl = await toJpeg(el, {
-        quality: 0.95,
-        pixelRatio: 3,
-        cacheBust: true,
-        backgroundColor: '#ffffff',
-        fontEmbedCSS: fontCSS,
-        width: Math.ceil(rect.width),
-        height: Math.ceil(rect.height),
-      });
+
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:inline-block;padding:4px;';
+      el.parentNode.insertBefore(wrapper, el);
+      wrapper.appendChild(el);
+
+      let dataUrl;
+      try {
+        dataUrl = await toJpeg(wrapper, {
+          quality: 0.95,
+          pixelRatio: 3,
+          cacheBust: true,
+          backgroundColor: '#ffffff',
+          fontEmbedCSS: fontCSS,
+        });
+      } finally {
+        wrapper.parentNode.insertBefore(el, wrapper);
+        wrapper.remove();
+      }
+
       const link = document.createElement('a');
       link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;
       link.href = dataUrl;

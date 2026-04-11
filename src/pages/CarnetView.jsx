@@ -200,16 +200,29 @@ const CarnetView = () => {
     try {
       const fontCSS = await getEmbeddedFontCSS();
       const el = carnetRef.current;
-      const rect = el.getBoundingClientRect();
-      const dataUrl = await toJpeg(el, {
-        quality: 0.95,
-        pixelRatio: 3,
-        cacheBust: true,
-        backgroundColor: '#ffffff',
-        fontEmbedCSS: fontCSS,
-        width: Math.ceil(rect.width),
-        height: Math.ceil(rect.height),
-      });
+
+      // Envolver en contenedor con padding para evitar recorte de bordes
+      // (SVG foreignObject de Chrome recorta contenido en el borde exacto)
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:inline-block;padding:4px;';
+      el.parentNode.insertBefore(wrapper, el);
+      wrapper.appendChild(el);
+
+      let dataUrl;
+      try {
+        dataUrl = await toJpeg(wrapper, {
+          quality: 0.95,
+          pixelRatio: 3,
+          cacheBust: true,
+          backgroundColor: '#ffffff',
+          fontEmbedCSS: fontCSS,
+        });
+      } finally {
+        // Restaurar DOM original
+        wrapper.parentNode.insertBefore(el, wrapper);
+        wrapper.remove();
+      }
+
       const link = document.createElement('a');
       link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;
       link.href = dataUrl;
