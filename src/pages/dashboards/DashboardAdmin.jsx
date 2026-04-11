@@ -79,19 +79,19 @@ const DashboardAdmin = () => {
     { header: 'Nivel', accessor: 'nivel' },
     { header: 'Total', render: (row) => <span className="font-semibold">{row.total}</span> },
     {
-      header: 'Presentes',
+      header: 'Asistencias',
       render: (row) => (
         <span className="text-emerald-700 font-semibold">{row.presentes}</span>
       ),
     },
     {
-      header: 'Tardes',
+      header: 'Tardanzas',
       render: (row) => (
         <span className={`font-semibold ${row.tardes > 0 ? 'text-amber-600' : 'text-primary-800/50'}`}>{row.tardes}</span>
       ),
     },
     {
-      header: 'Ausentes',
+      header: 'Faltas',
       render: (row) => (
         <span className={`font-semibold ${row.ausentes > 0 ? 'text-red-600' : 'text-primary-800/50'}`}>{row.ausentes}</span>
       ),
@@ -149,7 +149,7 @@ const DashboardAdmin = () => {
                 <HiCheckCircle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-xs text-gold-600 font-medium">Presentes</p>
+                <p className="text-xs text-gold-600 font-medium">Asistencias</p>
                 <p className="text-2xl font-bold text-emerald-600 font-display">{resumenHoy.presentes}</p>
               </div>
             </div>
@@ -163,7 +163,7 @@ const DashboardAdmin = () => {
                 <HiClock className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-xs text-gold-600 font-medium">Tardes</p>
+                <p className="text-xs text-gold-600 font-medium">Tardanzas</p>
                 <p className="text-2xl font-bold text-amber-600 font-display">{resumenHoy.tardes}</p>
               </div>
             </div>
@@ -177,7 +177,7 @@ const DashboardAdmin = () => {
                 <HiXCircle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-xs text-gold-600 font-medium">Ausentes</p>
+                <p className="text-xs text-gold-600 font-medium">Faltas</p>
                 <p className="text-2xl font-bold text-red-600 font-display">{resumenHoy.ausentes}</p>
               </div>
             </div>
@@ -245,7 +245,7 @@ const DashboardAdmin = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Alumnos Ausentes */}
         <Card
-          title={`Alumnos Ausentes Hoy (${ausentes.length})`}
+          title={`Alumnos que Faltaron Hoy (${ausentes.length})`}
           actions={
             ausentes.length > 0 && (
               <Badge variant="danger">{ausentes.length}</Badge>
@@ -256,7 +256,7 @@ const DashboardAdmin = () => {
             <DataTable
               columns={ausentesColumns}
               data={ausentes}
-              emptyMessage="No hay alumnos ausentes hoy"
+              emptyMessage="No hay faltas hoy"
             />
           </div>
         </Card>

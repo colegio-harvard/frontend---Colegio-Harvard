@@ -7,12 +7,12 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
-import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiPrinter, HiPhotograph, HiUserAdd, HiTrash } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash } from 'react-icons/hi';
 import { fileUrl } from '../utils/constants';
-import { PRINT_CSS, buildPrintHTML } from './CarnetView';
 import logoHarvard from '../assets/insignia-harvard.jpeg';
+import { toJpeg } from 'html-to-image';
+import { getEmbeddedFontCSS } from './CarnetView';
 import { QRCodeSVG } from 'qrcode.react';
-import QRCode from 'qrcode';
 import toast from 'react-hot-toast';
 
 const Alumnos = () => {
@@ -24,7 +24,7 @@ const Alumnos = () => {
   const [editando, setEditando] = useState(null);
 
   // Form alumno
-  const [form, setForm] = useState({ codigo_alumno: '', dni: '', nombre_completo: '', id_nivel: '', id_grado: '', id_aula: '' });
+  const [form, setForm] = useState({ codigo_alumno: '', dni: '', nombre_completo: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
   const [fotoFile, setFotoFile] = useState(null);
   const [fotoPreview, setFotoPreview] = useState(null);
   const fotoInputRef = useRef(null);
@@ -149,17 +149,28 @@ const Alumnos = () => {
     }
   };
 
-  const handlePrintCarnet = async () => {
-    if (!carnetData) return;
-    const logoUrl = window.location.origin + logoHarvard;
-    const fotoUrl = fileUrl(carnetData.alumno.foto_url);
-    const qrDataUrl = await QRCode.toDataURL(carnetData.carnet.qr_token, {
-      width: 240, margin: 1, color: { dark: '#000080', light: '#FFFCF8' }
-    });
-    const win = window.open('', '_blank');
-    win.document.write(buildPrintHTML({ alumno: carnetData.alumno, carnet: carnetData.carnet, logoUrl, fotoUrl, qrDataUrl }));
-    win.document.close();
-    win.focus();
+  const handleDescargarCarnet = async () => {
+    if (!carnetData || !carnetRef.current) return;
+    try {
+      const fontCSS = await getEmbeddedFontCSS();
+      const el = carnetRef.current;
+      const rect = el.getBoundingClientRect();
+      const dataUrl = await toJpeg(el, {
+        quality: 0.95,
+        pixelRatio: 3,
+        cacheBust: true,
+        backgroundColor: '#ffffff',
+        fontEmbedCSS: fontCSS,
+        width: Math.ceil(rect.width),
+        height: Math.ceil(rect.height),
+      });
+      const link = document.createElement('a');
+      link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;
+      link.href = dataUrl;
+      link.click();
+    } catch {
+      toast.error('Error al descargar el fotocheck');
+    }
   };
 
   // ===================== FOTO =====================
@@ -215,7 +226,7 @@ const Alumnos = () => {
   // ===================== OPEN/CLOSE MODALS =====================
   const openCreate = () => {
     setEditando(null);
-    setForm({ codigo_alumno: '', dni: '', nombre_completo: '', id_nivel: '', id_grado: '', id_aula: '' });
+    setForm({ codigo_alumno: '', dni: '', nombre_completo: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
     setFotoFile(null);
     setFotoPreview(null);
     setPadreBusqueda('');
@@ -240,15 +251,23 @@ const Alumnos = () => {
       codigo_alumno: a.codigo_alumno,
       dni: a.dni || '',
       nombre_completo: a.nombre_completo,
+      monto_pension: a.monto_pension != null ? String(a.monto_pension) : '',
       id_nivel: String(id_nivel),
       id_grado: String(id_grado),
       id_aula: String(a.id_aula),
     });
     setFotoFile(null);
     setFotoPreview(fileUrl(a.foto_url));
-    setPadreBusqueda('');
+    // Pre-seleccionar padre actual si existe
+    const padreActual = a.padre_alumno?.[0]?.padre;
+    if (padreActual) {
+      setPadreSeleccionado(padreActual);
+      setPadreBusqueda(padreActual.dni || '');
+    } else {
+      setPadreSeleccionado(null);
+      setPadreBusqueda('');
+    }
     setPadreResultados([]);
-    setPadreSeleccionado(null);
     setPadreNuevo(false);
     setPadreForm({ dni: '', nombre_completo: '', celular: '', username: '', contrasena: '' });
     setModalOpen(true);
@@ -259,17 +278,25 @@ const Alumnos = () => {
     e.preventDefault();
     try {
       const fd = new FormData();
+      fd.append('codigo_alumno', form.codigo_alumno);
       fd.append('nombre_completo', form.nombre_completo);
       fd.append('id_aula', form.id_aula);
       if (form.dni) fd.append('dni', form.dni);
+      if (form.monto_pension) fd.append('monto_pension', form.monto_pension);
       if (fotoFile) fd.append('foto', fotoFile);
 
       if (editando) {
+        // Enviar padre_id: el padre seleccionado o vacio para desvincular
+        if (padreSeleccionado) {
+          fd.append('padre_id', padreSeleccionado.id);
+        } else {
+          // Sin padre seleccionado = desvincular
+          fd.append('padre_id', '');
+        }
         await actualizarAlumno(editando.id, fd);
         toast.success('Alumno actualizado');
       } else {
-        fd.append('codigo_alumno', form.codigo_alumno);
-        // Datos del padre
+        // Datos del padre para creacion
         if (padreSeleccionado) {
           fd.append('padre_dni', padreSeleccionado.dni);
         } else if (padreNuevo) {
@@ -431,8 +458,7 @@ const Alumnos = () => {
                   value={form.codigo_alumno}
                   onChange={(e) => setForm({ ...form, codigo_alumno: e.target.value })}
                   required
-                  disabled={!!editando}
-                  className={`${inputClass} ${editando ? 'bg-cream-100 cursor-not-allowed' : ''}`}
+                  className={inputClass}
                   placeholder="ALU-2026-001"
                 />
               </div>
@@ -456,6 +482,18 @@ const Alumnos = () => {
                   required
                   className={inputClass}
                   placeholder="Nombres y apellidos"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Monto Pensión (S/.)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.monto_pension}
+                  onChange={(e) => setForm({ ...form, monto_pension: e.target.value })}
+                  className={inputClass}
+                  placeholder="0.00"
                 />
               </div>
             </div>
@@ -534,52 +572,52 @@ const Alumnos = () => {
             </div>
           </div>
 
-          {/* --- Padre / Apoderado (solo en creacion) --- */}
-          {!editando && (
-            <div className="border-b border-cream-200 pb-4">
-              <h4 className={sectionTitle}>Padre / Apoderado</h4>
+          {/* --- Padre / Apoderado --- */}
+          <div className="border-b border-cream-200 pb-4">
+            <h4 className={sectionTitle}>Padre / Apoderado</h4>
 
-              {/* Busqueda con autocomplete */}
-              {!padreSeleccionado && !padreNuevo && (
-                <div className="relative mb-3">
-                  <div className="relative">
-                    <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-400" />
-                    <input
-                      type="text"
-                      value={padreBusqueda}
-                      onChange={(e) => handlePadreBusquedaChange(e.target.value)}
-                      placeholder="Buscar por DNI o nombre del padre..."
-                      className={`${inputClass} pl-9`}
-                    />
-                    {buscandoPadre && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="w-4 h-4 border-2 border-gold-400 border-t-transparent rounded-full animate-spin"></div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Dropdown de resultados */}
-                  {padreBusqueda.length >= 2 && !buscandoPadre && padreResultados.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-cream-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {padreResultados.map(p => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => handleSeleccionarPadre(p)}
-                          className="w-full text-left px-3 py-2 hover:bg-gold-50 border-b border-cream-100 last:border-b-0 transition-colors"
-                        >
-                          <span className="text-sm font-medium text-primary-800">{p.nombre_completo}</span>
-                          <span className="text-xs text-cream-500 ml-2">DNI: {p.dni}</span>
-                          {p.celular && <span className="text-xs text-cream-500 ml-2">Tel: {p.celular}</span>}
-                        </button>
-                      ))}
+            {/* Busqueda con autocomplete */}
+            {!padreSeleccionado && !padreNuevo && (
+              <div className="relative mb-3">
+                <div className="relative">
+                  <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-400" />
+                  <input
+                    type="text"
+                    value={padreBusqueda}
+                    onChange={(e) => handlePadreBusquedaChange(e.target.value)}
+                    placeholder="Buscar por DNI o nombre del padre..."
+                    className={`${inputClass} pl-9`}
+                  />
+                  {buscandoPadre && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="w-4 h-4 border-2 border-gold-400 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   )}
+                </div>
 
-                  {/* Sin resultados */}
-                  {padreBusqueda.length >= 2 && !buscandoPadre && padreResultados.length === 0 && (
-                    <div className="mt-2 p-3 bg-cream-50 border border-cream-200 rounded-lg">
-                      <p className="text-sm text-cream-600 mb-2">No se encontraron padres con esa búsqueda.</p>
+                {/* Dropdown de resultados */}
+                {padreBusqueda.length >= 2 && !buscandoPadre && padreResultados.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-cream-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {padreResultados.map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => handleSeleccionarPadre(p)}
+                        className="w-full text-left px-3 py-2 hover:bg-gold-50 border-b border-cream-100 last:border-b-0 transition-colors"
+                      >
+                        <span className="text-sm font-medium text-primary-800">{p.nombre_completo}</span>
+                        <span className="text-xs text-cream-500 ml-2">DNI: {p.dni}</span>
+                        {p.celular && <span className="text-xs text-cream-500 ml-2">Tel: {p.celular}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Sin resultados */}
+                {padreBusqueda.length >= 2 && !buscandoPadre && padreResultados.length === 0 && (
+                  <div className="mt-2 p-3 bg-cream-50 border border-cream-200 rounded-lg">
+                    <p className="text-sm text-cream-600 mb-2">No se encontraron padres con esa búsqueda.</p>
+                    {!editando && (
                       <button
                         type="button"
                         onClick={handleRegistrarNuevoPadre}
@@ -587,12 +625,14 @@ const Alumnos = () => {
                       >
                         <HiUserAdd className="w-4 h-4" /> Registrar nuevo padre
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                )}
 
-                  {padreBusqueda.length === 0 && (
-                    <div className="flex items-center justify-between mt-2">
-                      <p className="text-xs text-cream-500">Busque por DNI o nombre, o registre un padre nuevo.</p>
+                {padreBusqueda.length === 0 && (
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-cream-500">{editando ? 'Busque por DNI o nombre para cambiar el padre.' : 'Busque por DNI o nombre, o registre un padre nuevo.'}</p>
+                    {!editando && (
                       <button
                         type="button"
                         onClick={handleRegistrarNuevoPadre}
@@ -600,34 +640,35 @@ const Alumnos = () => {
                       >
                         <HiUserAdd className="w-3.5 h-3.5" /> Registrar nuevo
                       </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Padre seleccionado (encontrado) */}
-              {padreSeleccionado && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium text-green-800">Padre seleccionado - se vinculará automáticamente</p>
-                    <button
-                      type="button"
-                      onClick={() => { setPadreSeleccionado(null); setPadreBusqueda(''); }}
-                      className="text-xs text-green-600 hover:text-green-800 font-medium"
-                    >
-                      Cambiar
-                    </button>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm text-green-700">
-                    <span><strong>Nombre:</strong> {padreSeleccionado.nombre_completo}</span>
-                    <span><strong>DNI:</strong> {padreSeleccionado.dni}</span>
-                    <span><strong>Celular:</strong> {padreSeleccionado.celular}</span>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
+            )}
 
-              {/* Formulario de padre nuevo */}
-              {padreNuevo && (
+            {/* Padre seleccionado (encontrado) */}
+            {padreSeleccionado && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-sm font-medium text-green-800">{editando ? 'Padre vinculado' : 'Padre seleccionado - se vinculará automáticamente'}</p>
+                  <button
+                    type="button"
+                    onClick={() => { setPadreSeleccionado(null); setPadreBusqueda(''); }}
+                    className="text-xs text-green-600 hover:text-green-800 font-medium"
+                  >
+                    Cambiar
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm text-green-700">
+                  <span><strong>Nombre:</strong> {padreSeleccionado.nombre_completo}</span>
+                  <span><strong>DNI:</strong> {padreSeleccionado.dni}</span>
+                  {padreSeleccionado.celular && <span><strong>Celular:</strong> {padreSeleccionado.celular}</span>}
+                </div>
+              </div>
+            )}
+
+            {/* Formulario de padre nuevo (solo en creacion) */}
+            {!editando && padreNuevo && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-amber-800">Registrar nuevo padre</p>
@@ -709,20 +750,7 @@ const Alumnos = () => {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Mostrar padre actual en edicion */}
-          {editando && (
-            <div className="border-b border-cream-200 pb-4">
-              <h4 className={sectionTitle}>Padre / Apoderado</h4>
-              <p className="text-sm text-primary-800/70">
-                {editando.padre_alumno?.[0]?.padre?.nombre_completo
-                  ? `${editando.padre_alumno[0].padre.nombre_completo} (DNI: ${editando.padre_alumno[0].padre.dni || '-'})`
-                  : 'Sin padre vinculado'}
-              </p>
-            </div>
-          )}
+          </div>
 
           {/* Botones */}
           <div className="flex justify-end gap-3 pt-2">
@@ -771,11 +799,11 @@ const Alumnos = () => {
         ) : carnetData ? (
           <div>
             <div ref={carnetRef} className="w-[340px] bg-white rounded-2xl overflow-hidden shadow-gold-lg border border-cream-200 mx-auto">
-              {/* Header azul con logo */}
-              <div className="px-6 pt-5 pb-4 text-center" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
-                <img src={logoHarvard} alt="Colegio Harvard" className="w-[108px] h-[108px] rounded-full mx-auto mb-2.5 border-[3px] border-gold-400 object-cover" />
-                <h3 className="text-gold-400 font-display text-lg font-bold tracking-[0.15em] uppercase">Colegio Harvard</h3>
-                <div className="mt-2.5 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
+              {/* Header azul con logo y nombre del colegio */}
+              <div className="px-5 pt-4 pb-3 text-center" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
+                <img src={logoHarvard} alt="Colegio Harvard" className="w-[72px] h-[72px] rounded-full mx-auto mb-2 border-[3px] border-gold-400 object-cover" />
+                <h3 className="text-gold-400 font-display text-[52px] font-bold tracking-[0.04em] uppercase leading-none">Colegio Harvard</h3>
+                <div className="mt-2 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
               </div>
 
               {/* Foto con anillo dorado */}
@@ -794,7 +822,7 @@ const Alumnos = () => {
 
               {/* Info del alumno */}
               <div className="px-6 pt-3 pb-4 text-center">
-                <h2 className="text-xl font-bold font-display leading-tight" style={{ color: '#000080' }}>{carnetData.alumno.nombre_completo}</h2>
+                <h2 className={`font-bold font-display leading-tight ${carnetData.alumno.nombre_completo.length > 35 ? 'text-base' : 'text-xl'}`} style={{ color: '#000080' }}>{carnetData.alumno.nombre_completo}</h2>
                 <p className="text-sm text-black font-semibold mt-1">{carnetData.alumno.codigo_alumno}</p>
                 <p className="text-sm text-black mt-0.5">{carnetData.alumno.nivel} — {carnetData.alumno.aula}</p>
 
@@ -822,10 +850,10 @@ const Alumnos = () => {
             </div>
             <div className="flex justify-center gap-3 mt-5">
               <button
-                onClick={handlePrintCarnet}
+                onClick={handleDescargarCarnet}
                 className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-medium"
               >
-                <HiPrinter className="w-4 h-4" /> Imprimir
+                <HiDownload className="w-4 h-4" /> Descargar JPG
               </button>
             </div>
           </div>

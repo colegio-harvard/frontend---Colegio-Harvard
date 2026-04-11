@@ -27,6 +27,7 @@ import ReportesAula from './pages/ReportesAula';
 import ReportesAlumno from './pages/ReportesAlumno';
 import AnioEscolar from './pages/AnioEscolar';
 import Auditoria from './pages/Auditoria';
+import RegistroAsistencia from './pages/RegistroAsistencia';
 import CarnetView from './pages/CarnetView';
 import AulaDetalle from './pages/AulaDetalle';
 import AlumnoDetalle from './pages/AlumnoDetalle';
@@ -133,6 +134,10 @@ function App() {
             } />
             <Route path="/carnet/:id_alumno" element={<CarnetView />} />
             <Route path="/notificaciones" element={<Notificaciones />} />
+
+            <Route path="/registro-asistencia" element={
+              <ProtectedRoute roles={[SUPER_ADMIN]}><RegistroAsistencia /></ProtectedRoute>
+            } />
 
             <Route path="/auditoria" element={
               <ProtectedRoute roles={[SUPER_ADMIN]}><Auditoria /></ProtectedRoute>

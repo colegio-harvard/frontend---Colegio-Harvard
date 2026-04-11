@@ -3,13 +3,14 @@ import { ROLES } from '../../utils/constants';
 import {
   HiHome, HiUsers, HiAcademicCap, HiUserGroup,
   HiClipboardCheck, HiBookOpen, HiChat, HiSpeakerphone, HiCurrencyDollar,
-  HiCog, HiBell, HiDocumentText, HiCalendar, HiShieldCheck, HiX
+  HiCog, HiBell, HiDocumentText, HiCalendar, HiShieldCheck, HiX, HiQrcode
 } from 'react-icons/hi';
 import logoHarvard from '../../assets/logo-harvard.png';
 
 const menuItems = {
   [ROLES.SUPER_ADMIN]: [
     { to: '/dashboard', icon: HiHome, label: 'Dashboard' },
+    { to: '/registro-asistencia', icon: HiQrcode, label: 'Tomar Asistencia' },
     { to: '/usuarios', icon: HiUsers, label: 'Usuarios' },
     { to: '/config-escolar', icon: HiCog, label: 'Config. Escolar' },
     { to: '/padres', icon: HiUserGroup, label: 'Padres' },

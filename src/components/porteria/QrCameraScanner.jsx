@@ -29,7 +29,7 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
 
     scanner
       .start(
-        { facingMode: 'environment' },
+        { facingMode: 'user' },
         { fps: 10, qrbox: { width: 220, height: 220 }, disableFlip: false },
         (decodedText) => {
           // Evitar escaneos duplicados consecutivos
@@ -39,7 +39,7 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
           // Resetear después de 3s para permitir re-escaneo
           setTimeout(() => {
             lastResultRef.current = null;
-          }, 3000);
+          }, 6000);
         },
         () => {} // ignorar errores de frames sin QR
       )

@@ -158,15 +158,15 @@ const AsistenciaPadre = () => {
                 <div className="flex flex-wrap gap-4 mt-4 pt-3 border-t border-cream-200">
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-emerald-100 border border-emerald-300"></span>
-                    <span className="text-primary-800 font-medium">Presente</span>
+                    <span className="text-primary-800 font-medium">Asistió</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-amber-100 border border-amber-300"></span>
-                    <span className="text-primary-800 font-medium">Tarde</span>
+                    <span className="text-primary-800 font-medium">Tardanza</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-red-100 border border-red-300"></span>
-                    <span className="text-primary-800 font-medium">Ausente</span>
+                    <span className="text-primary-800 font-medium">Faltó</span>
                   </div>
                 </div>
               </Card>
@@ -408,15 +408,15 @@ const AsistenciaTutor = () => {
         <div className="flex flex-wrap gap-4 mt-4 pt-3 border-t border-cream-200">
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-emerald-100 border border-emerald-300"></span>
-            <span className="text-primary-800 font-medium">Presente</span>
+            <span className="text-primary-800 font-medium">Asistió</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-amber-100 border border-amber-300"></span>
-            <span className="text-primary-800 font-medium">Tarde</span>
+            <span className="text-primary-800 font-medium">Tardanza</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-red-100 border border-red-300"></span>
-            <span className="text-primary-800 font-medium">Ausente</span>
+            <span className="text-primary-800 font-medium">Faltó</span>
           </div>
         </div>
       </Modal>
@@ -569,9 +569,9 @@ const AsistenciaAdmin = () => {
             <select value={filtros.estado} onChange={(e) => setFiltros({...filtros, estado: e.target.value})}
               className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
               <option value="">Todos</option>
-              <option value="PRESENTE">Presente</option>
-              <option value="TARDE">Tarde</option>
-              <option value="AUSENTE">Ausente</option>
+              <option value="PRESENTE">Asistió</option>
+              <option value="TARDE">Tardanza</option>
+              <option value="AUSENTE">Faltó</option>
             </select>
           </div>
           <button onClick={handleFiltrar} className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-medium">
@@ -590,9 +590,9 @@ const AsistenciaAdmin = () => {
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Nuevo Estado</label>
             <select value={correccionForm.nuevo_estado} onChange={(e) => setCorreccionForm({...correccionForm, nuevo_estado: e.target.value})} required
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none">
-              <option value="PRESENTE">Presente</option>
-              <option value="TARDE">Tarde</option>
-              <option value="AUSENTE">Ausente</option>
+              <option value="PRESENTE">Asistió</option>
+              <option value="TARDE">Tardanza</option>
+              <option value="AUSENTE">Faltó</option>
             </select>
           </div>
           <div>

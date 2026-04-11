@@ -45,9 +45,9 @@ export const ESTADO_ASISTENCIA = {
 };
 
 export const ESTADO_ASISTENCIA_LABELS = {
-  PRESENTE: { label: 'Presente', color: 'bg-emerald-100 text-emerald-800' },
-  TARDE: { label: 'Tarde', color: 'bg-amber-100 text-amber-800' },
-  AUSENTE: { label: 'Ausente', color: 'bg-red-100 text-red-800' },
+  PRESENTE: { label: 'Asistió', color: 'bg-emerald-100 text-emerald-800' },
+  TARDE: { label: 'Tardanza', color: 'bg-amber-100 text-amber-800' },
+  AUSENTE: { label: 'Faltó', color: 'bg-red-100 text-red-800' },
 };
 
 export const PRIORIDAD_COMUNICADO = {

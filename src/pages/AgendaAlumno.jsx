@@ -169,7 +169,7 @@ const AgendaAlumno = () => {
                     {!entrada.firmada ? (
                       <button
                         onClick={() => handleFirmar(entrada.id)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                        className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700"
                       >
                         <HiCheck className="w-3 h-3" /> Firmar
                       </button>

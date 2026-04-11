@@ -64,15 +64,15 @@ const DashboardTutor = () => {
       <h1 className="page-title mb-6">Mi Aula - Hoy</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card>
-          <p className="text-sm text-gold-600 font-medium">Presentes</p>
+          <p className="text-sm text-gold-600 font-medium">Asistencias</p>
           <p className="text-3xl font-bold text-emerald-600 font-display">{resumenHoy.presentes}</p>
         </Card>
         <Card>
-          <p className="text-sm text-gold-600 font-medium">Tardes</p>
+          <p className="text-sm text-gold-600 font-medium">Tardanzas</p>
           <p className="text-3xl font-bold text-amber-600 font-display">{resumenHoy.tardes}</p>
         </Card>
         <Card>
-          <p className="text-sm text-gold-600 font-medium">Ausentes</p>
+          <p className="text-sm text-gold-600 font-medium">Faltas</p>
           <p className="text-3xl font-bold text-primary-600 font-display">{resumenHoy.ausentes}</p>
         </Card>
         <Card>
