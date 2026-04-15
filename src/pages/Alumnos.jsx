@@ -1,18 +1,19 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import CarnetCard from '../components/CarnetCard';
 import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash } from 'react-icons/hi';
 import { fileUrl } from '../utils/constants';
-import logoHarvard from '../assets/insignia-harvard.jpeg';
 import { toJpeg } from 'html-to-image';
 import { getEmbeddedFontCSS } from './CarnetView';
-import { QRCodeSVG } from 'qrcode.react';
+import JSZip from 'jszip';
 import toast from 'react-hot-toast';
 
 const Alumnos = () => {
@@ -54,6 +55,10 @@ const Alumnos = () => {
   // Modal eliminar
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [alumnoAEliminar, setAlumnoAEliminar] = useState(null);
+
+  // Descarga masiva
+  const [descargaMasivaLoading, setDescargaMasivaLoading] = useState(false);
+  const [descargaMasivaProgreso, setDescargaMasivaProgreso] = useState({ actual: 0, total: 0 });
 
   // ===================== FETCH DATA =====================
   const fetchData = async () => {
@@ -180,6 +185,121 @@ const Alumnos = () => {
       link.click();
     } catch {
       toast.error('Error al descargar el fotocheck');
+    }
+  };
+
+  // ===================== DESCARGA MASIVA =====================
+  const filtrosCompletos = filtroNivel && filtroGrado && filtroSeccion;
+
+  const handleDescargarMasivo = async () => {
+    if (!filtrosCompletos) return;
+
+    const alumnosConCarnet = alumnosFiltrados.filter(a => a.carnet?.qr_token);
+    if (alumnosConCarnet.length === 0) {
+      toast.error('No hay alumnos con carnet en esta sección');
+      return;
+    }
+
+    setDescargaMasivaLoading(true);
+    setDescargaMasivaProgreso({ actual: 0, total: alumnosConCarnet.length });
+
+    try {
+      const fontCSS = await getEmbeddedFontCSS();
+      const zip = new JSZip();
+      let sinFoto = 0;
+
+      for (let i = 0; i < alumnosConCarnet.length; i++) {
+        const a = alumnosConCarnet[i];
+        setDescargaMasivaProgreso({ actual: i + 1, total: alumnosConCarnet.length });
+
+        // Formatear datos del alumno para el CarnetCard (misma estructura que obtenerCarnet)
+        const alumnoData = {
+          nombre_completo: a.nombre_completo,
+          codigo_alumno: a.codigo_alumno,
+          foto_url: a.foto_url,
+          aula: `${a.aula?.grado?.nombre || ''} ${a.aula?.seccion || ''}`.trim(),
+          nivel: a.aula?.grado?.nivel || '',
+        };
+        const carnetData = {
+          qr_token: a.carnet.qr_token,
+          version: a.carnet.version,
+        };
+
+        if (!a.foto_url) sinFoto++;
+
+        // Renderizar CarnetCard en un contenedor off-screen
+        const container = document.createElement('div');
+        container.style.cssText = 'position:fixed;left:-9999px;top:0;z-index:-1;';
+        document.body.appendChild(container);
+
+        const cardWrapper = document.createElement('div');
+        container.appendChild(cardWrapper);
+
+        const root = createRoot(cardWrapper);
+        await new Promise((resolve) => {
+          root.render(<CarnetCard alumno={alumnoData} carnet={carnetData} carnetRef={{ current: null }} />);
+          // Esperar al siguiente frame para que el DOM se renderice completamente
+          requestAnimationFrame(() => requestAnimationFrame(resolve));
+        });
+
+        // Obtener el elemento del carnet renderizado
+        const carnetEl = cardWrapper.firstElementChild;
+        if (!carnetEl) {
+          root.unmount();
+          container.remove();
+          continue;
+        }
+
+        // Aplicar wrapper con padding (mismo que descarga individual)
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:inline-block;padding:4px;';
+        carnetEl.parentNode.insertBefore(wrapper, carnetEl);
+        wrapper.appendChild(carnetEl);
+
+        try {
+          // Esperar a que las imágenes se carguen
+          const imgs = wrapper.querySelectorAll('img');
+          await Promise.all([...imgs].map(img =>
+            img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
+          ));
+
+          // Generar JPEG con exactamente los mismos parámetros que la descarga individual
+          const dataUrl = await toJpeg(wrapper, {
+            quality: 0.95,
+            pixelRatio: 3,
+            cacheBust: true,
+            backgroundColor: '#ffffff',
+            fontEmbedCSS: fontCSS,
+          });
+
+          // Convertir data URL a blob y agregar al ZIP
+          const base64 = dataUrl.split(',')[1];
+          zip.file(`fotocheck-${a.codigo_alumno}.jpg`, base64, { base64: true });
+        } finally {
+          root.unmount();
+          container.remove();
+        }
+      }
+
+      // Generar y descargar el ZIP
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const link = document.createElement('a');
+      link.download = `fotochecks-${filtroGrado}-${filtroSeccion}.zip`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      if (sinFoto > 0) {
+        toast.success(`Descarga completada. ${sinFoto} alumno${sinFoto > 1 ? 's' : ''} sin foto ${sinFoto > 1 ? 'fueron incluidos' : 'fue incluido'} con imagen placeholder.`);
+      } else {
+        toast.success('Fotochecks descargados correctamente');
+      }
+    } catch (err) {
+      console.error('Error en descarga masiva:', err);
+      toast.error('Error al generar los fotochecks');
+    } finally {
+      setDescargaMasivaLoading(false);
+      setDescargaMasivaProgreso({ actual: 0, total: 0 });
     }
   };
 
@@ -441,12 +561,33 @@ const Alumnos = () => {
           {(filtroNivel || filtroGrado || filtroSeccion || filtroCodigo) && (
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-cream-200">
               <span className="text-xs text-primary-800/50">{alumnosFiltrados.length} de {alumnos.length} alumnos</span>
-              <button
-                onClick={() => { setFiltroNivel(''); setFiltroGrado(''); setFiltroSeccion(''); setFiltroCodigo(''); }}
-                className="text-xs text-primary-600 hover:text-primary-800 font-medium"
-              >
-                Limpiar filtros
-              </button>
+              <div className="flex items-center gap-3">
+                {filtrosCompletos && (
+                  <button
+                    onClick={handleDescargarMasivo}
+                    disabled={descargaMasivaLoading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {descargaMasivaLoading ? (
+                      <>
+                        <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Generando {descargaMasivaProgreso.actual}/{descargaMasivaProgreso.total}...
+                      </>
+                    ) : (
+                      <>
+                        <HiDownload className="w-3.5 h-3.5" />
+                        Descargar Fotochecks
+                      </>
+                    )}
+                  </button>
+                )}
+                <button
+                  onClick={() => { setFiltroNivel(''); setFiltroGrado(''); setFiltroSeccion(''); setFiltroCodigo(''); }}
+                  className="text-xs text-primary-600 hover:text-primary-800 font-medium"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -469,7 +610,7 @@ const Alumnos = () => {
                   onChange={(e) => setForm({ ...form, codigo_alumno: e.target.value })}
                   required
                   className={inputClass}
-                  placeholder="ALU-2026-001"
+                  placeholder={`ALU-${new Date().getFullYear()}-001`}
                 />
               </div>
               <div>
@@ -808,55 +949,8 @@ const Alumnos = () => {
           <div className="py-8"><LoadingSpinner /></div>
         ) : carnetData ? (
           <div>
-            <div ref={carnetRef} className="w-[340px] bg-white rounded-2xl overflow-hidden shadow-gold-lg border border-cream-200 mx-auto">
-              {/* Header azul con logo y nombre del colegio */}
-              <div className="px-5 pt-4 pb-3 text-center" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
-                <img src={logoHarvard} alt="Colegio Harvard" className="w-[72px] h-[72px] rounded-full mx-auto mb-2 border-[3px] border-gold-400 object-cover" />
-                <h3 className="text-gold-400 font-display text-[52px] font-bold tracking-[0.04em] uppercase leading-none">Colegio Harvard</h3>
-                <div className="mt-2 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
-              </div>
-
-              {/* Foto con anillo dorado */}
-              <div className="flex justify-center -mt-5 relative z-10">
-                <div className="w-[88px] h-[88px] rounded-full bg-gold-gradient p-[3px] shadow-gold-md">
-                  {carnetData.alumno.foto_url ? (
-                    <img src={fileUrl(carnetData.alumno.foto_url)} alt={carnetData.alumno.nombre_completo}
-                      className="w-full h-full rounded-full object-cover border-2 border-white" />
-                  ) : (
-                    <div className="w-full h-full rounded-full bg-cream-100 border-2 border-white flex items-center justify-center">
-                      <span className="text-gold-600 font-bold text-[28px] font-display">{carnetData.alumno.nombre_completo?.charAt(0)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Info del alumno */}
-              <div className="px-6 pt-3 pb-4 text-center">
-                <h2 className={`font-bold font-display leading-tight ${carnetData.alumno.nombre_completo.length > 35 ? 'text-base' : 'text-xl'}`} style={{ color: '#000080' }}>{carnetData.alumno.nombre_completo}</h2>
-                <p className="text-sm text-black font-semibold mt-1">{carnetData.alumno.codigo_alumno}</p>
-                <p className="text-sm text-black mt-0.5">{carnetData.alumno.nivel} — {carnetData.alumno.aula}</p>
-
-                {/* QR Code */}
-                <div className="bg-cream-50 border border-cream-200 rounded-lg px-3 py-3 mt-3">
-                  <p className="text-[9px] font-semibold text-black uppercase tracking-[0.12em] mb-2">Código de Identificación</p>
-                  <div className="flex justify-center">
-                    <QRCodeSVG
-                      value={carnetData.carnet.qr_token}
-                      size={120}
-                      level="M"
-                      bgColor="#FFFCF8"
-                      fgColor="#000080"
-                      marginSize={1}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="px-4 py-1.5 flex justify-between items-center" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>
-                <p className="text-[9px] text-gold-400/55">v{carnetData.carnet.version}</p>
-                <p className="text-[9px] text-gold-400/55">2026</p>
-              </div>
+            <div className="flex justify-center">
+              <CarnetCard alumno={carnetData.alumno} carnet={carnetData.carnet} carnetRef={carnetRef} />
             </div>
             <div className="flex justify-center gap-3 mt-5">
               <button

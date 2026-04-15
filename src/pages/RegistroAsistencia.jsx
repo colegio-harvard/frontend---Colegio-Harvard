@@ -3,7 +3,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../services/asistenciaService';
 import { formatHora } from '../utils/formatters';
-import { HiQrcode, HiKey } from 'react-icons/hi';
+import { HiQrcode, HiKey, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../hooks/useSocket';
 import { fileUrl } from '../utils/constants';
@@ -32,7 +32,7 @@ class CameraErrorBoundary extends Component {
   }
 }
 
-const COOLDOWN_SECONDS = 5;
+const COOLDOWN_SECONDS = 3;
 
 const RegistroAsistencia = () => {
   const [modo, setModo] = useState('CAMARA');
@@ -42,13 +42,19 @@ const RegistroAsistencia = () => {
   const [cooldown, setCooldown] = useState(null);
   const [scanResult, setScanResult] = useState(null);
   const [historial, setHistorial] = useState([]);
+  const [paginaHistorial, setPaginaHistorial] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalRegistros, setTotalRegistros] = useState(0);
+  const REGISTROS_POR_PAGINA = 20;
   const codigoRef = useRef(null);
   const cooldownTimerRef = useRef(null);
 
-  const cargarHistorial = async () => {
+  const cargarHistorial = async (page = paginaHistorial) => {
     try {
-      const { data } = await historialPorteria();
+      const { data } = await historialPorteria({ page, limit: REGISTROS_POR_PAGINA });
       setHistorial(data.data || []);
+      setTotalPaginas(data.totalPages || 1);
+      setTotalRegistros(data.total || 0);
     } catch {
       // silenciar
     }
@@ -63,31 +69,73 @@ const RegistroAsistencia = () => {
       playSuccessBeep();
       setScanResult(data.data);
       setCodigoAlumno('');
-      cargarHistorial();
+      setPaginaHistorial(1);
+      cargarHistorial(1);
 
-      if (modo === 'CAMARA') {
-        let remaining = COOLDOWN_SECONDS;
-        setCooldown({
-          alumno: data.data.alumno,
-          tipo_evento: data.data.tipo_evento,
-          aula: data.data.aula,
-          foto: data.data.foto,
-          dni: data.data.dni,
-          segundos: remaining,
-        });
-        cooldownTimerRef.current = setInterval(() => {
-          remaining -= 1;
-          if (remaining <= 0) {
-            clearInterval(cooldownTimerRef.current);
-            setCooldown(null);
+      const resultado = data.data;
+      const esIngreso = resultado.tipo_evento === 'CHECKIN';
+
+      // Toast invasivo para ambos modos
+      toast.custom(
+        (t) => (
+          <div
+            className={`${t.visible ? 'animate-fade-in' : 'opacity-0'} w-full max-w-lg pointer-events-auto`}
+            style={{ animation: t.visible ? 'toastSlideIn 0.4s ease-out' : 'toastSlideOut 0.3s ease-in' }}
+          >
+            <div className={`${esIngreso ? 'bg-emerald-600' : 'bg-blue-600'} text-white rounded-2xl shadow-2xl p-5 ring-4 ${esIngreso ? 'ring-emerald-300' : 'ring-blue-300'}`}>
+              <div className="flex items-center gap-4">
+                {resultado.foto ? (
+                  <img src={fileUrl(resultado.foto)} alt="" className="w-16 h-16 flex-shrink-0 rounded-full object-cover border-3 border-white/40 shadow-lg" />
+                ) : (
+                  <div className="w-16 h-16 flex-shrink-0 rounded-full bg-white/20 flex items-center justify-center">
+                    <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-xl font-extrabold tracking-wide font-display">
+                    {esIngreso ? 'INGRESO REGISTRADO' : 'SALIDA REGISTRADA'}
+                  </p>
+                  <p className="text-lg font-semibold mt-0.5 text-white/95 truncate">{resultado.alumno}</p>
+                  {resultado.aula && <p className="text-sm text-white/75 truncate">{resultado.aula}</p>}
+                </div>
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/20 flex items-center justify-center ml-auto">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        ),
+        { duration: 3000, position: 'top-center' }
+      );
+
+      // Cooldown para AMBOS modos (bloqueo de 3 segundos)
+      let remaining = COOLDOWN_SECONDS;
+      setCooldown({
+        alumno: resultado.alumno,
+        tipo_evento: resultado.tipo_evento,
+        aula: resultado.aula,
+        foto: resultado.foto,
+        dni: resultado.dni,
+        segundos: remaining,
+      });
+      cooldownTimerRef.current = setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0) {
+          clearInterval(cooldownTimerRef.current);
+          setCooldown(null);
+          if (modo === 'CAMARA') {
             setScannerPaused(false);
           } else {
-            setCooldown(prev => prev ? { ...prev, segundos: remaining } : null);
+            codigoRef.current?.focus();
           }
-        }, 1000);
-      } else {
-        toast.success(`${data.data.tipo_evento === 'CHECKIN' ? 'INGRESO' : 'SALIDA'} - ${data.data.alumno}`);
-      }
+        } else {
+          setCooldown(prev => prev ? { ...prev, segundos: remaining } : null);
+        }
+      }, 1000);
     } catch (err) {
       playErrorBeep();
       toast.error(err.response?.data?.error || 'Error al registrar');
@@ -111,11 +159,15 @@ const RegistroAsistencia = () => {
   };
 
   useEffect(() => {
-    cargarHistorial();
+    cargarHistorial(1);
     return () => {
       if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    cargarHistorial();
+  }, [paginaHistorial]);
 
   useEffect(() => {
     if (modo === 'CODIGO') {
@@ -124,6 +176,26 @@ const RegistroAsistencia = () => {
   }, [modo]);
 
   useSocket('asistencia:evento', () => cargarHistorial());
+
+  const cambiarPagina = (nuevaPagina) => {
+    if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+      setPaginaHistorial(nuevaPagina);
+    }
+  };
+
+  const generarPaginas = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPaginas; i++) {
+      if (i === 1 || i === totalPaginas || Math.abs(i - paginaHistorial) <= 1) {
+        pages.push(i);
+      }
+    }
+    return pages.reduce((acc, page, idx, arr) => {
+      if (idx > 0 && page - arr[idx - 1] > 1) acc.push('...');
+      acc.push(page);
+      return acc;
+    }, []);
+  };
 
   const btnBase = 'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 text-sm';
   const btnActive = 'bg-primary-600 text-white shadow-crimson';
@@ -206,7 +278,9 @@ const RegistroAsistencia = () => {
                         <p className="text-xl font-bold font-display tracking-wide">
                           {cooldown.tipo_evento === 'CHECKIN' ? 'INGRESO REGISTRADO' : 'SALIDA REGISTRADA'}
                         </p>
-                        <p className="text-lg font-semibold mt-1 text-white/90">{cooldown.alumno}</p>
+                        <p className="text-lg font-semibold mt-2 text-white/90">{cooldown.alumno}</p>
+                        {cooldown.dni && <p className="text-sm text-white/70">DNI: {cooldown.dni}</p>}
+                        {cooldown.aula && <p className="text-sm text-white/70 mt-1">{cooldown.aula}</p>}
                         <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 rounded-full text-xs text-white/80">
                           <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                           Escaner disponible en {cooldown.segundos}s
@@ -217,26 +291,63 @@ const RegistroAsistencia = () => {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleCodigoSubmit}>
-                <label className="form-label">Ingrese el codigo del alumno</label>
-                <input
-                  ref={codigoRef}
-                  type="text"
-                  value={codigoAlumno}
-                  onChange={(e) => setCodigoAlumno(e.target.value.toUpperCase())}
-                  placeholder="Ej: ALU-2026-001"
-                  className="input-field text-lg text-center tracking-widest"
-                  maxLength={50}
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  disabled={loading || !codigoAlumno.trim()}
-                  className="mt-3 w-full py-2.5 bg-crimson-gradient text-white rounded-lg hover:opacity-90 disabled:opacity-50 font-medium shadow-crimson transition-all"
-                >
-                  {loading ? 'Registrando...' : 'Registrar'}
-                </button>
-              </form>
+              <div className="relative">
+                <form onSubmit={handleCodigoSubmit}>
+                  <label className="form-label">Ingrese el codigo del alumno</label>
+                  <input
+                    ref={codigoRef}
+                    type="text"
+                    value={codigoAlumno}
+                    onChange={(e) => setCodigoAlumno(e.target.value.toUpperCase())}
+                    placeholder={`Ej: ALU-${new Date().getFullYear()}-001`}
+                    className="input-field text-lg text-center tracking-widest"
+                    maxLength={50}
+                    autoFocus
+                    disabled={!!cooldown}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading || !codigoAlumno.trim() || !!cooldown}
+                    className="mt-3 w-full py-2.5 bg-crimson-gradient text-white rounded-lg hover:opacity-90 disabled:opacity-50 font-medium shadow-crimson transition-all"
+                  >
+                    {loading ? 'Registrando...' : cooldown ? `Espere ${cooldown.segundos}s...` : 'Registrar'}
+                  </button>
+                </form>
+
+                {/* Overlay de confirmacion con bloqueo temporal (modo manual) */}
+                {cooldown && (
+                  <div className="absolute inset-0 bg-emerald-600 rounded-lg flex items-center justify-center z-10">
+                    <div className="text-center text-white px-6">
+                      {cooldown.foto ? (
+                        <div className="relative w-20 h-20 mx-auto mb-3">
+                          <img src={fileUrl(cooldown.foto)} alt="" className="w-20 h-20 rounded-full object-cover border-2 border-white/30" />
+                          <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white flex items-center justify-center">
+                            <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-white/20 flex items-center justify-center">
+                          <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                      <p className="text-xl font-bold font-display tracking-wide">
+                        {cooldown.tipo_evento === 'CHECKIN' ? 'INGRESO REGISTRADO' : 'SALIDA REGISTRADA'}
+                      </p>
+                      <p className="text-lg font-semibold mt-2 text-white/90">{cooldown.alumno}</p>
+                      {cooldown.dni && <p className="text-sm text-white/70">DNI: {cooldown.dni}</p>}
+                      {cooldown.aula && <p className="text-sm text-white/70 mt-1">{cooldown.aula}</p>}
+                      <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 rounded-full text-xs text-white/80">
+                        <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        Disponible en {cooldown.segundos}s
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </Card>
         </div>
@@ -254,11 +365,14 @@ const RegistroAsistencia = () => {
                   </div>
                 )}
                 <h3 className="text-2xl font-bold text-primary-800 font-display text-center">{scanResult.alumno}</h3>
+                {scanResult.codigo_alumno && (
+                  <p className="text-sm text-primary-800/50 mt-1">{scanResult.codigo_alumno}</p>
+                )}
                 {scanResult.dni && (
-                  <p className="text-base text-primary-800/60 mt-2">DNI: {scanResult.dni}</p>
+                  <p className="text-base text-primary-800/60 mt-1">DNI: {scanResult.dni}</p>
                 )}
                 {scanResult.aula && (
-                  <p className="text-sm text-gold-600 mt-1">{scanResult.aula}</p>
+                  <p className="text-sm text-gold-600 font-medium mt-1">{scanResult.aula}</p>
                 )}
                 <div className="mt-4">
                   <span className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-base font-bold ${
@@ -292,35 +406,79 @@ const RegistroAsistencia = () => {
       </div>
 
       {/* Historial */}
-      <Card title="Ultimos registros">
+      <Card title={`Registros del dia${totalRegistros > 0 ? ` (${totalRegistros})` : ''}`}>
         {historial.length === 0 ? (
-          <p className="text-center text-cream-400 py-4 font-display">Sin registros recientes</p>
+          <p className="text-center text-cream-400 py-4 font-display">Sin registros del dia</p>
         ) : (
-          <div className="space-y-2">
-            {historial.map((reg) => (
-              <div key={reg.id} className="flex items-center justify-between py-2 border-b border-cream-100 last:border-0">
-                <div className="flex items-center gap-3">
-                  {reg.alumno?.foto_url ? (
-                    <img src={fileUrl(reg.alumno.foto_url)} alt="" className="w-9 h-9 rounded-full object-cover border border-cream-200" />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-cream-100 flex items-center justify-center">
-                      <span className="text-sm font-bold text-cream-400">{reg.alumno?.nombre_completo?.charAt(0) || '?'}</span>
+          <>
+            <div className="space-y-2">
+              {historial.map((reg) => (
+                <div key={reg.id} className="flex items-center justify-between py-2 border-b border-cream-100 last:border-0">
+                  <div className="flex items-center gap-3">
+                    {reg.alumno?.foto_url ? (
+                      <img src={fileUrl(reg.alumno.foto_url)} alt="" className="w-9 h-9 rounded-full object-cover border border-cream-200" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-cream-100 flex items-center justify-center">
+                        <span className="text-sm font-bold text-cream-400">{reg.alumno?.nombre_completo?.charAt(0) || '?'}</span>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-primary-800">{reg.alumno?.nombre_completo || 'Alumno'}</p>
+                      <p className="text-xs text-primary-800/50">{reg.alumno?.codigo_alumno}{reg.alumno?.dni ? ` - DNI: ${reg.alumno.dni}` : ''}</p>
+                      <p className="text-xs text-gold-600">{reg.alumno?.aula || ''}</p>
                     </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-medium text-primary-800">{reg.alumno?.nombre_completo || 'Alumno'}</p>
-                    <p className="text-xs text-gold-600">{reg.metodo} {reg.alumno?.aula ? `- ${reg.alumno.aula}` : ''}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant={reg.tipo_evento === 'CHECKIN' ? 'success' : 'info'}>
+                      {reg.tipo_evento === 'CHECKIN' ? 'Ingreso' : 'Salida'}
+                    </Badge>
+                    <p className="text-xs text-primary-800/50 mt-1">{formatHora(reg.fecha_hora)}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <Badge variant={reg.tipo_evento === 'CHECKIN' ? 'success' : 'info'}>
-                    {reg.tipo_evento === 'CHECKIN' ? 'Ingreso' : 'Salida'}
-                  </Badge>
-                  <p className="text-xs text-primary-800/50 mt-1">{formatHora(reg.fecha_hora)}</p>
+              ))}
+            </div>
+
+            {totalPaginas > 1 && (
+              <div className="flex items-center justify-between pt-4 mt-4 border-t border-cream-200">
+                <span className="text-sm text-primary-800/60">
+                  Mostrando {((paginaHistorial - 1) * REGISTROS_POR_PAGINA) + 1}–{Math.min(paginaHistorial * REGISTROS_POR_PAGINA, totalRegistros)} de {totalRegistros}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => cambiarPagina(paginaHistorial - 1)}
+                    disabled={paginaHistorial === 1}
+                    className="p-1.5 rounded-lg text-primary-800/60 hover:bg-cream-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <HiChevronLeft className="w-5 h-5" />
+                  </button>
+                  {generarPaginas().map((item, idx) =>
+                    item === '...' ? (
+                      <span key={`dots-${idx}`} className="px-1 text-sm text-primary-800/40">...</span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => cambiarPagina(item)}
+                        className={`min-w-[2rem] h-8 rounded-lg text-sm font-medium transition-colors ${
+                          paginaHistorial === item
+                            ? 'bg-primary-600 text-white shadow-sm'
+                            : 'text-primary-800/60 hover:bg-cream-200'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={() => cambiarPagina(paginaHistorial + 1)}
+                    disabled={paginaHistorial === totalPaginas}
+                    className="p-1.5 rounded-lg text-primary-800/60 hover:bg-cream-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <HiChevronRight className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </Card>
     </div>

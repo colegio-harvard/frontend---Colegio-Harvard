@@ -433,7 +433,7 @@ const AsistenciaAdmin = () => {
   const [grados, setGrados] = useState([]);
   const [aulasDisponibles, setAulasDisponibles] = useState([]);
   const [correccionModal, setCorreccionModal] = useState(false);
-  const [correccionForm, setCorreccionForm] = useState({ id_asistencia_dia: '', nuevo_estado: '', motivo: '' });
+  const [correccionForm, setCorreccionForm] = useState({ id_asistencia_dia: '', nuevo_estado: '', motivo: '', hora_ingreso: '', hora_salida: '' });
 
   useEffect(() => {
     const fetchFiltros = async () => {
@@ -471,7 +471,11 @@ const AsistenciaAdmin = () => {
   const handleCorreccion = async (e) => {
     e.preventDefault();
     try {
-      await corregirAsistencia(correccionForm);
+      const payload = { id_asistencia_dia: correccionForm.id_asistencia_dia, motivo: correccionForm.motivo };
+      if (correccionForm.nuevo_estado) payload.nuevo_estado = correccionForm.nuevo_estado;
+      if (correccionForm.hora_ingreso) payload.hora_ingreso = correccionForm.hora_ingreso;
+      if (correccionForm.hora_salida) payload.hora_salida = correccionForm.hora_salida;
+      await corregirAsistencia(payload);
       toast.success('Asistencia corregida');
       setCorreccionModal(false);
       fetchData();
@@ -514,7 +518,18 @@ const AsistenciaAdmin = () => {
       return r.hora_salida ? formatHora(r.hora_salida) : '-';
     }},
     { header: 'Acciones', render: (r) => (
-      <button onClick={() => { setCorreccionForm({ id_asistencia_dia: r.id, nuevo_estado: r.estado || 'PRESENTE', motivo: '' }); setCorreccionModal(true); }}
+      <button onClick={() => {
+        setCorreccionForm({
+          id_asistencia_dia: r.id,
+          nuevo_estado: r.estado || 'PRESENTE',
+          motivo: '',
+          hora_ingreso: '',
+          hora_salida: '',
+          tiene_ingreso: !!r.hora_ingreso,
+          tiene_salida: !!r.hora_salida && !r.salida_no_registrada,
+        });
+        setCorreccionModal(true);
+      }}
         className="px-2 py-1 text-xs bg-amber-50 text-amber-700 rounded hover:bg-amber-100">Corregir</button>
     )},
   ];
@@ -588,13 +603,37 @@ const AsistenciaAdmin = () => {
         <form onSubmit={handleCorreccion} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Nuevo Estado</label>
-            <select value={correccionForm.nuevo_estado} onChange={(e) => setCorreccionForm({...correccionForm, nuevo_estado: e.target.value})} required
+            <select value={correccionForm.nuevo_estado} onChange={(e) => setCorreccionForm({...correccionForm, nuevo_estado: e.target.value})}
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none">
               <option value="PRESENTE">Asistió</option>
               <option value="TARDE">Tardanza</option>
               <option value="AUSENTE">Faltó</option>
             </select>
           </div>
+          {correccionForm.tiene_ingreso && (
+            <div>
+              <label className="block text-sm font-medium text-primary-800/80 mb-1">Corregir Hora de Ingreso</label>
+              <input
+                type="time"
+                value={correccionForm.hora_ingreso}
+                onChange={(e) => setCorreccionForm({...correccionForm, hora_ingreso: e.target.value})}
+                className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none"
+              />
+              <p className="text-xs text-gold-500 mt-1">Dejar vacío si no desea modificar</p>
+            </div>
+          )}
+          {correccionForm.tiene_salida && (
+            <div>
+              <label className="block text-sm font-medium text-primary-800/80 mb-1">Corregir Hora de Salida</label>
+              <input
+                type="time"
+                value={correccionForm.hora_salida}
+                onChange={(e) => setCorreccionForm({...correccionForm, hora_salida: e.target.value})}
+                className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none"
+              />
+              <p className="text-xs text-gold-500 mt-1">Dejar vacío si no desea modificar</p>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Motivo (obligatorio)</label>
             <textarea value={correccionForm.motivo} onChange={(e) => setCorreccionForm({...correccionForm, motivo: e.target.value})} required

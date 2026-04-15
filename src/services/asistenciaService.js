@@ -8,5 +8,5 @@ export const obtenerAulasTutor = () => apiClient.get('/asistencia/aulas-tutor');
 export const asistenciaGlobal = (params) => apiClient.get('/asistencia/global', { params });
 export const exportarExcelAsistencia = (params) => apiClient.get('/asistencia/exportar-excel', { params, responseType: 'blob' });
 export const corregirAsistencia = (data) => apiClient.post('/asistencia/corregir', data);
-export const historialPorteria = () => apiClient.get('/asistencia/historial-porteria');
+export const historialPorteria = (params) => apiClient.get('/asistencia/historial-porteria', { params });
 export const dashboardAdmin = () => apiClient.get('/asistencia/dashboard-admin');

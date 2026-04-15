@@ -228,7 +228,7 @@ const DashboardPorteria = () => {
               type="text"
               value={codigoAlumno}
               onChange={(e) => setCodigoAlumno(e.target.value.toUpperCase())}
-              placeholder="Ej: ALU-2026-001"
+              placeholder={`Ej: ALU-${new Date().getFullYear()}-001`}
               className="input-field text-lg text-center tracking-widest"
               maxLength={50}
               autoFocus
@@ -262,6 +262,7 @@ const DashboardPorteria = () => {
                 {ultimoRegistro.tipo_evento === 'CHECKIN' ? 'INGRESO' : 'SALIDA'}
               </p>
               <p className="text-lg font-semibold text-primary-800 truncate">{ultimoRegistro.alumno}</p>
+              {ultimoRegistro.codigo_alumno && <p className="text-xs text-primary-800/50">{ultimoRegistro.codigo_alumno}</p>}
               {ultimoRegistro.dni && <p className="text-sm text-primary-800/60">DNI: {ultimoRegistro.dni}</p>}
               <div className="flex items-center gap-3 mt-1">
                 {ultimoRegistro.aula && <span className="text-sm text-gold-600">{ultimoRegistro.aula}</span>}
@@ -280,9 +281,19 @@ const DashboardPorteria = () => {
           <div className="space-y-2">
             {historial.map((reg) => (
               <div key={reg.id} className="flex items-center justify-between py-2 border-b border-cream-100 last:border-0">
-                <div>
-                  <p className="text-sm font-medium text-primary-800">{reg.alumno?.nombre_completo || 'Alumno'}</p>
-                  <p className="text-xs text-gold-600">{reg.metodo} {reg.alumno?.aula ? `- ${reg.alumno.aula}` : ''}</p>
+                <div className="flex items-center gap-3">
+                  {reg.alumno?.foto_url ? (
+                    <img src={fileUrl(reg.alumno.foto_url)} alt="" className="w-9 h-9 rounded-full object-cover border border-cream-200" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-cream-100 flex items-center justify-center">
+                      <span className="text-sm font-bold text-cream-400">{reg.alumno?.nombre_completo?.charAt(0) || '?'}</span>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-primary-800">{reg.alumno?.nombre_completo || 'Alumno'}</p>
+                    <p className="text-xs text-primary-800/50">{reg.alumno?.codigo_alumno}{reg.alumno?.dni ? ` - DNI: ${reg.alumno.dni}` : ''}</p>
+                    <p className="text-xs text-gold-600">{reg.alumno?.aula || ''}</p>
+                  </div>
                 </div>
                 <div className="text-right">
                   <Badge variant={reg.tipo_evento === 'CHECKIN' ? 'success' : 'info'}>
