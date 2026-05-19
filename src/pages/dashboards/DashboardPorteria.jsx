@@ -53,7 +53,7 @@ const DashboardPorteria = () => {
     }
   };
 
-  const COOLDOWN_SECONDS = 5;
+  const COOLDOWN_SECONDS = 1;
 
   const registrar = async (payload) => {
     if (loading || cooldown) return;

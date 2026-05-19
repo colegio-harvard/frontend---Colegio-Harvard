@@ -32,7 +32,7 @@ class CameraErrorBoundary extends Component {
   }
 }
 
-const COOLDOWN_SECONDS = 3;
+const COOLDOWN_SECONDS = 1;
 
 const RegistroAsistencia = () => {
   const [modo, setModo] = useState('CAMARA');
