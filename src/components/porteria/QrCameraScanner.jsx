@@ -21,10 +21,10 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
     if (decodedText === lastResultRef.current) return;
     lastResultRef.current = decodedText;
     onScanRef.current(decodedText);
-    // Resetear después de 2s para permitir re-escaneo
+    // Resetear después de 1s para permitir re-escaneo
     setTimeout(() => {
       lastResultRef.current = null;
-    }, 2000);
+    }, 1000);
   };
 
   useEffect(() => {

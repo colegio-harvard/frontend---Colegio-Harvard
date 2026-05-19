@@ -140,7 +140,7 @@ const RegistroAsistencia = () => {
       playErrorBeep();
       toast.error(err.response?.data?.error || 'Error al registrar');
       if (modo === 'CAMARA') {
-        setTimeout(() => setScannerPaused(false), 2000);
+        setTimeout(() => setScannerPaused(false), 1000);
       }
     } finally {
       setLoading(false);

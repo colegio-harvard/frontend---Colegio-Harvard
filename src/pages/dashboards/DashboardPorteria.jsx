@@ -96,7 +96,7 @@ const DashboardPorteria = () => {
       toast.error(err.response?.data?.error || 'Error al registrar');
       // Reanudar cámara después de un breve delay en caso de error
       if (modo === 'CAMARA') {
-        setTimeout(() => setScannerPaused(false), 2000);
+        setTimeout(() => setScannerPaused(false), 1000);
       }
     } finally {
       setLoading(false);
