@@ -11,6 +11,10 @@ export const UPLOADS_BASE = API_URL.replace(/\/api\/?$/, '');
 export const fileUrl = (path) => {
   if (!path) return null;
   const normalized = String(path).trim();
+  if (normalized.includes('wasabisys.com')) {
+    const match = normalized.match(/wasabisys\.com\/[^/]+\/(.+)/);
+    if (match) return `${API_URL}/archivos?key=${encodeURIComponent(match[1])}`;
+  }
   const key = normalized.replace(/^\/+/, '');
   if (key.startsWith('fotos/') || key.startsWith('adjuntos/')) {
     return `${API_URL}/archivos?key=${encodeURIComponent(key)}`;
@@ -60,3 +64,4 @@ export const AUDIENCIA_COMUNICADO = {
   AULA: 'AULA',
   ALUMNO: 'ALUMNO',
 };
+
