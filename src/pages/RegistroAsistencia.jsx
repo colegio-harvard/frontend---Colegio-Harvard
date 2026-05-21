@@ -3,7 +3,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../services/asistenciaService';
 import { formatHora } from '../utils/formatters';
-import { HiQrcode, HiKey, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
+import { HiQrcode, HiKey, HiChevronLeft, HiChevronRight, HiCheck, HiClock, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../hooks/useSocket';
 import { fileUrl } from '../utils/constants';
@@ -33,6 +33,52 @@ class CameraErrorBoundary extends Component {
 }
 
 const COOLDOWN_SECONDS = 1;
+const formatMonto = (n) => `S/. ${Number(n || 0).toFixed(2)}`;
+
+const PensionStatus = ({ mes }) => {
+  if (mes.estado === 'PAGADO') {
+    return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700"><HiCheck className="w-4 h-4" /></span>;
+  }
+  if (mes.estado === 'PAGO_PARCIAL') {
+    return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700"><HiClock className="w-4 h-4" /></span>;
+  }
+  return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-600"><HiX className="w-4 h-4" /></span>;
+};
+
+const PensionResumen = ({ pensiones }) => {
+  const meses = pensiones?.meses || [];
+  if (meses.length === 0) return null;
+
+  return (
+    <div className="w-full mt-5 pt-4 border-t border-cream-200">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-sm font-bold text-primary-800 font-display">Pensiones</h4>
+        <div className="flex items-center gap-2 text-[11px]">
+          <span className="text-emerald-700 font-semibold">{pensiones.resumen?.pagados || 0} pag.</span>
+          <span className="text-amber-700 font-semibold">{pensiones.resumen?.parciales || 0} parc.</span>
+          <span className="text-red-600 font-semibold">{pensiones.resumen?.pendientes || 0} pend.</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {meses.map((mes) => (
+          <div key={mes.clave} className="rounded-lg border border-cream-200 bg-white px-2 py-2 text-center">
+            <p className="text-[11px] font-semibold text-primary-800 truncate">{mes.nombre || mes.clave}</p>
+            <div className="flex justify-center mt-1">
+              <PensionStatus mes={mes} />
+            </div>
+            {mes.estado === 'PAGO_PARCIAL' && mes.saldo !== null && (
+              <p className="text-[10px] text-amber-700 font-semibold mt-1">Saldo {formatMonto(mes.saldo)}</p>
+            )}
+            {mes.estado === 'PAGADO' && mes.monto_total && (
+              <p className="text-[10px] text-emerald-700 font-semibold mt-1">{formatMonto(mes.monto_total)}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const RegistroAsistencia = () => {
   const [modo, setModo] = useState('CAMARA');
@@ -387,6 +433,7 @@ const RegistroAsistencia = () => {
                   </span>
                 </div>
                 <p className="text-sm text-primary-800/50 mt-3">{formatHora(scanResult.fecha_hora)}</p>
+                <PensionResumen pensiones={scanResult.pensiones} />
               </div>
             </Card>
           ) : (
