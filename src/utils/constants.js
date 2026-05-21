@@ -10,8 +10,13 @@ export const UPLOADS_BASE = API_URL.replace(/\/api\/?$/, '');
 // - Rutas relativas legacy (/uploads/...) se prefijan con UPLOADS_BASE.
 export const fileUrl = (path) => {
   if (!path) return null;
-  if (path.startsWith('http')) return path;
-  return `${UPLOADS_BASE}${path}`;
+  const normalized = String(path).trim();
+  const key = normalized.replace(/^\/+/, '');
+  if (key.startsWith('fotos/') || key.startsWith('adjuntos/')) {
+    return `${API_URL}/archivos?key=${encodeURIComponent(key)}`;
+  }
+  if (normalized.startsWith('http')) return normalized;
+  return `${UPLOADS_BASE}${normalized.startsWith('/') ? normalized : `/${normalized}`}`;
 };
 
 export const ROLES = {
