@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+﻿import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../../services/asistenciaService';
 import { formatHora } from '../../utils/formatters';
-import { HiQrcode, HiKey } from 'react-icons/hi';
+import { HiQrcode, HiKey, HiCheck, HiClock, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../../hooks/useSocket';
 import { fileUrl } from '../../utils/constants';
@@ -11,6 +11,52 @@ import { playSuccessBeep, playErrorBeep } from '../../utils/sounds';
 
 const QrCameraScanner = lazy(() => import('../../components/porteria/QrCameraScanner'));
 
+const formatMonto = (n) => `S/. ${Number(n || 0).toFixed(2)}`;
+
+const PensionStatus = ({ mes }) => {
+  if (mes.estado === 'PAGADO') {
+    return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-700"><HiCheck className="w-4 h-4" /></span>;
+  }
+  if (mes.estado === 'PAGO_PARCIAL') {
+    return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700"><HiClock className="w-4 h-4" /></span>;
+  }
+  return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-600"><HiX className="w-4 h-4" /></span>;
+};
+
+const PensionResumen = ({ pensiones }) => {
+  const meses = pensiones?.meses || [];
+  if (meses.length === 0) return null;
+
+  return (
+    <div className="w-full mt-4 pt-4 border-t border-cream-200">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-sm font-bold text-primary-800 font-display">Pensiones</h4>
+        <div className="flex items-center gap-2 text-[11px]">
+          <span className="text-emerald-700 font-semibold">{pensiones.resumen?.pagados || 0} pag.</span>
+          <span className="text-amber-700 font-semibold">{pensiones.resumen?.parciales || 0} parc.</span>
+          <span className="text-red-600 font-semibold">{pensiones.resumen?.pendientes || 0} pend.</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        {meses.map((mes) => (
+          <div key={mes.clave} className="rounded-lg border border-cream-200 bg-white px-2 py-2 text-center">
+            <p className="text-[11px] font-semibold text-primary-800 truncate">{mes.nombre || mes.clave}</p>
+            <div className="flex justify-center mt-1">
+              <PensionStatus mes={mes} />
+            </div>
+            {mes.estado === 'PAGO_PARCIAL' && mes.saldo !== null && (
+              <p className="text-[10px] text-amber-700 font-semibold mt-1">Saldo {formatMonto(mes.saldo)}</p>
+            )}
+            {mes.estado === 'PAGADO' && mes.monto_total && (
+              <p className="text-[10px] text-emerald-700 font-semibold mt-1">{formatMonto(mes.monto_total)}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 class CameraErrorBoundary extends Component {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
@@ -23,9 +69,9 @@ class CameraErrorBoundary extends Component {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </div>
-          <p className="text-sm text-red-600 font-medium mb-1">Cámara no disponible</p>
-          <p className="text-xs text-primary-800/50">Ocurrió un error inesperado al iniciar la cámara</p>
-          <p className="text-xs text-primary-800/40 mt-2">Use el modo manual para ingresar el código del alumno</p>
+          <p className="text-sm text-red-600 font-medium mb-1">CÃ¡mara no disponible</p>
+          <p className="text-xs text-primary-800/50">OcurriÃ³ un error inesperado al iniciar la cÃ¡mara</p>
+          <p className="text-xs text-primary-800/40 mt-2">Use el modo manual para ingresar el cÃ³digo del alumno</p>
         </div>
       );
     }
@@ -58,7 +104,7 @@ const DashboardPorteria = () => {
   const registrar = async (payload) => {
     if (loading || cooldown) return;
     setLoading(true);
-    // Pausar cámara mientras se procesa
+    // Pausar cÃ¡mara mientras se procesa
     if (modo === 'CAMARA') setScannerPaused(true);
     try {
       const { data } = await registrarAsistencia(payload);
@@ -68,7 +114,7 @@ const DashboardPorteria = () => {
       cargarHistorial();
 
       if (modo === 'CAMARA') {
-        // Bloquear escáner y mostrar confirmación visual
+        // Bloquear escÃ¡ner y mostrar confirmaciÃ³n visual
         let remaining = COOLDOWN_SECONDS;
         setCooldown({
           alumno: data.data.alumno,
@@ -94,7 +140,7 @@ const DashboardPorteria = () => {
     } catch (err) {
       playErrorBeep();
       toast.error(err.response?.data?.error || 'Error al registrar');
-      // Reanudar cámara después de un breve delay en caso de error
+      // Reanudar cÃ¡mara despuÃ©s de un breve delay en caso de error
       if (modo === 'CAMARA') {
         setTimeout(() => setScannerPaused(false), 1000);
       }
@@ -150,15 +196,15 @@ const DashboardPorteria = () => {
           onClick={() => setModo('CODIGO')}
           className={`${btnBase} ${modo === 'CODIGO' ? btnActive : btnInactive}`}
         >
-          <HiKey className="w-5 h-5" /> Código Manual
+          <HiKey className="w-5 h-5" /> CÃ³digo Manual
         </button>
       </div>
 
-      {/* Área de escaneo / entrada */}
+      {/* Ãrea de escaneo / entrada */}
       <Card className="mb-4">
         {modo === 'CAMARA' ? (
           <div>
-            <label className="form-label mb-2">Apunte la cámara al QR del carnet</label>
+            <label className="form-label mb-2">Apunte la cÃ¡mara al QR del carnet</label>
             <div className="relative">
               <CameraErrorBoundary>
                 <Suspense
@@ -166,7 +212,7 @@ const DashboardPorteria = () => {
                     <div className="flex items-center justify-center py-16 bg-primary-900/5 rounded-lg">
                       <div className="text-center">
                         <div className="w-8 h-8 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto mb-2" />
-                        <p className="text-sm text-primary-800/50">Cargando escáner...</p>
+                        <p className="text-sm text-primary-800/50">Cargando escÃ¡ner...</p>
                       </div>
                     </div>
                   }
@@ -185,7 +231,7 @@ const DashboardPorteria = () => {
                 </div>
               )}
 
-              {/* Overlay de confirmación con bloqueo temporal */}
+              {/* Overlay de confirmaciÃ³n con bloqueo temporal */}
               {cooldown && (
                 <div className="absolute inset-0 bg-emerald-600 rounded-lg flex items-center justify-center z-10">
                   <div className="text-center text-white px-6">
@@ -213,7 +259,7 @@ const DashboardPorteria = () => {
                     {cooldown.aula && <p className="text-sm text-white/70 mt-1">{cooldown.aula}</p>}
                     <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 rounded-full text-xs text-white/80">
                       <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                      Escáner disponible en {cooldown.segundos}s
+                      EscÃ¡ner disponible en {cooldown.segundos}s
                     </div>
                   </div>
                 </div>
@@ -222,7 +268,7 @@ const DashboardPorteria = () => {
           </div>
         ) : (
           <form onSubmit={handleCodigoSubmit}>
-            <label className="form-label">Ingrese el código del alumno</label>
+            <label className="form-label">Ingrese el cÃ³digo del alumno</label>
             <input
               ref={codigoRef}
               type="text"
@@ -244,7 +290,7 @@ const DashboardPorteria = () => {
         )}
       </Card>
 
-      {/* Último registro */}
+      {/* Ãšltimo registro */}
       {ultimoRegistro && (
         <Card className="mb-4 border-emerald-200 bg-emerald-50/50">
           <div className="flex items-center gap-4">
@@ -270,11 +316,12 @@ const DashboardPorteria = () => {
               </div>
             </div>
           </div>
-        </Card>
+                  <PensionResumen pensiones={ultimoRegistro.pensiones} />
+</Card>
       )}
 
       {/* Historial */}
-      <Card title="Últimos registros">
+      <Card title="Ãšltimos registros">
         {historial.length === 0 ? (
           <p className="text-center text-cream-400 py-4 font-display">Sin registros recientes</p>
         ) : (
@@ -311,3 +358,4 @@ const DashboardPorteria = () => {
 };
 
 export default DashboardPorteria;
+
