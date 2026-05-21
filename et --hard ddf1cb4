@@ -1,0 +1,20 @@
+[33m6a94f0f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: guardar monto pension
+[33mf540c61[m Agregar estado de pensión en asistencia
+[33mfb95b7e[m fix: marcar comunicados al cargar padre
+[33m1f0daa4[m fix comunicados alumno
+[33m55105dc[m Fix click comunicados
+[33mbac6b68[m Arreglar lectura de comunicados
+[33mddf1cb4[m Reducir cooldown QR a 1 segundo
+[33m67f02f3[m Reducri pausa QR portería a 1 segundo
+[33m468d6b5[m Reducir tiempo de escaneo QR a 2 segundos
+[33m758be32[m Correcciones - Producción
+[33m90a72a3[m Correcciones - Producción
+[33m1d05325[m Correcciones - Producción
+[33mc6b4270[m Producción
+[33m435470f[m Producción
+[33m5a91c78[m Producción
+[33mb8ce224[m Producción
+[33m45543cf[m Producción
+[33m5585cc2[m Producción
+[33mfdd9397[m Despliegue
+[33m3347ad4[m Despliegue

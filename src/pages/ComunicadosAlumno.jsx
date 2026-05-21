@@ -207,8 +207,9 @@ const ComunicadosAlumno = () => {
                       {formatFechaHora(com.publicado_en || com.date_time_registration)} - {com.creador} - Audiencia: {com.audiencia}
                     </p>
                   </div>
-                  {esLeido && <Badge variant="success">Leido</Badge>}
-                  {!isPadre && <span className="text-xs text-cream-400">{com.total_lecturas} lecturas</span>}
+{(esLeido || (!isPadre && com.total_lecturas > 0)) && (
+  <Badge variant="success">Leido</Badge>
+)}                  {!isPadre && <span className="text-xs text-cream-400">{com.total_lecturas} lecturas</span>}
                 </div>
                 <p className="text-sm text-primary-800/80 whitespace-pre-wrap">{com.contenido}</p>
               </Card>
