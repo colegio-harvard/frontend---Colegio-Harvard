@@ -110,7 +110,7 @@ const ComunicadosAlumno = () => {
   };
 
   const handleVerComunicado = async (com) => {
-    if (!com.leido) {
+    if (isPadre && !com.leido) {
       try {
         await marcarLeido(com.id);
         setComunicados(prev => prev.map(c => c.id === com.id ? { ...c, leido: true } : c));
@@ -357,6 +357,7 @@ const ComunicadosAlumno = () => {
 };
 
 export default ComunicadosAlumno;
+
 
 
 
