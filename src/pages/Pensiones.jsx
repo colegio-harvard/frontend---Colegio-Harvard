@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, API_URL } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { obtenerPlantilla, obtenerEstadoPension, cuadriculaPensiones, registrarPago, obtenerDetalleMes, obtenerTicketPension } from '../services/pensionesService';
 import { listarNiveles, listarGrados, listarAulas } from '../services/configEscolarService';
-import { HiCheck, HiX, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter } from 'react-icons/hi';
+import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter } from 'react-icons/hi';
 import { formatFecha } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
@@ -97,6 +97,7 @@ const imprimirTicket = (ticket) => {
 const EstadoBadge = ({ estado }) => {
   if (estado === 'PAGADO') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700"><HiCheck className="w-3 h-3" /> Pagado</span>;
   if (estado === 'PAGO_PARCIAL') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700"><HiClock className="w-3 h-3" /> Parcial</span>;
+  if (estado === 'NO_CORRESPONDE') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-700"><HiMinus className="w-3 h-3" /> No corresponde</span>;
   return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-600"><HiX className="w-3 h-3" /> Pendiente</span>;
 };
 
@@ -180,24 +181,28 @@ const PensionPadre = () => {
                 const cardStyles = {
                   PAGADO: 'border-emerald-300 bg-emerald-50',
                   PAGO_PARCIAL: 'border-amber-300 bg-amber-50',
+                  NO_CORRESPONDE: 'border-sky-300 bg-sky-50',
                   PENDIENTE: 'border-red-200 bg-red-50/50',
                 };
                 const iconStyles = {
                   PAGADO: 'text-emerald-600',
                   PAGO_PARCIAL: 'text-amber-600',
+                  NO_CORRESPONDE: 'text-sky-600',
                   PENDIENTE: 'text-red-400',
                 };
                 const labelStyles = {
                   PAGADO: 'text-emerald-700',
                   PAGO_PARCIAL: 'text-amber-700',
+                  NO_CORRESPONDE: 'text-sky-700',
                   PENDIENTE: 'text-red-500',
                 };
                 const labels = {
                   PAGADO: 'Pagado',
                   PAGO_PARCIAL: 'Pago Parcial',
+                  NO_CORRESPONDE: 'No corresponde',
                   PENDIENTE: 'Pendiente',
                 };
-                const IconComp = estado === 'PAGADO' ? HiCheck : estado === 'PAGO_PARCIAL' ? HiClock : HiX;
+                const IconComp = estado === 'PAGADO' ? HiCheck : estado === 'PAGO_PARCIAL' ? HiClock : estado === 'NO_CORRESPONDE' ? HiMinus : HiX;
 
                 return (
                   <div key={mes.clave} className={`flex flex-col items-center p-6 rounded-xl border-2 ${cardStyles[estado]}`}>
@@ -525,9 +530,10 @@ const PensionAdmin = () => {
                     const btnColors = {
                       PAGADO: 'bg-emerald-500 text-white hover:bg-emerald-600',
                       PAGO_PARCIAL: 'bg-amber-400 text-white hover:bg-amber-500',
+                      NO_CORRESPONDE: 'bg-sky-200 text-sky-700 hover:bg-sky-300',
                       PENDIENTE: 'bg-cream-200 text-cream-400 hover:bg-cream-300',
                     };
-                    const IconComp = estado === 'PAGADO' ? HiCheck : estado === 'PAGO_PARCIAL' ? HiClock : HiX;
+                    const IconComp = estado === 'PAGADO' ? HiCheck : estado === 'PAGO_PARCIAL' ? HiClock : estado === 'NO_CORRESPONDE' ? HiMinus : HiX;
 
                     return (
                       <td key={p.clave} className="px-3 py-2 text-center">
@@ -635,6 +641,9 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
         if (d.estado === 'PAGO_PARCIAL') {
           setAccion('NUEVO_PAGO');
           setMontoTotal(String(d.monto_total || ''));
+        } else if (d.estado === 'NO_CORRESPONDE') {
+          setAccion('');
+          setObservacion(d.observacion_no_corresponde || '');
         } else if (d.estado === 'PENDIENTE') {
           setAccion('');
         }
@@ -672,6 +681,8 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
       if (parseFloat(montoPago) >= parseFloat(montoTotal)) return toast.error('El monto del pago debe ser menor al total. Para pago completo, use "Pago Completo".');
     } else if (accion === 'NUEVO_PAGO') {
       if (montoPago === '' || parseFloat(montoPago) < 0) return toast.error('Ingrese el monto del pago');
+    } else if (accion === 'NO_CORRESPONDE') {
+      if (!observacion.trim()) return toast.error('Ingrese la observacion');
     }
 
     setSaving(true);
@@ -702,6 +713,13 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
           monto_total: detalle.monto_total,
           monto_pago: parseFloat(montoPago),
           observacion: observacion || undefined,
+        });
+      } else if (accion === 'NO_CORRESPONDE') {
+        res = await registrarPago({
+          id_alumno: alumno.id,
+          clave_mes: mes.clave,
+          estado: 'NO_CORRESPONDE',
+          observacion: observacion.trim(),
         });
       } else if (accion === 'PENDIENTE') {
         res = await registrarPago({
@@ -806,7 +824,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               <h4 className="text-sm font-semibold text-primary-800">Registrar pago</h4>
 
               {/* Tipo de pago */}
-              <div className="flex gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <label className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${accion === 'PAGADO' ? 'border-emerald-400 bg-emerald-50' : 'border-cream-200 hover:border-cream-300'}`}>
                   <input type="radio" name="accion" value="PAGADO" checked={accion === 'PAGADO'} onChange={() => { setAccion('PAGADO'); setMontoPago(''); }} className="accent-emerald-600" />
                   <div>
@@ -819,6 +837,13 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                   <div>
                     <span className="text-sm font-semibold text-primary-800">Pago Parcial</span>
                     <p className="text-xs text-primary-800/50">Registrar un pago parcial</p>
+                  </div>
+                </label>
+                <label className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${accion === 'NO_CORRESPONDE' ? 'border-sky-400 bg-sky-50' : 'border-cream-200 hover:border-cream-300'}`}>
+                  <input type="radio" name="accion" value="NO_CORRESPONDE" checked={accion === 'NO_CORRESPONDE'} onChange={() => { setAccion('NO_CORRESPONDE'); setMontoPago(''); setMontoTotal(''); }} className="accent-sky-600" />
+                  <div>
+                    <span className="text-sm font-semibold text-primary-800">No Corresponde Pago</span>
+                    <p className="text-xs text-primary-800/50">Registrar que este mes no aplica</p>
                   </div>
                 </label>
               </div>
@@ -864,6 +889,33 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                   </div>
                 </div>
               )}
+              {accion === 'NO_CORRESPONDE' && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">Observacion (obligatoria)</label>
+                    <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
+                      className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: Alumno ingreso en abril" />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {detalle?.estado === 'NO_CORRESPONDE' && (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-sky-200 bg-sky-50 p-3">
+                <p className="text-sm font-semibold text-sky-800">No corresponde pago</p>
+                <p className="text-xs text-sky-700 mt-1">{detalle.observacion_no_corresponde || 'Sin observacion registrada'}</p>
+              </div>
+              <div className="flex gap-3">
+                <label className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${accion === 'PENDIENTE' ? 'border-red-400 bg-red-50' : 'border-cream-200 hover:border-cream-300'}`}>
+                  <input type="radio" name="accion_no_corresponde" value="PENDIENTE" checked={accion === 'PENDIENTE'} onChange={() => setAccion('PENDIENTE')} className="accent-red-600" />
+                  <div>
+                    <span className="text-sm font-semibold text-primary-800">Revertir a Pendiente</span>
+                    <p className="text-xs text-primary-800/50">Volver a marcar este mes como pendiente</p>
+                  </div>
+                </label>
+              </div>
             </div>
           )}
 
