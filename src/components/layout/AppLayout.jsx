@@ -56,6 +56,7 @@ const AppLayout = () => {
         <CustomNotificationModal
           titulo={modalPendiente.titulo}
           cuerpo={modalPendiente.cuerpo}
+          imagenUrl={modalPendiente.imagen_url}
           onAccept={handleAceptarNotifPersonalizada}
         />
       )}

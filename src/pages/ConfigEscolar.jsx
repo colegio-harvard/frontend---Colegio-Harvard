@@ -7,7 +7,7 @@ import Badge from '../components/ui/Badge';
 import { listarAños, crearAño, actualizarAño, activarAño, listarNiveles, crearNivel, actualizarNivel, listarGrados, crearGrado, actualizarGrado, listarAulas, crearAula, asignarTutor, listarPuntosEscaneo, listarHorarios, guardarHorario, obtenerColegio, actualizarColegio } from '../services/configEscolarService';
 import { listarUsuarios } from '../services/usuariosService';
 import apiClient from '../services/apiClient';
-import { HiPlus, HiPencil, HiClock, HiEye, HiBell, HiGlobe, HiX, HiMenuAlt4, HiExclamation, HiInformationCircle, HiTrash, HiSpeakerphone } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiClock, HiEye, HiBell, HiGlobe, HiX, HiMenuAlt4, HiExclamation, HiInformationCircle, HiTrash, HiSpeakerphone, HiPhotograph } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { formatFecha, formatFechaHora } from '../utils/formatters';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
@@ -213,7 +213,7 @@ const ConfigEscolar = () => {
   const [savingPension, setSavingPension] = useState(false);
   // Notif. Personalizadas tab state
   const [notifPersonalizadas, setNotifPersonalizadas] = useState([]);
-  const [notifForm, setNotifForm] = useState({ titulo: '', cuerpo: '', tipo_entrega: 'buzon', tipo_audiencia: 'COLEGIO', id_ref_audiencia: null, _id_nivel: '', _id_grado: '', fecha_programada: '' });
+  const [notifForm, setNotifForm] = useState({ titulo: '', cuerpo: '', imagen_url: '', tipo_entrega: 'buzon', tipo_audiencia: 'COLEGIO', id_ref_audiencia: null, _id_nivel: '', _id_grado: '', fecha_programada: '' });
   const [sendingNotif, setSendingNotif] = useState(false);
   const [confirmDeleteNotif, setConfirmDeleteNotif] = useState(null);
   // Sitio Web tab state
@@ -479,6 +479,22 @@ const ConfigEscolar = () => {
     }
   };
 
+  const handleImagenNotifChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Seleccione una imagen valida');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('La imagen no debe superar 2MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setNotifForm(prev => ({ ...prev, imagen_url: reader.result }));
+    reader.readAsDataURL(file);
+  };
+
   const handleEnviarNotifPersonalizada = async (e) => {
     e.preventDefault();
     if (!notifForm.titulo.trim() || !notifForm.cuerpo.trim()) {
@@ -495,6 +511,7 @@ const ConfigEscolar = () => {
       const payload = {
         titulo: notifForm.titulo.trim(),
         cuerpo: notifForm.cuerpo.trim(),
+        imagen_url: notifForm.imagen_url || null,
         tipo_entrega: notifForm.tipo_entrega,
         tipo_audiencia: notifForm.tipo_audiencia,
         id_ref_audiencia: notifForm.tipo_audiencia !== 'COLEGIO' ? notifForm.id_ref_audiencia : null,
@@ -506,7 +523,7 @@ const ConfigEscolar = () => {
       } else {
         toast.success(`Notificación enviada a ${data.data.total_destinatarios} destinatarios`);
       }
-      setNotifForm({ titulo: '', cuerpo: '', tipo_entrega: 'buzon', tipo_audiencia: 'COLEGIO', id_ref_audiencia: null, _id_nivel: '', _id_grado: '', fecha_programada: '' });
+      setNotifForm({ titulo: '', cuerpo: '', imagen_url: '', tipo_entrega: 'buzon', tipo_audiencia: 'COLEGIO', id_ref_audiencia: null, _id_nivel: '', _id_grado: '', fecha_programada: '' });
       fetchAll();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al enviar notificación');
@@ -864,12 +881,34 @@ const ConfigEscolar = () => {
                   placeholder="Ej: Cambio de horario"
                   className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-primary-800/80 mb-1">Mensaje</label>
-                <textarea value={notifForm.cuerpo} rows={4}
-                  onChange={(e) => setNotifForm({ ...notifForm, cuerpo: e.target.value })} required
-                  placeholder="Escriba el contenido de la notificación..."
-                  className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors resize-y" />
+              <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-primary-800/80 mb-1">Mensaje corto</label>
+                  <textarea value={notifForm.cuerpo} rows={5}
+                    onChange={(e) => setNotifForm({ ...notifForm, cuerpo: e.target.value })} required
+                    placeholder="Texto breve que acompaÃ±a la imagen..."
+                    className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors resize-y" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-primary-800/80 mb-1">Imagen principal (opcional)</label>
+                  <div className="rounded-lg border border-cream-300 bg-cream-50 p-3">
+                    {notifForm.imagen_url ? (
+                      <div className="space-y-2">
+                        <img src={notifForm.imagen_url} alt="Vista previa" className="h-72 w-full rounded-lg object-contain bg-white border border-cream-200" />
+                        <button type="button" onClick={() => setNotifForm({ ...notifForm, imagen_url: '' })} className="text-xs font-medium text-primary-600 hover:text-primary-800">
+                          Quitar imagen
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex h-72 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-cream-300 bg-white text-center hover:border-gold-400">
+                        <HiPhotograph className="h-10 w-10 text-gold-500" />
+                        <span className="mt-2 text-sm font-semibold text-primary-800">Seleccionar imagen</span>
+                        <span className="text-xs text-primary-800/50">JPG, PNG o WEBP. Max 2MB.</span>
+                        <input type="file" accept="image/*" onChange={handleImagenNotifChange} className="hidden" />
+                      </label>
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

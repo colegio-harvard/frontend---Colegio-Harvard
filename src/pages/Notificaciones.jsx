@@ -121,6 +121,9 @@ const Notificaciones = () => {
                       <p className={`text-sm ${notif.leida ? 'text-primary-800/70' : 'text-primary-800 font-medium'}`}>{notif.mensaje}</p>
                       {isCustom && !notif.leida && <Badge variant="info">Aviso</Badge>}
                     </div>
+                    {notif.imagen_url && (
+                      <img src={notif.imagen_url} alt={notif.titulo || 'Notificacion'} className="mt-3 max-h-72 w-full rounded-lg object-contain bg-white border border-cream-200" />
+                    )}
                     <p className="text-xs text-gold-600 mt-1">{formatFechaHora(notif.date_time_registration)}</p>
                   </div>
                   {buildRuta(notif.codigo_plantilla, notif.referencia_id) && (
