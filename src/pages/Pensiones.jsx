@@ -331,7 +331,7 @@ const PensionAdmin = () => {
 
   const handleBuscarTicket = async () => {
     const codigo = ticketBusqueda.trim().toUpperCase();
-    if (!codigo) return toast.error('Ingrese el codigo del ticket');
+    if (!codigo) return toast.error('Ingrese el cÓdigo del ticket');
     try {
       const { data } = await obtenerTicketPension(codigo);
       imprimirTicket(data.data);
@@ -682,7 +682,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
     } else if (accion === 'NUEVO_PAGO') {
       if (montoPago === '' || parseFloat(montoPago) < 0) return toast.error('Ingrese el monto del pago');
     } else if (accion === 'NO_CORRESPONDE') {
-      if (!observacion.trim()) return toast.error('Ingrese la observacion');
+      if (!observacion.trim()) return toast.error('Ingrese la observaciÓn');
     }
 
     setSaving(true);
@@ -786,7 +786,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                     <tr className="bg-cream-50">
                       <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">Fecha</th>
                       <th className="px-3 py-2 text-right text-xs font-medium text-gold-600">Monto</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">ObservaciÃ³n</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">ObservaciÓn</th>
                       <th className="px-3 py-2 text-right text-xs font-medium text-gold-600">Ticket</th>
                     </tr>
                   </thead>
@@ -892,7 +892,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               {accion === 'NO_CORRESPONDE' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">Observacion (obligatoria)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÓn (obligatoria)</label>
                     <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: Alumno ingreso en abril" />
                   </div>
@@ -905,7 +905,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
             <div className="space-y-4">
               <div className="rounded-lg border border-sky-200 bg-sky-50 p-3">
                 <p className="text-sm font-semibold text-sky-800">No corresponde pago</p>
-                <p className="text-xs text-sky-700 mt-1">{detalle.observacion_no_corresponde || 'Sin observacion registrada'}</p>
+                <p className="text-xs text-sky-700 mt-1">{detalle.observacion_no_corresponde || 'Sin observaciÓn registrada'}</p>
               </div>
               <div className="flex gap-3">
                 <label className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${accion === 'PENDIENTE' ? 'border-red-400 bg-red-50' : 'border-cream-200 hover:border-cream-300'}`}>

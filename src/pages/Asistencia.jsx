@@ -134,7 +134,7 @@ const AsistenciaPadre = () => {
               <p className="text-center text-gold-600 py-8">No hay registros para este periodo</p>
             </Card>
           ) : vista === 'calendario' ? (
-            /* â”€â”€ Vista Calendario â”€â”€ */
+            /* -- Vista Calendario -- */
             <div className="space-y-4">
               <Card>
                 <div className="grid grid-cols-7 gap-1">
@@ -205,7 +205,7 @@ const AsistenciaPadre = () => {
               )}
             </div>
           ) : (
-            /* â”€â”€ Vista Lista â”€â”€ */
+            /* -- Vista Lista -- */
             <Card>
               {diasConRegistro.length === 0 ? (
                 <p className="text-center text-gold-600 py-8">No hay registros para este periodo</p>
@@ -622,7 +622,7 @@ const AsistenciaAdmin = () => {
                 disabled={correccionForm.eliminar_ingreso}
                 className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100 disabled:text-primary-800/40"
               />
-              <p className="text-xs text-gold-500 mt-1">Dejar vacÃ­o si no desea modificar</p>
+              <p className="text-xs text-gold-500 mt-1">Dejar vacÍo si no desea modificar</p>
               <label className="mt-2 flex items-center gap-2 text-sm text-red-700">
                 <input
                   type="checkbox"
@@ -644,7 +644,7 @@ const AsistenciaAdmin = () => {
                 disabled={correccionForm.eliminar_salida}
                 className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100 disabled:text-primary-800/40"
               />
-              <p className="text-xs text-gold-500 mt-1">Dejar vacÃ­o si no desea modificar</p>
+              <p className="text-xs text-gold-500 mt-1">Dejar vacÍo si no desea modificar</p>
               <label className="mt-2 flex items-center gap-2 text-sm text-red-700">
                 <input
                   type="checkbox"

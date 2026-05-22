@@ -131,7 +131,7 @@ const MensajesAlumno = () => {
 
     try {
       await responderHilo(hiloActivo.id, { mensaje: textoEnviar, adjunto: adjuntoEnviar });
-      // El mensaje llegará via WebSocket (evento 'mensaje:nuevo' â†’ append)
+      // El mensaje llegará via WebSocket (evento 'mensaje:nuevo' -> append)
     } catch (err) {
       // Restaurar texto si falla
       setRespuestaTexto(textoEnviar);

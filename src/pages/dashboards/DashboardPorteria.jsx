@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+﻿import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../../services/asistenciaService';
@@ -300,7 +300,7 @@ const DashboardPorteria = () => {
         )}
       </Card>
 
-      {/* Ãšltimo registro */}
+      {/* Último registro */}
       {ultimoRegistro && (
         <Card className="mb-4 border-emerald-200 bg-emerald-50/50">
           <div className="flex items-center gap-4">

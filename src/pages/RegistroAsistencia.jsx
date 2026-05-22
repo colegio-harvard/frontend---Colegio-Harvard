@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+﻿import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../services/asistenciaService';
@@ -351,7 +351,7 @@ const RegistroAsistencia = () => {
             ) : (
               <div className="relative">
                 <form onSubmit={handleCodigoSubmit}>
-                  <label className="form-label">Ingrese el codigo del alumno</label>
+                  <label className="form-label">Ingrese el cÓdigo del alumno</label>
                   <input
                     ref={codigoRef}
                     type="text"

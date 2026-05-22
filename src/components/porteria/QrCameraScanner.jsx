@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 const QR_REGION_ID = 'qr-camera-region';
@@ -69,7 +69,7 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
             }
           })
           .catch((err) => {
-            if (mounted) setError(err?.message || 'No se pudo acceder a la cÃ¡mara');
+            if (mounted) setError(err?.message || 'No se pudo acceder a la cÁmara');
           });
       });
 

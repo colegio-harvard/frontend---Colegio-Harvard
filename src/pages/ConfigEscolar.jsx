@@ -886,7 +886,7 @@ const ConfigEscolar = () => {
                   <label className="block text-sm font-medium text-primary-800/80 mb-1">Mensaje corto</label>
                   <textarea value={notifForm.cuerpo} rows={5}
                     onChange={(e) => setNotifForm({ ...notifForm, cuerpo: e.target.value })} required
-                    placeholder="Texto breve que acompaÃ±a la imagen..."
+                    placeholder="Texto breve que acompaÑa la imagen..."
                     className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none focus:border-gold-400 transition-colors resize-y" />
                 </div>
                 <div>
