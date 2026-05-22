@@ -1,18 +1,95 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ROLES } from '../utils/constants';
+import { ROLES, API_URL } from '../utils/constants';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { obtenerPlantilla, obtenerEstadoPension, cuadriculaPensiones, registrarPago, obtenerDetalleMes } from '../services/pensionesService';
+import { obtenerPlantilla, obtenerEstadoPension, cuadriculaPensiones, registrarPago, obtenerDetalleMes, obtenerTicketPension } from '../services/pensionesService';
 import { listarNiveles, listarGrados, listarAulas } from '../services/configEscolarService';
-import { HiCheck, HiX, HiSearch, HiClock, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
+import { HiCheck, HiX, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter } from 'react-icons/hi';
 import { formatFecha } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
 const nombreMes = (p) => p.nombre || p.clave;
 
 const formatMonto = (n) => `S/. ${Number(n || 0).toFixed(2)}`;
+
+const escapeHtml = (value) => String(value ?? '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#039;');
+
+const ticketHtml = (ticket) => {
+  const pension = ticket?.pension || {};
+  const alumno = ticket?.alumno || {};
+  const registradoPor = ticket?.registrado_por || {};
+  const verifyUrl = `${API_URL}/pensiones/ticket/${encodeURIComponent(ticket.codigo || '')}`;
+  const filas = [
+    ['Codigo', ticket.codigo],
+    ['Fecha de pago', ticket.fecha_pago],
+    ['Alumno', alumno.nombre_completo],
+    ['Codigo alumno', alumno.codigo_alumno],
+    ['DNI', alumno.dni || '-'],
+    ['Aula', alumno.aula || '-'],
+    ['Concepto', pension.concepto],
+    ['Estado', pension.estado],
+    ['Monto de este pago', formatMonto(pension.monto_pagado_en_ticket)],
+    ['Monto total', formatMonto(pension.monto_total)],
+    ['Pagado acumulado', formatMonto(pension.monto_pagado_acumulado)],
+    ['Saldo pendiente', formatMonto(pension.saldo_pendiente)],
+    ['Registrado por', registradoPor.nombre],
+    ['Observacion', ticket.observacion || '-'],
+  ];
+
+  return `<!doctype html>
+  <html>
+    <head>
+      <meta charset="utf-8" />
+      <title>Ticket ${escapeHtml(ticket.codigo)}</title>
+      <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 18px; color: #3a1f1f; }
+        .ticket { max-width: 380px; margin: 0 auto; border: 1px solid #d8c7aa; padding: 16px; border-radius: 8px; }
+        h1 { margin: 0; font-size: 20px; text-align: center; color: #8b1d1d; }
+        h2 { margin: 4px 0 16px; font-size: 13px; text-align: center; color: #9a7a19; font-weight: 500; }
+        .code { text-align: center; border: 1px dashed #b08a19; padding: 8px; margin: 12px 0; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        td { padding: 6px 0; border-bottom: 1px solid #f0e6d8; vertical-align: top; }
+        td:first-child { width: 42%; color: #9a7a19; font-weight: 700; }
+        .verify { margin-top: 12px; font-size: 10px; overflow-wrap: anywhere; color: #6b5b43; }
+        .foot { margin-top: 14px; text-align: center; font-size: 11px; color: #7a6a55; }
+        @media print { body { padding: 0; } .ticket { border: none; } }
+      </style>
+    </head>
+    <body>
+      <div class="ticket">
+        <h1>Colegio Harvard</h1>
+        <h2>Ticket de pago de pension</h2>
+        <div class="code">${escapeHtml(ticket.codigo)}</div>
+        <table>
+          ${filas.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('')}
+        </table>
+        <div class="verify"><strong>Verificacion:</strong> ${escapeHtml(verifyUrl)}</div>
+        <div class="foot">Conserve este ticket. El codigo permite verificar su autenticidad.</div>
+      </div>
+      <script>window.onload = () => setTimeout(() => window.print(), 250);</script>
+    </body>
+  </html>`;
+};
+
+const imprimirTicket = (ticket) => {
+  if (!ticket?.codigo) return;
+  const win = window.open('', '_blank', 'width=430,height=720');
+  if (!win) {
+    toast.error('Permita ventanas emergentes para imprimir el ticket');
+    return;
+  }
+  win.document.open();
+  win.document.write(ticketHtml(ticket));
+  win.document.close();
+};
 
 // ============================
 // Badge de estado reutilizable
@@ -538,6 +615,15 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 
   const saldo = detalle ? (Number(detalle.monto_total || 0) - Number(detalle.monto_pagado || 0)) : 0;
 
+  const reimprimirTicket = async (codigo) => {
+    try {
+      const { data } = await obtenerTicketPension(codigo);
+      imprimirTicket(data.data);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo abrir el ticket');
+    }
+  };
+
   const handleGuardar = async () => {
     if (!accion) return;
 
@@ -556,8 +642,9 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 
     setSaving(true);
     try {
+      let res = null;
       if (accion === 'PAGADO') {
-        await registrarPago({
+        res = await registrarPago({
           id_alumno: alumno.id,
           clave_mes: mes.clave,
           estado: 'PAGADO',
@@ -565,7 +652,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
           observacion: observacion || undefined,
         });
       } else if (accion === 'PAGO_PARCIAL') {
-        await registrarPago({
+        res = await registrarPago({
           id_alumno: alumno.id,
           clave_mes: mes.clave,
           estado: 'PAGO_PARCIAL',
@@ -574,7 +661,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
           observacion: observacion || undefined,
         });
       } else if (accion === 'NUEVO_PAGO') {
-        await registrarPago({
+        res = await registrarPago({
           id_alumno: alumno.id,
           clave_mes: mes.clave,
           estado: 'PAGO_PARCIAL',
@@ -583,14 +670,16 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
           observacion: observacion || undefined,
         });
       } else if (accion === 'PENDIENTE') {
-        await registrarPago({
+        res = await registrarPago({
           id_alumno: alumno.id,
           clave_mes: mes.clave,
           estado: 'PENDIENTE',
         });
       }
 
-      toast.success('Pensión actualizada');
+      const ticket = res?.data?.data?.ticket;
+      toast.success(ticket?.codigo ? `Pension actualizada - Ticket ${ticket.codigo}` : 'Pension actualizada');
+      if (ticket) imprimirTicket(ticket);
       onSaved();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al registrar pago');
@@ -645,7 +734,8 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                     <tr className="bg-cream-50">
                       <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">Fecha</th>
                       <th className="px-3 py-2 text-right text-xs font-medium text-gold-600">Monto</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">Observación</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">ObservaciÃ³n</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-gold-600">Ticket</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -654,6 +744,20 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                         <td className="px-3 py-2 text-primary-800/80">{formatFecha(p.fecha)}</td>
                         <td className="px-3 py-2 text-right font-medium text-primary-800">{formatMonto(p.monto)}</td>
                         <td className="px-3 py-2 text-primary-800/60">{p.observacion || '-'}</td>
+                        <td className="px-3 py-2 text-right">
+                          {p.codigo_ticket ? (
+                            <button
+                              type="button"
+                              onClick={() => reimprimirTicket(p.codigo_ticket)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-cream-100 text-primary-800 hover:bg-cream-200 text-xs font-semibold"
+                              title={`Reimprimir ${p.codigo_ticket}`}
+                            >
+                              <HiPrinter className="w-3 h-3" /> {p.codigo_ticket}
+                            </button>
+                          ) : (
+                            <span className="text-xs text-primary-800/30">-</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
