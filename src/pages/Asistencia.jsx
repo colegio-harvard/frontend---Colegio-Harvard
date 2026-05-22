@@ -433,7 +433,7 @@ const AsistenciaAdmin = () => {
   const [grados, setGrados] = useState([]);
   const [aulasDisponibles, setAulasDisponibles] = useState([]);
   const [correccionModal, setCorreccionModal] = useState(false);
-  const [correccionForm, setCorreccionForm] = useState({ id_asistencia_dia: '', nuevo_estado: '', motivo: '', hora_ingreso: '', hora_salida: '' });
+  const [correccionForm, setCorreccionForm] = useState({ id_asistencia_dia: '', nuevo_estado: '', motivo: '', hora_ingreso: '', hora_salida: '', eliminar_ingreso: false, eliminar_salida: false });
 
   useEffect(() => {
     const fetchFiltros = async () => {
@@ -473,8 +473,10 @@ const AsistenciaAdmin = () => {
     try {
       const payload = { id_asistencia_dia: correccionForm.id_asistencia_dia, motivo: correccionForm.motivo };
       if (correccionForm.nuevo_estado) payload.nuevo_estado = correccionForm.nuevo_estado;
-      if (correccionForm.hora_ingreso) payload.hora_ingreso = correccionForm.hora_ingreso;
-      if (correccionForm.hora_salida) payload.hora_salida = correccionForm.hora_salida;
+      if (correccionForm.eliminar_ingreso) payload.eliminar_ingreso = true;
+      if (correccionForm.eliminar_salida) payload.eliminar_salida = true;
+      if (correccionForm.hora_ingreso && !correccionForm.eliminar_ingreso) payload.hora_ingreso = correccionForm.hora_ingreso;
+      if (correccionForm.hora_salida && !correccionForm.eliminar_salida) payload.hora_salida = correccionForm.hora_salida;
       await corregirAsistencia(payload);
       toast.success('Asistencia corregida');
       setCorreccionModal(false);
@@ -617,9 +619,19 @@ const AsistenciaAdmin = () => {
                 type="time"
                 value={correccionForm.hora_ingreso}
                 onChange={(e) => setCorreccionForm({...correccionForm, hora_ingreso: e.target.value})}
-                className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none"
+                disabled={correccionForm.eliminar_ingreso}
+                className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100 disabled:text-primary-800/40"
               />
-              <p className="text-xs text-gold-500 mt-1">Dejar vacío si no desea modificar</p>
+              <p className="text-xs text-gold-500 mt-1">Dejar vacÃ­o si no desea modificar</p>
+              <label className="mt-2 flex items-center gap-2 text-sm text-red-700">
+                <input
+                  type="checkbox"
+                  checked={correccionForm.eliminar_ingreso}
+                  onChange={(e) => setCorreccionForm({...correccionForm, eliminar_ingreso: e.target.checked, hora_ingreso: e.target.checked ? '' : correccionForm.hora_ingreso})}
+                  className="accent-red-600"
+                />
+                Eliminar escaneo de ingreso
+              </label>
             </div>
           )}
           {correccionForm.tiene_salida && (
@@ -629,9 +641,19 @@ const AsistenciaAdmin = () => {
                 type="time"
                 value={correccionForm.hora_salida}
                 onChange={(e) => setCorreccionForm({...correccionForm, hora_salida: e.target.value})}
-                className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none"
+                disabled={correccionForm.eliminar_salida}
+                className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100 disabled:text-primary-800/40"
               />
-              <p className="text-xs text-gold-500 mt-1">Dejar vacío si no desea modificar</p>
+              <p className="text-xs text-gold-500 mt-1">Dejar vacÃ­o si no desea modificar</p>
+              <label className="mt-2 flex items-center gap-2 text-sm text-red-700">
+                <input
+                  type="checkbox"
+                  checked={correccionForm.eliminar_salida}
+                  onChange={(e) => setCorreccionForm({...correccionForm, eliminar_salida: e.target.checked, hora_salida: e.target.checked ? '' : correccionForm.hora_salida})}
+                  className="accent-red-600"
+                />
+                Eliminar escaneo de salida
+              </label>
             </div>
           )}
           <div>
@@ -641,7 +663,16 @@ const AsistenciaAdmin = () => {
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => setCorreccionModal(false)} className="px-4 py-2 text-sm text-primary-800/80 bg-cream-100 rounded-lg hover:bg-cream-200">Cancelar</button>
-            <button type="submit" className="px-4 py-2 text-sm text-white bg-primary-600 rounded-lg hover:bg-primary-700">Guardar</button>
+            <button
+              type="submit"
+              className={`px-4 py-2 text-sm text-white rounded-lg ${
+                correccionForm.eliminar_ingreso || correccionForm.eliminar_salida
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-primary-600 hover:bg-primary-700'
+              }`}
+            >
+              {correccionForm.eliminar_ingreso || correccionForm.eliminar_salida ? 'Eliminar y guardar' : 'Guardar'}
+            </button>
           </div>
         </form>
       </Modal>
@@ -650,4 +681,5 @@ const AsistenciaAdmin = () => {
 };
 
 export default Asistencia;
+
 
