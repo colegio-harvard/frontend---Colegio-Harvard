@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, fileUrl } from '../utils/constants';
@@ -131,7 +131,7 @@ const MensajesAlumno = () => {
 
     try {
       await responderHilo(hiloActivo.id, { mensaje: textoEnviar, adjunto: adjuntoEnviar });
-      // El mensaje llegará via WebSocket (evento 'mensaje:nuevo' → append)
+      // El mensaje llegará via WebSocket (evento 'mensaje:nuevo' â†’ append)
     } catch (err) {
       // Restaurar texto si falla
       setRespuestaTexto(textoEnviar);
@@ -197,7 +197,7 @@ const MensajesAlumno = () => {
           </button>
           <div>
             <h1 className="text-lg font-bold text-primary-800">{hiloActivo.asunto}</h1>
-            <p className="text-xs text-gold-600">{alumno.nombre_completo} — {gradoNombre} "{seccion}"</p>
+            <p className="text-xs text-gold-600">{alumno.nombre_completo} - {gradoNombre} "{seccion}"</p>
           </div>
         </div>
 
@@ -301,7 +301,7 @@ const MensajesAlumno = () => {
             )}
             <div>
               <h1 className="text-lg font-bold text-primary-800 font-display">{alumno.nombre_completo}</h1>
-              <p className="text-xs text-gold-600">{gradoNombre} "{seccion}" — {nivelNombre}</p>
+              <p className="text-xs text-gold-600">{gradoNombre} "{seccion}" - {nivelNombre}</p>
             </div>
           </div>
         </div>
@@ -375,3 +375,4 @@ const MensajesAlumno = () => {
 };
 
 export default MensajesAlumno;
+

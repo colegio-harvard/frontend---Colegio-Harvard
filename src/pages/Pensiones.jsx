@@ -30,7 +30,7 @@ const Pensiones = () => {
 };
 
 // ============================================================
-// VISTA PADRE â€” Tabs por hijo + cards grandes + 3 estados
+// VISTA PADRE - Tabs por hijo + cards grandes + 3 estados
 // ============================================================
 const PensionPadre = () => {
   const [plantilla, setPlantilla] = useState([]);
@@ -126,7 +126,7 @@ const PensionPadre = () => {
                   <div key={mes.clave} className={`flex flex-col items-center p-6 rounded-xl border-2 ${cardStyles[estado]}`}>
                     <span className="text-base font-semibold text-primary-800">{nombreMes(mes)}</span>
 
-                    {/* Comentario de la plantilla (del superadmin) â€” debajo del mes */}
+                    {/* Comentario de la plantilla (del superadmin) - debajo del mes */}
                     {mes.comentario && (
                       <p className="mt-1 text-xs text-primary-800/50 italic text-center leading-snug">{mes.comentario}</p>
                     )}
@@ -150,7 +150,7 @@ const PensionPadre = () => {
                       <p className="mt-2 text-xs text-emerald-600 font-medium">{formatMonto(estadoMes.monto_total)}</p>
                     )}
 
-                    {/* Observacion del pago â€” debajo de la info de pago */}
+                    {/* Observacion del pago - debajo de la info de pago */}
                     {estadoMes?.pagos?.length > 0 && (() => {
                       const ultimaObs = [...estadoMes.pagos].reverse().find(p => p.observacion)?.observacion;
                       return ultimaObs ? (
@@ -169,7 +169,7 @@ const PensionPadre = () => {
 };
 
 // ============================================================
-// VISTA ADMIN â€” Cuadricula + Modal de pago
+// VISTA ADMIN - Cuadricula + Modal de pago
 // ============================================================
 const PensionAdmin = () => {
   const [cuadricula, setCuadricula] = useState([]);
@@ -281,7 +281,7 @@ const PensionAdmin = () => {
 
   const hayFiltros = filtros.id_nivel || filtros.id_grado || filtros.id_aula || busqueda;
 
-  // PaginaciÃ³n
+  // Paginación
   const ROWS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(cuadriculaFiltrada.length / ROWS_PER_PAGE));
@@ -297,7 +297,7 @@ const PensionAdmin = () => {
 
   return (
     <div>
-      <h1 className="page-title mb-6">CuadrÃ­cula de Pensiones</h1>
+      <h1 className="page-title mb-6">Cuadrícula de Pensiones</h1>
 
       {/* Filtros */}
       <Card className="mb-4">
@@ -327,7 +327,7 @@ const PensionAdmin = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gold-600 mb-1">SecciÃ³n</label>
+            <label className="block text-xs font-medium text-gold-600 mb-1">Sección</label>
             <select
               value={filtros.id_aula}
               onChange={(e) => setFiltros({ ...filtros, id_aula: e.target.value })}
@@ -348,7 +348,7 @@ const PensionAdmin = () => {
                 type="text"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Nombre, DNI, cÃ³digo..."
+                placeholder="Nombre, DNI, código..."
                 className="pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm bg-white"
               />
             </div>
@@ -384,7 +384,7 @@ const PensionAdmin = () => {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">DNI</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Padre/Apoderado</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Aula</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">PensiÃ³n</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Pensión</th>
                 {plantilla.map(p => (
                   <th key={p.clave} className="px-3 py-2 text-center text-xs font-medium text-gold-600 uppercase">{nombreMes(p)}</th>
                 ))}
@@ -436,11 +436,11 @@ const PensionAdmin = () => {
           </table>
         </div>
 
-        {/* PaginaciÃ³n */}
+        {/* Paginación */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-cream-200 bg-cream-50/50">
             <span className="text-sm text-primary-800/60">
-              Mostrando {((currentPage - 1) * ROWS_PER_PAGE) + 1}â€“{Math.min(currentPage * ROWS_PER_PAGE, cuadriculaFiltrada.length)} de {cuadriculaFiltrada.length} registros
+              Mostrando {((currentPage - 1) * ROWS_PER_PAGE) + 1}-{Math.min(currentPage * ROWS_PER_PAGE, cuadriculaFiltrada.length)} de {cuadriculaFiltrada.length} registros
             </span>
             <div className="flex items-center gap-1">
               <button
@@ -500,7 +500,7 @@ const PensionAdmin = () => {
 };
 
 // ============================================================
-// MODAL DE PAGO â€” Admin registra pagos
+// MODAL DE PAGO - Admin registra pagos
 // ============================================================
 const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
   const [detalle, setDetalle] = useState(null);
@@ -520,7 +520,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
         const d = res.data.data;
         setDetalle(d);
 
-        // Pre-seleccionar accion segÃºn estado actual
+        // Pre-seleccionar accion según estado actual
         if (d.estado === 'PAGO_PARCIAL') {
           setAccion('NUEVO_PAGO');
           setMontoTotal(String(d.monto_total || ''));
@@ -590,7 +590,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
         });
       }
 
-      toast.success('PensiÃ³n actualizada');
+      toast.success('Pensión actualizada');
       onSaved();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al registrar pago');
@@ -600,7 +600,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={`PensiÃ³n - ${nombreMes(mes)}`} size="lg">
+    <Modal isOpen={true} onClose={onClose} title={`Pensión - ${nombreMes(mes)}`} size="lg">
       {loading ? (
         <div className="flex justify-center py-8"><LoadingSpinner /></div>
       ) : (
@@ -611,7 +611,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               <p className="text-sm font-semibold text-primary-800">{alumno.nombre_completo}</p>
                             <p className="text-xs text-primary-800/60">
                 {alumno.codigo_alumno} {alumno.aula ? `| ${alumno.aula.grado?.nombre || ''} ${alumno.aula.seccion}` : ''}
-                {alumno.monto_pension != null ? ` | PensiÃ³n: ${formatMonto(alumno.monto_pension)}` : ''}
+                {alumno.monto_pension != null ? ` | Pensión: ${formatMonto(alumno.monto_pension)}` : ''}
               </p>
             </div>
             <EstadoBadge estado={detalle?.estado || 'PENDIENTE'} />
@@ -645,7 +645,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                     <tr className="bg-cream-50">
                       <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">Fecha</th>
                       <th className="px-3 py-2 text-right text-xs font-medium text-gold-600">Monto</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">ObservaciÃ³n</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">Observación</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -662,7 +662,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
             </div>
           )}
 
-          {/* Acciones segÃºn estado actual */}
+          {/* Acciones según estado actual */}
           {detalle?.estado === 'PENDIENTE' && (
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-primary-800">Registrar pago</h4>
@@ -694,7 +694,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: 450.00" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÃ³n (opcional)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">Observación (opcional)</label>
                     <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: Pago en efectivo" />
                   </div>
@@ -705,7 +705,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               {accion === 'PAGO_PARCIAL' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">Monto Total de la pensiÃ³n (S/.)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">Monto Total de la pensión (S/.)</label>
                     <input type="number" step="0.01" min="0" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: 450.00" />
                   </div>
@@ -720,7 +720,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                     </p>
                   )}
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÃ³n (opcional)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">Observación (opcional)</label>
                     <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: Primer pago" />
                   </div>
@@ -760,12 +760,12 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                   {montoPago !== '' && (
                     <p className="text-xs font-medium text-emerald-700">
                       {parseFloat(montoPago) >= saldo
-                        ? 'Este pago completarÃ¡ el total â€” se marcarÃ¡ como Pagado'
+                        ? 'Este pago completará el total - se marcará como Pagado'
                         : `Saldo restante: ${formatMonto(saldo - parseFloat(montoPago))}`}
                     </p>
                   )}
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÃ³n (opcional)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">Observación (opcional)</label>
                     <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" />
                   </div>
@@ -811,4 +811,5 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 };
 
 export default Pensiones;
+
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
 import { listarAuditoria, listarAcciones, exportarExcelAuditoria } from '../services/auditoriaService';
@@ -106,3 +106,4 @@ const Auditoria = () => {
 };
 
 export default Auditoria;
+

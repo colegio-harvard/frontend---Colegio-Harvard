@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
@@ -1342,3 +1342,4 @@ const ConfigEscolar = () => {
 };
 
 export default ConfigEscolar;
+

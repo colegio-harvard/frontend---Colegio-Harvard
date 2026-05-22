@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+﻿import { NavLink } from 'react-router-dom';
 import { ROLES } from '../../utils/constants';
 import {
   HiHome, HiUsers, HiAcademicCap, HiUserGroup,
@@ -116,3 +116,4 @@ const Sidebar = ({ isOpen, onClose }) => {
 };
 
 export default Sidebar;
+

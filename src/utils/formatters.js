@@ -1,4 +1,4 @@
-// Normaliza fechas civiles (YYYY-MM-DD o midnight UTC de @db.Date) a mediodía UTC
+﻿// Normaliza fechas civiles (YYYY-MM-DD o midnight UTC de @db.Date) a mediodía UTC
 // para evitar que la conversión a America/Lima muestre el día anterior.
 const toSafeDate = (fecha) => {
   const str = String(fecha);
@@ -69,3 +69,4 @@ export const truncate = (str, max = 50) => {
   if (!str) return '';
   return str.length > max ? str.substring(0, max) + '...' : str;
 };
+

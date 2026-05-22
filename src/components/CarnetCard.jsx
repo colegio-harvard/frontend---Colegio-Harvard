@@ -1,4 +1,4 @@
-import { fileUrl } from '../utils/constants';
+﻿import { fileUrl } from '../utils/constants';
 import logoHarvard from '../assets/insignia-harvard.jpeg';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -32,7 +32,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
       <div className="px-6 pt-3 pb-4 text-center">
         <h2 className={`font-bold font-display leading-tight ${(alumno.nombre_completo?.length || 0) > 35 ? 'text-base' : 'text-xl'}`} style={{ color: '#000080' }}>{alumno.nombre_completo}</h2>
         <p className="text-sm text-black font-semibold mt-1">{alumno.codigo_alumno}</p>
-        <p className="text-sm text-black mt-0.5">{alumno.nivel} — {alumno.aula}</p>
+        <p className="text-sm text-black mt-0.5">{alumno.nivel} - {alumno.aula}</p>
 
         {/* QR Code */}
         <div className="bg-cream-50 border border-cream-200 rounded-lg px-3 py-3 mt-3">
@@ -60,3 +60,4 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
 };
 
 export default CarnetCard;
+

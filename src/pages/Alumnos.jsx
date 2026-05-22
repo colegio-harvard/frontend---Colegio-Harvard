@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
@@ -970,3 +970,4 @@ const Alumnos = () => {
 };
 
 export default Alumnos;
+

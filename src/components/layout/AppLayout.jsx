@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
@@ -17,7 +17,7 @@ const AppLayout = () => {
       if (data.data) setModalPendiente(data.data);
       else setModalPendiente(null);
     } catch {
-      // silenciar — no bloquear la app
+      // silenciar - no bloquear la app
     }
   };
 
@@ -64,3 +64,4 @@ const AppLayout = () => {
 };
 
 export default AppLayout;
+

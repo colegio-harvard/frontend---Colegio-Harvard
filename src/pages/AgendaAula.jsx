@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -53,7 +53,7 @@ const AgendaAula = () => {
           <h1 className="text-xl font-bold text-primary-800 font-display">
             {aula.grado?.nombre} "{aula.seccion}"
           </h1>
-          <p className="text-sm text-gold-600">{aula.grado?.nivel?.nombre} — Agenda del Cuaderno</p>
+          <p className="text-sm text-gold-600">{aula.grado?.nivel?.nombre} - Agenda del Cuaderno</p>
         </div>
       </div>
 
@@ -134,3 +134,4 @@ const AgendaAula = () => {
 };
 
 export default AgendaAula;
+

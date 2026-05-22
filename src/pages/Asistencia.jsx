@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, ESTADO_ASISTENCIA_LABELS } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -134,7 +134,7 @@ const AsistenciaPadre = () => {
               <p className="text-center text-gold-600 py-8">No hay registros para este periodo</p>
             </Card>
           ) : vista === 'calendario' ? (
-            /* ── Vista Calendario ── */
+            /* â”€â”€ Vista Calendario â”€â”€ */
             <div className="space-y-4">
               <Card>
                 <div className="grid grid-cols-7 gap-1">
@@ -186,7 +186,7 @@ const AsistenciaPadre = () => {
                     <div className="bg-cream-50 rounded-lg p-3">
                       <p className="text-xs text-gold-600 mb-1">Entrada</p>
                       <p className="text-lg font-semibold text-primary-800">
-                        {diaSeleccionado.hora_ingreso ? formatHora(diaSeleccionado.hora_ingreso) : '—'}
+                        {diaSeleccionado.hora_ingreso ? formatHora(diaSeleccionado.hora_ingreso) : '-'}
                       </p>
                       {diaSeleccionado.metodo_ingreso && (
                         <p className="text-xs text-gold-500 mt-0.5">Método: {diaSeleccionado.metodo_ingreso}</p>
@@ -197,7 +197,7 @@ const AsistenciaPadre = () => {
                       <p className={`text-lg font-semibold ${diaSeleccionado.salida_no_registrada ? 'text-amber-600' : 'text-primary-800'}`}>
                         {diaSeleccionado.salida_no_registrada
                           ? 'No registrada'
-                          : diaSeleccionado.hora_salida ? formatHora(diaSeleccionado.hora_salida) : '—'}
+                          : diaSeleccionado.hora_salida ? formatHora(diaSeleccionado.hora_salida) : '-'}
                       </p>
                     </div>
                   </div>
@@ -205,7 +205,7 @@ const AsistenciaPadre = () => {
               )}
             </div>
           ) : (
-            /* ── Vista Lista ── */
+            /* â”€â”€ Vista Lista â”€â”€ */
             <Card>
               {diasConRegistro.length === 0 ? (
                 <p className="text-center text-gold-600 py-8">No hay registros para este periodo</p>
@@ -230,12 +230,12 @@ const AsistenciaPadre = () => {
                             </Badge>
                           </td>
                           <td className="py-2.5 px-3 text-primary-800">
-                            {dia.hora_ingreso ? formatHora(dia.hora_ingreso) : '—'}
+                            {dia.hora_ingreso ? formatHora(dia.hora_ingreso) : '-'}
                           </td>
                           <td className="py-2.5 px-3">
                             {dia.salida_no_registrada
                               ? <span className="text-amber-600 text-xs font-medium">No registrada</span>
-                              : <span className="text-primary-800">{dia.hora_salida ? formatHora(dia.hora_salida) : '—'}</span>}
+                              : <span className="text-primary-800">{dia.hora_salida ? formatHora(dia.hora_salida) : '-'}</span>}
                           </td>
                         </tr>
                       ))}
@@ -379,7 +379,7 @@ const AsistenciaTutor = () => {
       </Card>
 
       {/* Modal calendario de asistencia del alumno */}
-      <Modal isOpen={calModal} onClose={cerrarCalendario} title={`Historial — ${calAlumno?.nombre_completo || ''}`} size="md">
+      <Modal isOpen={calModal} onClose={cerrarCalendario} title={`Historial - ${calAlumno?.nombre_completo || ''}`} size="md">
         <div className="flex gap-3 mb-4">
           <select value={calMes} onChange={(e) => setCalMes(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
             {Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{new Date(2000, i).toLocaleString('es-PE', { month: 'long' })}</option>)}
@@ -650,3 +650,4 @@ const AsistenciaAdmin = () => {
 };
 
 export default Asistencia;
+

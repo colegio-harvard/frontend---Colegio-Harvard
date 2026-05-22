@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 import { HiChevronUp, HiChevronDown, HiSelector, HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 
@@ -118,7 +118,7 @@ const DataTable = ({ columns, data, loading, emptyMessage = 'No hay registros', 
       {isPaginated && totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-cream-200 bg-cream-50/50">
           <span className="text-sm text-primary-800/60">
-            Mostrando {((currentPage - 1) * rowsPerPage) + 1}–{Math.min(currentPage * rowsPerPage, sortedData.length)} de {sortedData.length} registros
+            Mostrando {((currentPage - 1) * rowsPerPage) + 1}-{Math.min(currentPage * rowsPerPage, sortedData.length)} de {sortedData.length} registros
           </span>
           <div className="flex items-center gap-1">
             <button
@@ -167,3 +167,4 @@ const DataTable = ({ columns, data, loading, emptyMessage = 'No hay registros', 
 };
 
 export default DataTable;
+

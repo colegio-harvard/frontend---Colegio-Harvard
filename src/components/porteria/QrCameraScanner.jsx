@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 const QR_REGION_ID = 'qr-camera-region';
@@ -150,3 +150,4 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
 };
 
 export default QrCameraScanner;
+

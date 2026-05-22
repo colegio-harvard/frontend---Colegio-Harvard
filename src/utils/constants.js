@@ -1,7 +1,7 @@
-// --- URL base del API ---
+﻿// --- URL base del API ---
 // LOCAL: viene del .env local (http://localhost:4000/api)
 // RAILWAY: viene de la variable VITE_API_URL configurada en el dashboard
-// El fallback a localhost es solo para desarrollo — nunca aplica en Railway.
+// El fallback a localhost es solo para desarrollo - nunca aplica en Railway.
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 export const UPLOADS_BASE = API_URL.replace(/\/api\/?$/, '');
 
@@ -64,4 +64,5 @@ export const AUDIENCIA_COMUNICADO = {
   AULA: 'AULA',
   ALUMNO: 'ALUMNO',
 };
+
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, fileUrl } from '../utils/constants';
@@ -163,7 +163,7 @@ const ComunicadosAlumno = () => {
             )}
             <div>
               <h1 className="text-lg font-bold text-primary-800 font-display">{alumno.nombre_completo}</h1>
-              <p className="text-xs text-gold-600">{gradoNombre} "{seccion}" — {nivelNombre}</p>
+              <p className="text-xs text-gold-600">{gradoNombre} "{seccion}" - {nivelNombre}</p>
             </div>
           </div>
         </div>
@@ -357,6 +357,7 @@ const ComunicadosAlumno = () => {
 };
 
 export default ComunicadosAlumno;
+
 
 
 

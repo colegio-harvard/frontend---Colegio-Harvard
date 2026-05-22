@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, fileUrl } from '../utils/constants';
@@ -335,7 +335,7 @@ const Agenda = () => {
           {aulasFiltradas.map(aula => {
             const tutorNombre = aula.tutor?.nombres || aula.asignacion_tutor?.[0]?.tutor?.nombres || 'Sin tutor';
             const nivelNombre = aula.grado?.nivel?.nombre || '';
-            const totalAlumnos = aula.total_alumnos ?? aula._count?.tbl_alumnos ?? '—';
+            const totalAlumnos = aula.total_alumnos ?? aula._count?.tbl_alumnos ?? '-';
 
             return (
               <button
@@ -508,3 +508,4 @@ const Agenda = () => {
 };
 
 export default Agenda;
+

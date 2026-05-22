@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+﻿import apiClient from './apiClient';
 
 // Años escolares
 export const listarAños = () => apiClient.get('/config-escolar/anios');
@@ -42,3 +42,4 @@ export const guardarHorario = (data) => apiClient.post('/config-escolar/horarios
 // Datos del colegio (landing)
 export const obtenerColegio = () => apiClient.get('/config-escolar/colegio');
 export const actualizarColegio = (data) => apiClient.put('/config-escolar/colegio', data);
+

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+﻿import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../services/asistenciaService';
@@ -488,7 +488,7 @@ const RegistroAsistencia = () => {
             {totalPaginas > 1 && (
               <div className="flex items-center justify-between pt-4 mt-4 border-t border-cream-200">
                 <span className="text-sm text-primary-800/60">
-                  Mostrando {((paginaHistorial - 1) * REGISTROS_POR_PAGINA) + 1}–{Math.min(paginaHistorial * REGISTROS_POR_PAGINA, totalRegistros)} de {totalRegistros}
+                  Mostrando {((paginaHistorial - 1) * REGISTROS_POR_PAGINA) + 1}-{Math.min(paginaHistorial * REGISTROS_POR_PAGINA, totalRegistros)} de {totalRegistros}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
@@ -533,3 +533,4 @@ const RegistroAsistencia = () => {
 };
 
 export default RegistroAsistencia;
+

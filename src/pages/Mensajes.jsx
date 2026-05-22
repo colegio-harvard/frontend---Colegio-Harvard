@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, fileUrl } from '../utils/constants';
@@ -177,7 +177,7 @@ const Mensajes = () => {
           {aulasFiltradas.map(aula => {
             const tutorNombre = aula.asignacion_tutor?.[0]?.tutor?.nombres || 'Sin tutor';
             const nivelNombre = aula.grado?.nivel?.nombre || '';
-            const totalAlumnos = aula.total_alumnos ?? '—';
+            const totalAlumnos = aula.total_alumnos ?? '-';
             return (
               <button key={aula.id} onClick={() => navigate(`/mensajes/aula/${aula.id}`)} className="text-left group">
                 <Card className="hover:shadow-lg hover:border-gold-300 transition-all duration-200 h-full">
@@ -208,3 +208,4 @@ const Mensajes = () => {
 };
 
 export default Mensajes;
+

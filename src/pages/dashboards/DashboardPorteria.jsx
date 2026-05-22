@@ -69,9 +69,9 @@ class CameraErrorBoundary extends Component {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </div>
-          <p className="text-sm text-red-600 font-medium mb-1">CÃ¡mara no disponible</p>
-          <p className="text-xs text-primary-800/50">OcurriÃ³ un error inesperado al iniciar la cÃ¡mara</p>
-          <p className="text-xs text-primary-800/40 mt-2">Use el modo manual para ingresar el cÃ³digo del alumno</p>
+          <p className="text-sm text-red-600 font-medium mb-1">Cámara no disponible</p>
+          <p className="text-xs text-primary-800/50">Ocurrió un error inesperado al iniciar la cámara</p>
+          <p className="text-xs text-primary-800/40 mt-2">Use el modo manual para ingresar el código del alumno</p>
         </div>
       );
     }
@@ -104,7 +104,7 @@ const DashboardPorteria = () => {
   const registrar = async (payload) => {
     if (loading || cooldown) return;
     setLoading(true);
-    // Pausar cÃ¡mara mientras se procesa
+    // Pausar cámara mientras se procesa
     if (modo === 'CAMARA') setScannerPaused(true);
     try {
       const { data } = await registrarAsistencia(payload);
@@ -114,7 +114,7 @@ const DashboardPorteria = () => {
       cargarHistorial();
 
       if (modo === 'CAMARA') {
-        // Bloquear escÃ¡ner y mostrar confirmaciÃ³n visual
+        // Bloquear escáner y mostrar confirmación visual
         let remaining = COOLDOWN_SECONDS;
         setCooldown({
           alumno: data.data.alumno,
@@ -140,7 +140,7 @@ const DashboardPorteria = () => {
     } catch (err) {
       playErrorBeep();
       toast.error(err.response?.data?.error || 'Error al registrar');
-      // Reanudar cÃ¡mara despuÃ©s de un breve delay en caso de error
+      // Reanudar cámara después de un breve delay en caso de error
       if (modo === 'CAMARA') {
         setTimeout(() => setScannerPaused(false), 1000);
       }
@@ -196,15 +196,15 @@ const DashboardPorteria = () => {
           onClick={() => setModo('CODIGO')}
           className={`${btnBase} ${modo === 'CODIGO' ? btnActive : btnInactive}`}
         >
-          <HiKey className="w-5 h-5" /> CÃ³digo Manual
+          <HiKey className="w-5 h-5" /> Código Manual
         </button>
       </div>
 
-      {/* Ãrea de escaneo / entrada */}
+      {/* Área de escaneo / entrada */}
       <Card className="mb-4">
         {modo === 'CAMARA' ? (
           <div>
-            <label className="form-label mb-2">Apunte la cÃ¡mara al QR del carnet</label>
+            <label className="form-label mb-2">Apunte la cámara al QR del carnet</label>
             <div className="relative">
               <CameraErrorBoundary>
                 <Suspense
@@ -212,7 +212,7 @@ const DashboardPorteria = () => {
                     <div className="flex items-center justify-center py-16 bg-primary-900/5 rounded-lg">
                       <div className="text-center">
                         <div className="w-8 h-8 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto mb-2" />
-                        <p className="text-sm text-primary-800/50">Cargando escÃ¡ner...</p>
+                        <p className="text-sm text-primary-800/50">Cargando escáner...</p>
                       </div>
                     </div>
                   }
@@ -231,7 +231,7 @@ const DashboardPorteria = () => {
                 </div>
               )}
 
-              {/* Overlay de confirmaciÃ³n con bloqueo temporal */}
+              {/* Overlay de confirmación con bloqueo temporal */}
               {cooldown && (
                 <div className="absolute inset-0 bg-emerald-600 rounded-lg flex items-center justify-center z-10">
                   <div className="text-center text-white px-6">
@@ -259,7 +259,7 @@ const DashboardPorteria = () => {
                     {cooldown.aula && <p className="text-sm text-white/70 mt-1">{cooldown.aula}</p>}
                     <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 rounded-full text-xs text-white/80">
                       <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                      EscÃ¡ner disponible en {cooldown.segundos}s
+                      Escáner disponible en {cooldown.segundos}s
                     </div>
                   </div>
                 </div>
@@ -268,7 +268,7 @@ const DashboardPorteria = () => {
           </div>
         ) : (
           <form onSubmit={handleCodigoSubmit}>
-            <label className="form-label">Ingrese el cÃ³digo del alumno</label>
+            <label className="form-label">Ingrese el código del alumno</label>
             <input
               ref={codigoRef}
               type="text"
@@ -358,4 +358,5 @@ const DashboardPorteria = () => {
 };
 
 export default DashboardPorteria;
+
 

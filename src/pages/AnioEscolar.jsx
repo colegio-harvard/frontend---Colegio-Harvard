@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import DataTable from '../components/ui/DataTable';
@@ -136,3 +136,4 @@ const AnioEscolar = () => {
 };
 
 export default AnioEscolar;
+

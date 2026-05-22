@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
@@ -214,11 +214,11 @@ const Padres = () => {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-primary-800/70">
                   <HiPhone className="w-4 h-4 text-gold-500" />
-                  <span><span className="font-medium">Celular:</span> {perfilData.celular || '—'}</span>
+                  <span><span className="font-medium">Celular:</span> {perfilData.celular || '-'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-primary-800/70">
                   <HiUser className="w-4 h-4 text-gold-500" />
-                  <span><span className="font-medium">Usuario:</span> {perfilData.usuario?.username || '—'}</span>
+                  <span><span className="font-medium">Usuario:</span> {perfilData.usuario?.username || '-'}</span>
                 </div>
                 {perfilData.date_time_registration && (
                   <div className="flex items-center gap-2 text-sm text-primary-800/70">
@@ -250,7 +250,7 @@ const Padres = () => {
                         <p className="text-sm font-medium text-primary-800 truncate">{hijo.nombre_completo}</p>
                         <p className="text-xs text-gold-600">
                           {hijo.codigo_alumno}
-                          {hijo.aula && ` — ${hijo.aula.grado} "${hijo.aula.seccion}" (${hijo.aula.nivel})`}
+                          {hijo.aula && ` - ${hijo.aula.grado} "${hijo.aula.seccion}" (${hijo.aula.nivel})`}
                         </p>
                       </div>
                       <Badge variant={hijo.estado === 'ACTIVO' ? 'success' : 'warning'}>{hijo.estado}</Badge>
@@ -273,3 +273,4 @@ const Padres = () => {
 };
 
 export default Padres;
+
