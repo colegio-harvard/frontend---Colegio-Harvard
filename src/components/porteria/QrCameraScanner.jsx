@@ -1,8 +1,9 @@
-﻿import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 const QR_REGION_ID = 'qr-camera-region';
 const SCANNER_CONFIG = { fps: 10, qrbox: { width: 220, height: 220 }, disableFlip: false };
+const DEFAULT_FACING_MODE = 'environment';
 
 const QrCameraScanner = ({ onScan, paused = false }) => {
   const scannerRef = useRef(null);
@@ -11,7 +12,7 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
   const switchingRef = useRef(false);
   const [error, setError] = useState(null);
   const [cameraReady, setCameraReady] = useState(false);
-  const [facingMode, setFacingMode] = useState('user');
+  const [facingMode, setFacingMode] = useState(DEFAULT_FACING_MODE);
 
   // Mantener ref actualizada para evitar closures estancados
   onScanRef.current = onScan;
@@ -45,18 +46,31 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
     }
     scannerRef.current = scanner;
 
-    scanner
-      .start(
-        { facingMode: 'user' },
-        SCANNER_CONFIG,
-        handleDecode,
-        () => {} // ignorar errores de frames sin QR
-      )
+    const startCamera = (mode) => scanner.start(
+      { facingMode: mode },
+      SCANNER_CONFIG,
+      handleDecode,
+      () => {} // ignorar errores de frames sin QR
+    );
+
+    startCamera(DEFAULT_FACING_MODE)
       .then(() => {
-        if (mounted) setCameraReady(true);
+        if (mounted) {
+          setFacingMode(DEFAULT_FACING_MODE);
+          setCameraReady(true);
+        }
       })
-      .catch((err) => {
-        if (mounted) setError(err?.message || 'No se pudo acceder a la cámara');
+      .catch(() => {
+        startCamera('user')
+          .then(() => {
+            if (mounted) {
+              setFacingMode('user');
+              setCameraReady(true);
+            }
+          })
+          .catch((err) => {
+            if (mounted) setError(err?.message || 'No se pudo acceder a la cÃ¡mara');
+          });
       });
 
     return () => {
