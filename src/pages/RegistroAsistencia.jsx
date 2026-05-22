@@ -1,8 +1,8 @@
-﻿import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../services/asistenciaService';
-import { formatHora } from '../utils/formatters';
+import { formatHora, todayLimaISO } from '../utils/formatters';
 import { HiQrcode, HiKey, HiChevronLeft, HiChevronRight, HiCheck, HiClock, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../hooks/useSocket';
@@ -91,13 +91,20 @@ const RegistroAsistencia = () => {
   const [paginaHistorial, setPaginaHistorial] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [totalRegistros, setTotalRegistros] = useState(0);
+  const [busquedaHistorial, setBusquedaHistorial] = useState('');
+  const [fechaHistorial, setFechaHistorial] = useState(todayLimaISO());
   const REGISTROS_POR_PAGINA = 20;
   const codigoRef = useRef(null);
   const cooldownTimerRef = useRef(null);
 
-  const cargarHistorial = async (page = paginaHistorial) => {
+  const cargarHistorial = async (page = paginaHistorial, filtros = {}) => {
     try {
-      const { data } = await historialPorteria({ page, limit: REGISTROS_POR_PAGINA });
+      const { data } = await historialPorteria({
+        page,
+        limit: REGISTROS_POR_PAGINA,
+        fecha: filtros.fecha ?? fechaHistorial,
+        q: filtros.q ?? busquedaHistorial,
+      });
       setHistorial(data.data || []);
       setTotalPaginas(data.totalPages || 1);
       setTotalRegistros(data.total || 0);
@@ -214,6 +221,11 @@ const RegistroAsistencia = () => {
   useEffect(() => {
     cargarHistorial();
   }, [paginaHistorial]);
+
+  useEffect(() => {
+    setPaginaHistorial(1);
+    cargarHistorial(1);
+  }, [busquedaHistorial, fechaHistorial]);
 
   useEffect(() => {
     if (modo === 'CODIGO') {
@@ -453,40 +465,67 @@ const RegistroAsistencia = () => {
       </div>
 
       {/* Historial */}
-      <Card title={`Registros del dia${totalRegistros > 0 ? ` (${totalRegistros})` : ''}`}>
+      <Card title={`Consulta de ingresos y salidas${totalRegistros > 0 ? ` (${totalRegistros})` : ''}`}>
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-3 mb-4">
+          <div>
+            <label className="form-label">Buscar Alumno</label>
+            <input
+              type="text"
+              value={busquedaHistorial}
+              onChange={(e) => setBusquedaHistorial(e.target.value)}
+              placeholder="Buscar por codigo, DNI, nombre o apellido..."
+              className="input-field"
+            />
+          </div>
+          <div>
+            <label className="form-label">Fecha</label>
+            <input
+              type="date"
+              value={fechaHistorial}
+              onChange={(e) => setFechaHistorial(e.target.value)}
+              className="input-field"
+            />
+          </div>
+        </div>
+
         {historial.length === 0 ? (
-          <p className="text-center text-cream-400 py-4 font-display">Sin registros del dia</p>
+          <p className="text-center text-cream-400 py-6 font-display">
+            {busquedaHistorial ? 'No se encontraron movimientos para esa busqueda' : 'Sin movimientos registrados en la fecha seleccionada'}
+          </p>
         ) : (
           <>
             <div className="space-y-2">
               {historial.map((reg) => (
-                <div key={reg.id} className="flex items-center justify-between py-2 border-b border-cream-100 last:border-0">
-                  <div className="flex items-center gap-3">
+                <div key={reg.id} className="flex items-center justify-between gap-3 py-3 border-b border-cream-100 last:border-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     {reg.alumno?.foto_url ? (
-                      <img src={fileUrl(reg.alumno.foto_url)} alt="" className="w-9 h-9 rounded-full object-cover border border-cream-200" />
+                      <img src={fileUrl(reg.alumno.foto_url)} alt="" className="w-10 h-10 rounded-full object-cover border border-cream-200 flex-shrink-0" />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-cream-100 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-cream-100 flex items-center justify-center flex-shrink-0">
                         <span className="text-sm font-bold text-cream-400">{reg.alumno?.nombre_completo?.charAt(0) || '?'}</span>
                       </div>
                     )}
-                    <div>
-                      <p className="text-sm font-medium text-primary-800">{reg.alumno?.nombre_completo || 'Alumno'}</p>
-                      <p className="text-xs text-primary-800/50">{reg.alumno?.codigo_alumno}{reg.alumno?.dni ? ` - DNI: ${reg.alumno.dni}` : ''}</p>
-                      <p className="text-xs text-gold-600">{reg.alumno?.aula || ''}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-primary-800 truncate">{reg.alumno?.nombre_completo || 'Alumno'}</p>
+                      <p className="text-xs text-primary-800/50 truncate">
+                        {reg.alumno?.codigo_alumno || 'Sin codigo'}{reg.alumno?.dni ? ` | DNI: ${reg.alumno.dni}` : ''}
+                      </p>
+                      <p className="text-xs text-gold-600 truncate">{reg.alumno?.aula || ''}</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <Badge variant={reg.tipo_evento === 'CHECKIN' ? 'success' : 'info'}>
                       {reg.tipo_evento === 'CHECKIN' ? 'Ingreso' : 'Salida'}
                     </Badge>
-                    <p className="text-xs text-primary-800/50 mt-1">{formatHora(reg.fecha_hora)}</p>
+                    <p className="text-sm font-semibold text-primary-800 mt-1">{formatHora(reg.fecha_hora)}</p>
+                    <p className="text-[11px] text-primary-800/40 uppercase">{reg.metodo || ''}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {totalPaginas > 1 && (
-              <div className="flex items-center justify-between pt-4 mt-4 border-t border-cream-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 mt-4 border-t border-cream-200">
                 <span className="text-sm text-primary-800/60">
                   Mostrando {((paginaHistorial - 1) * REGISTROS_POR_PAGINA) + 1}-{Math.min(paginaHistorial * REGISTROS_POR_PAGINA, totalRegistros)} de {totalRegistros}
                 </span>

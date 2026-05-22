@@ -1,8 +1,8 @@
-﻿import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../../services/asistenciaService';
-import { formatHora } from '../../utils/formatters';
+import { formatHora, todayLimaISO } from '../../utils/formatters';
 import { HiQrcode, HiKey, HiCheck, HiClock, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../../hooks/useSocket';
@@ -84,15 +84,21 @@ const DashboardPorteria = () => {
   const [codigoAlumno, setCodigoAlumno] = useState('');
   const [ultimoRegistro, setUltimoRegistro] = useState(null);
   const [historial, setHistorial] = useState([]);
+  const [busquedaHistorial, setBusquedaHistorial] = useState('');
+  const [fechaHistorial, setFechaHistorial] = useState(todayLimaISO());
   const [loading, setLoading] = useState(false);
   const [scannerPaused, setScannerPaused] = useState(false);
   const [cooldown, setCooldown] = useState(null);
   const codigoRef = useRef(null);
   const cooldownTimerRef = useRef(null);
 
-  const cargarHistorial = async () => {
+  const cargarHistorial = async (filtros = {}) => {
     try {
-      const { data } = await historialPorteria();
+      const { data } = await historialPorteria({
+        limit: 30,
+        fecha: filtros.fecha ?? fechaHistorial,
+        q: filtros.q ?? busquedaHistorial,
+      });
       setHistorial(data.data || []);
     } catch {
       // silenciar
@@ -166,6 +172,10 @@ const DashboardPorteria = () => {
       if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    cargarHistorial();
+  }, [busquedaHistorial, fechaHistorial]);
 
   useEffect(() => {
     if (modo === 'CODIGO') {
@@ -321,28 +331,54 @@ const DashboardPorteria = () => {
       )}
 
       {/* Historial */}
-      <Card title="Ãšltimos registros">
+      <Card title="Consulta de ingresos y salidas">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_150px] gap-3 mb-4">
+          <div>
+            <label className="form-label">Buscar Alumno</label>
+            <input
+              type="text"
+              value={busquedaHistorial}
+              onChange={(e) => setBusquedaHistorial(e.target.value)}
+              placeholder="Codigo, DNI, nombre o apellido..."
+              className="input-field"
+            />
+          </div>
+          <div>
+            <label className="form-label">Fecha</label>
+            <input
+              type="date"
+              value={fechaHistorial}
+              onChange={(e) => setFechaHistorial(e.target.value)}
+              className="input-field"
+            />
+          </div>
+        </div>
+
         {historial.length === 0 ? (
-          <p className="text-center text-cream-400 py-4 font-display">Sin registros recientes</p>
+          <p className="text-center text-cream-400 py-4 font-display">
+            {busquedaHistorial ? 'No se encontraron movimientos' : 'Sin movimientos en la fecha seleccionada'}
+          </p>
         ) : (
           <div className="space-y-2">
             {historial.map((reg) => (
-              <div key={reg.id} className="flex items-center justify-between py-2 border-b border-cream-100 last:border-0">
-                <div className="flex items-center gap-3">
+              <div key={reg.id} className="flex items-center justify-between gap-3 py-2 border-b border-cream-100 last:border-0">
+                <div className="flex items-center gap-3 min-w-0">
                   {reg.alumno?.foto_url ? (
-                    <img src={fileUrl(reg.alumno.foto_url)} alt="" className="w-9 h-9 rounded-full object-cover border border-cream-200" />
+                    <img src={fileUrl(reg.alumno.foto_url)} alt="" className="w-9 h-9 rounded-full object-cover border border-cream-200 flex-shrink-0" />
                   ) : (
-                    <div className="w-9 h-9 rounded-full bg-cream-100 flex items-center justify-center">
+                    <div className="w-9 h-9 rounded-full bg-cream-100 flex items-center justify-center flex-shrink-0">
                       <span className="text-sm font-bold text-cream-400">{reg.alumno?.nombre_completo?.charAt(0) || '?'}</span>
                     </div>
                   )}
-                  <div>
-                    <p className="text-sm font-medium text-primary-800">{reg.alumno?.nombre_completo || 'Alumno'}</p>
-                    <p className="text-xs text-primary-800/50">{reg.alumno?.codigo_alumno}{reg.alumno?.dni ? ` - DNI: ${reg.alumno.dni}` : ''}</p>
-                    <p className="text-xs text-gold-600">{reg.alumno?.aula || ''}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-primary-800 truncate">{reg.alumno?.nombre_completo || 'Alumno'}</p>
+                    <p className="text-xs text-primary-800/50 truncate">
+                      {reg.alumno?.codigo_alumno || 'Sin codigo'}{reg.alumno?.dni ? ` | DNI: ${reg.alumno.dni}` : ''}
+                    </p>
+                    <p className="text-xs text-gold-600 truncate">{reg.alumno?.aula || ''}</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex-shrink-0">
                   <Badge variant={reg.tipo_evento === 'CHECKIN' ? 'success' : 'info'}>
                     {reg.tipo_evento === 'CHECKIN' ? 'Ingreso' : 'Salida'}
                   </Badge>
