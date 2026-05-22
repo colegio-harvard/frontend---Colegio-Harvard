@@ -256,6 +256,7 @@ const PensionAdmin = () => {
   // Filtros
   const [filtros, setFiltros] = useState({ id_nivel: '', id_grado: '', id_aula: '' });
   const [busqueda, setBusqueda] = useState('');
+  const [ticketBusqueda, setTicketBusqueda] = useState('');
   const [niveles, setNiveles] = useState([]);
   const [grados, setGrados] = useState([]);
   const [aulasDisponibles, setAulasDisponibles] = useState([]);
@@ -321,6 +322,17 @@ const PensionAdmin = () => {
     setModalOpen(false);
     setModalAlumno(null);
     setModalMes(null);
+  };
+
+  const handleBuscarTicket = async () => {
+    const codigo = ticketBusqueda.trim().toUpperCase();
+    if (!codigo) return toast.error('Ingrese el codigo del ticket');
+    try {
+      const { data } = await obtenerTicketPension(codigo);
+      imprimirTicket(data.data);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Ticket no encontrado');
+    }
   };
 
   const handlePagoRegistrado = () => {
@@ -417,22 +429,44 @@ const PensionAdmin = () => {
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gold-600 mb-1">Buscar</label>
-            <div className="relative">
-              <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-400" />
-              <input
-                type="text"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Nombre, DNI, código..."
-                className="pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm bg-white"
-              />
+            <div>
+              <label className="block text-xs font-medium text-gold-600 mb-1">Buscar</label>
+              <div className="relative">
+                <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-400" />
+                <input
+                  type="text"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  placeholder="Nombre, DNI, codigo..."
+                  className="pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm bg-white"
+                />
+              </div>
             </div>
-          </div>
 
-          <button
-            onClick={handleFiltrar}
+            <div>
+              <label className="block text-xs font-medium text-gold-600 mb-1">Buscar ticket</label>
+              <div className="relative">
+                <HiPrinter className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-800/30 w-4 h-4" />
+                <input
+                  type="text"
+                  value={ticketBusqueda}
+                  onChange={(e) => setTicketBusqueda(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === 'Enter' && handleBuscarTicket()}
+                  placeholder="Ej: R8F3A2C"
+                  className="pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm w-full uppercase"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleBuscarTicket}
+              className="self-end px-5 py-2 bg-gold-600 hover:bg-gold-700 text-white rounded-lg text-sm font-medium"
+            >
+              Ticket
+            </button>
+
+            <button
+              onClick={handleFiltrar}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-medium"
           >
             Filtrar
