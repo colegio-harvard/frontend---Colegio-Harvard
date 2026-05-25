@@ -688,6 +688,27 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
   const [montoPago, setMontoPago] = useState('');
   const [observacion, setObservacion] = useState('');
 
+  const montoTotalSugerido = () => {
+    const clave = String(mes?.clave || mes?.nombre || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase();
+
+    const monto =
+      clave === 'MATRICULA'
+        ? alumno?.monto_matricula
+        : clave === 'MATERIALES'
+          ? alumno?.monto_materiales
+          : alumno?.monto_pension;
+
+    const numero = Number(monto);
+    return Number.isFinite(numero) && numero > 0 ? numero.toFixed(2) : '';
+  };
+
+  const completarMontoTotal = () => {
+    setMontoTotal((actual) => actual || montoTotalSugerido());
+  };
+
   useEffect(() => {
     const fetchDetalle = async () => {
       try {
@@ -698,7 +719,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
         // Pre-seleccionar accion según estado actual
         if (d.estado === 'PAGO_PARCIAL') {
           setAccion('NUEVO_PAGO');
-          setMontoTotal(String(d.monto_total || ''));
+          setMontoTotal(montoInicial);
         } else if (d.estado === 'NO_CORRESPONDE') {
           setAccion('');
           setObservacion(d.observacion_no_corresponde || '');
@@ -884,14 +905,14 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               {/* Tipo de pago */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <label className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${accion === 'PAGADO' ? 'border-emerald-400 bg-emerald-50' : 'border-cream-200 hover:border-cream-300'}`}>
-                  <input type="radio" name="accion" value="PAGADO" checked={accion === 'PAGADO'} onChange={() => { setAccion('PAGADO'); setMontoPago(''); }} className="accent-emerald-600" />
+                  <input type="radio" name="accion" value="PAGADO" checked={accion === 'PAGADO'} onChange={() => { setAccion('PAGADO'); setMontoPago(''); completarMontoTotal(); }} className="accent-emerald-600" />
                   <div>
                     <span className="text-sm font-semibold text-primary-800">Pago Completo</span>
                     <p className="text-xs text-primary-800/50">Marcar como pagado en su totalidad</p>
                   </div>
                 </label>
                 <label className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${accion === 'PAGO_PARCIAL' ? 'border-amber-400 bg-amber-50' : 'border-cream-200 hover:border-cream-300'}`}>
-                  <input type="radio" name="accion" value="PAGO_PARCIAL" checked={accion === 'PAGO_PARCIAL'} onChange={() => setAccion('PAGO_PARCIAL')} className="accent-amber-600" />
+                  <input type="radio" name="accion" value="PAGO_PARCIAL" checked={accion === 'PAGO_PARCIAL'} onChange={() => { setAccion('PAGO_PARCIAL'); completarMontoTotal(); }} className="accent-amber-600" />
                   <div>
                     <span className="text-sm font-semibold text-primary-800">Pago Parcial</span>
                     <p className="text-xs text-primary-800/50">Registrar un pago parcial</p>
