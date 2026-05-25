@@ -7,3 +7,6 @@ export const obtenerDetalleMes = (id_alumno, clave_mes) => apiClient.get(`/pensi
 export const cuadriculaPensiones = (params) => apiClient.get('/pensiones/cuadricula', { params });
 export const obtenerTicketPension = (codigo) => apiClient.get(`/pensiones/ticket/${codigo}`);
 export const listarTicketsPension = (params) => apiClient.get('/pensiones/tickets', { params });
+
+export const previewImportacionPensiones = (formData) => apiClient.post('/pensiones/importar-excel/preview', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const aplicarImportacionPensiones = (formData) => apiClient.post('/pensiones/importar-excel/aplicar', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
