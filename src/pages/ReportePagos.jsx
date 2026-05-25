@@ -2,8 +2,8 @@
 import toast from 'react-hot-toast';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { cuadriculaPensiones, obtenerPlantilla } from '../services/pensionesService';
-import { HiCheck, HiClock, HiCurrencyDollar, HiMinus, HiSearch, HiX } from 'react-icons/hi';
+import { cuadriculaPensiones, obtenerPlantilla, exportarReportePagosExcel } from '../services/pensionesService';
+import { HiCheck, HiClock, HiCurrencyDollar, HiDownload, HiMinus, HiSearch, HiX } from 'react-icons/hi';
 
 const formatMonto = (monto) => {
   if (monto === null || monto === undefined || monto === '') return '-';
@@ -214,6 +214,24 @@ const ReportePagos = () => {
 
   const resumenGeneral = useMemo(() => calcularResumen(alumnosFiltrados, plantilla), [alumnosFiltrados, plantilla]);
 
+
+  const descargarBackupPagos = async () => {
+    try {
+      const res = await exportarReportePagosExcel();
+      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `reporte-pagos-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Backup de pagos descargado');
+    } catch (err) {
+      toast.error('No se pudo descargar el backup de pagos');
+    }
+  };
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -223,6 +241,9 @@ const ReportePagos = () => {
           <h1 className="page-title">Reporte de Pagos</h1>
           <p className="text-sm text-primary-800/60">Ordenado por Inicial, Primaria y Secundaria.</p>
         </div>
+        <button onClick={descargarBackupPagos} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700">
+          <HiDownload className="h-4 w-4" /> Descargar Excel
+        </button>
       </div>
 
       <Card className="mb-4">
