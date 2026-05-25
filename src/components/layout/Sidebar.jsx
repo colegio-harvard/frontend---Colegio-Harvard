@@ -3,7 +3,7 @@ import { ROLES } from '../../utils/constants';
 import {
   HiHome, HiUsers, HiAcademicCap, HiUserGroup,
   HiClipboardCheck, HiBookOpen, HiChat, HiSpeakerphone, HiCurrencyDollar,
-  HiCog, HiBell, HiDocumentText, HiChartBar, HiCalendar, HiShieldCheck, HiX, HiQrcode
+  HiCog, HiBell, HiDocumentText, HiChartBar, HiPrinter, HiCalendar, HiShieldCheck, HiX, HiQrcode
 } from 'react-icons/hi';
 import logoHarvard from '../../assets/logo-harvard.png';
 
@@ -22,6 +22,7 @@ const menuItems = {
     { to: '/comunicados', icon: HiSpeakerphone, label: 'Comunicados' },
     { to: '/pensiones', icon: HiCurrencyDollar, label: 'Pensiones' },
     { to: '/reporte-pagos', icon: HiChartBar, label: 'Reporte Pagos' },
+    { to: '/imprimir-recibos', icon: HiPrinter, label: 'Imprimir Recibos' },
     { to: '/anio-escolar', icon: HiCalendar, label: 'Año Escolar' },
     { to: '/notificaciones', icon: HiBell, label: 'Notificaciones' },
     { to: '/auditoria', icon: HiShieldCheck, label: 'Auditoria' },
@@ -38,6 +39,7 @@ const menuItems = {
     { to: '/comunicados', icon: HiSpeakerphone, label: 'Comunicados' },
     { to: '/pensiones', icon: HiCurrencyDollar, label: 'Pensiones' },
     { to: '/reporte-pagos', icon: HiChartBar, label: 'Reporte Pagos' },
+    { to: '/imprimir-recibos', icon: HiPrinter, label: 'Imprimir Recibos' },
     { to: '/anio-escolar', icon: HiCalendar, label: 'Año Escolar' },
     { to: '/notificaciones', icon: HiBell, label: 'Notificaciones' },
   ],

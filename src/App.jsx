@@ -22,6 +22,7 @@ import ComunicadosAula from './pages/ComunicadosAula';
 import ComunicadosAlumno from './pages/ComunicadosAlumno';
 import Pensiones from './pages/Pensiones';
 import ReportePagos from './pages/ReportePagos';
+import ImprimirRecibos from './pages/ImprimirRecibos';
 import Notificaciones from './pages/Notificaciones';
 import ReportesSemanales from './pages/ReportesSemanales';
 import ReportesAula from './pages/ReportesAula';
@@ -125,6 +126,10 @@ function App() {
 
             <Route path="/reporte-pagos" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><ReportePagos /></ProtectedRoute>
+            } />
+
+            <Route path="/imprimir-recibos" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><ImprimirRecibos /></ProtectedRoute>
             } />
 
             <Route path="/anio-escolar" element={
