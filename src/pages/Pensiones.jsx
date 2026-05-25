@@ -1,12 +1,12 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, API_URL } from '../utils/constants';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { obtenerPlantilla, obtenerEstadoPension, cuadriculaPensiones, registrarPago, obtenerDetalleMes, obtenerTicketPension } from '../services/pensionesService';
+import { obtenerPlantilla, obtenerEstadoPension, cuadriculaPensiones, registrarPago, obtenerDetalleMes, obtenerTicketPension, exportarDeudoresPensionesExcel } from '../services/pensionesService';
 import { listarNiveles, listarGrados, listarAulas } from '../services/configEscolarService';
-import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter } from 'react-icons/hi';
+import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter, HiDownload } from 'react-icons/hi';
 import { formatFecha } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
@@ -262,6 +262,8 @@ const PensionAdmin = () => {
   const [filtros, setFiltros] = useState({ id_nivel: '', id_grado: '', id_aula: '' });
   const [busqueda, setBusqueda] = useState('');
   const [ticketBusqueda, setTicketBusqueda] = useState('');
+  const [conceptoDeudores, setConceptoDeudores] = useState('');
+  const [descargandoDeudores, setDescargandoDeudores] = useState(false);
   const [niveles, setNiveles] = useState([]);
   const [grados, setGrados] = useState([]);
   const [aulasDisponibles, setAulasDisponibles] = useState([]);
@@ -340,6 +342,34 @@ const PensionAdmin = () => {
     }
   };
 
+  const handleExportarDeudores = async () => {
+    if (!conceptoDeudores) return toast.error('Seleccione el concepto de cobro');
+    const loadingToast = toast.loading('Preparando lista de deudores...');
+    try {
+      setDescargandoDeudores(true);
+      const params = { concepto: conceptoDeudores };
+      if (filtros.id_nivel) params.id_nivel = filtros.id_nivel;
+      if (filtros.id_grado) params.id_grado = filtros.id_grado;
+      if (filtros.id_aula) params.id_aula = filtros.id_aula;
+      const res = await exportarDeudoresPensionesExcel(params);
+      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const disposition = res.headers?.['content-disposition'] || '';
+      const match = disposition.match(/filename="?([^"]+)"?/i);
+      link.href = url;
+      link.download = match?.[1] || `deudores-${conceptoDeudores}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Lista de deudores descargada', { id: loadingToast });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo descargar la lista', { id: loadingToast });
+    } finally {
+      setDescargandoDeudores(false);
+    }
+  };
   const handlePagoRegistrado = () => {
     cerrarModal();
     fetchData();
@@ -470,6 +500,26 @@ const PensionAdmin = () => {
               Ticket
             </button>
 
+            <div>
+              <label className="block text-xs font-medium text-gold-600 mb-1">Concepto de deuda</label>
+              <select
+                value={conceptoDeudores}
+                onChange={(e) => setConceptoDeudores(e.target.value)}
+                className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm bg-white"
+              >
+                <option value="">Seleccione...</option>
+                {plantilla.map(p => <option key={p.clave} value={p.clave}>{nombreMes(p)}</option>)}
+              </select>
+            </div>
+
+            <button
+              onClick={handleExportarDeudores}
+              disabled={descargandoDeudores}
+              className="self-end inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm text-sm font-medium"
+            >
+              <HiDownload className="w-4 h-4" />
+              {descargandoDeudores ? 'Preparando...' : 'Lista deudores'}
+            </button>
             <button
               onClick={handleFiltrar}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-medium"

@@ -1,4 +1,4 @@
-﻿import apiClient from './apiClient';
+import apiClient from './apiClient';
 
 export const obtenerPlantilla = () => apiClient.get('/pensiones/plantilla');
 export const obtenerEstadoPension = (id_alumno) => apiClient.get(`/pensiones/estado/${id_alumno}`);
@@ -11,3 +11,4 @@ export const listarTicketsPension = (params) => apiClient.get('/pensiones/ticket
 export const previewImportacionPensiones = (formData) => apiClient.post('/pensiones/importar-excel/preview', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const aplicarImportacionPensiones = (formData) => apiClient.post('/pensiones/importar-excel/aplicar', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const exportarReportePagosExcel = () => apiClient.get('/pensiones/reporte-pagos/exportar-excel', { responseType: 'blob' });
+export const exportarDeudoresPensionesExcel = (params) => apiClient.get('/pensiones/deudores/exportar-excel', { params, responseType: 'blob' });
