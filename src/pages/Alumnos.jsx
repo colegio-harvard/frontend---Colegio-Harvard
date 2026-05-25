@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
@@ -681,6 +681,15 @@ const Alumnos = () => {
                   onChange={(e) => setForm({ ...form, monto_pension: e.target.value })}
                   className={inputClass}
                   placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Celular del Apoderado</label>
+                <input
+                  type="text"
+                  value={padreSeleccionado?.celular || 'Sin apoderado vinculado'}
+                  readOnly
+                  className={`${inputClass} bg-cream-50 text-primary-800/80`}
                 />
               </div>
             </div>
