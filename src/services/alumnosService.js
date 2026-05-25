@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+﻿import apiClient from './apiClient';
 
 export const listarAlumnos = (params) => apiClient.get('/alumnos', { params });
 export const obtenerAlumno = (id) => apiClient.get(`/alumnos/${id}`);
@@ -10,3 +10,5 @@ export const vincularPadre = (data) => apiClient.post('/alumnos/vincular', data)
 export const desvincularPadre = (id_alumno) => apiClient.delete(`/alumnos/desvincular/${id_alumno}`);
 export const reemitirCarnet = (id_alumno) => apiClient.post(`/alumnos/reemitir-carnet/${id_alumno}`);
 export const eliminarAlumno = (id) => apiClient.delete(`/alumnos/${id}`);
+
+export const obtenerSiguienteCodigoAlumno = () => apiClient.get('/alumnos/siguiente-codigo');

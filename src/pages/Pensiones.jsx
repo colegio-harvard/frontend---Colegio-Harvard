@@ -500,6 +500,8 @@ const PensionAdmin = () => {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">DNI</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Padre/Apoderado</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Aula</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Matrícula</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Materiales</th>
                 <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Pensión</th>
                 {plantilla.map(p => (
                   <th key={p.clave} className="px-3 py-2 text-center text-xs font-medium text-gold-600 uppercase">{nombreMes(p)}</th>
@@ -519,6 +521,12 @@ const PensionAdmin = () => {
                   </td>
                   <td className="px-3 py-2 text-sm text-primary-800/70 whitespace-nowrap">
                     {alumno.aula ? `${alumno.aula.grado?.nombre || ''} ${alumno.aula.seccion}` : '-'}
+                  </td>
+                                    <td className="px-3 py-2 text-sm text-primary-800/70 text-right whitespace-nowrap">
+                    {alumno.monto_matricula != null ? formatMonto(alumno.monto_matricula) : <span className="text-cream-400 italic">-</span>}
+                  </td>
+                  <td className="px-3 py-2 text-sm text-primary-800/70 text-right whitespace-nowrap">
+                    {alumno.monto_materiales != null ? formatMonto(alumno.monto_materiales) : <span className="text-cream-400 italic">-</span>}
                   </td>
                   <td className="px-3 py-2 text-sm text-primary-800/70 text-right whitespace-nowrap">
                     {alumno.monto_pension != null ? formatMonto(alumno.monto_pension) : <span className="text-cream-400 italic">-</span>}

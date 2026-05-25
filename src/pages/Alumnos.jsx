@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import CarnetCard from '../components/CarnetCard';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno } from '../services/alumnosService';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash } from 'react-icons/hi';
@@ -25,7 +25,7 @@ const Alumnos = () => {
   const [editando, setEditando] = useState(null);
 
   // Form alumno
-  const [form, setForm] = useState({ codigo_alumno: '', dni: '', nombre_completo: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
+  const [form, setForm] = useState({ codigo_alumno: '', dni: '', nombre_completo: '', monto_matricula: '', monto_materiales: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
   const [fotoFile, setFotoFile] = useState(null);
   const [fotoPreview, setFotoPreview] = useState(null);
   const fotoInputRef = useRef(null);
@@ -354,9 +354,10 @@ const Alumnos = () => {
   };
 
   // ===================== OPEN/CLOSE MODALS =====================
-  const openCreate = () => {
+  const openCreate = async () => {
     setEditando(null);
-    setForm({ codigo_alumno: '', dni: '', nombre_completo: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
+    const baseForm = { codigo_alumno: '', dni: '', nombre_completo: '', monto_matricula: '', monto_materiales: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' };
+    setForm(baseForm);
     setFotoFile(null);
     setFotoPreview(null);
     setPadreBusqueda('');
@@ -365,6 +366,13 @@ const Alumnos = () => {
     setPadreNuevo(false);
     setPadreForm({ dni: '', nombre_completo: '', celular: '', username: '', contrasena: '' });
     setModalOpen(true);
+    try {
+      const res = await obtenerSiguienteCodigoAlumno();
+      const codigo = res.data?.data?.codigo_alumno || res.data?.codigo_alumno || '';
+      if (codigo) setForm(prev => ({ ...prev, codigo_alumno: codigo }));
+    } catch (err) {
+      toast.error('No se pudo sugerir el codigo automatico');
+    }
   };
 
   const openEdit = (a) => {
@@ -381,6 +389,8 @@ const Alumnos = () => {
       codigo_alumno: a.codigo_alumno,
       dni: a.dni || '',
       nombre_completo: a.nombre_completo,
+      monto_matricula: a.monto_matricula != null ? String(a.monto_matricula) : '',
+      monto_materiales: a.monto_materiales != null ? String(a.monto_materiales) : '',
       monto_pension: a.monto_pension != null ? String(a.monto_pension) : '',
       id_nivel: String(id_nivel),
       id_grado: String(id_grado),
@@ -412,7 +422,9 @@ const Alumnos = () => {
       fd.append('nombre_completo', form.nombre_completo);
       fd.append('id_aula', form.id_aula);
       if (form.dni) fd.append('dni', form.dni);
-      if (form.monto_pension) fd.append('monto_pension', form.monto_pension);
+      if (form.monto_matricula !== '') fd.append('monto_matricula', form.monto_matricula);
+      if (form.monto_materiales !== '') fd.append('monto_materiales', form.monto_materiales);
+      if (form.monto_pension !== '') fd.append('monto_pension', form.monto_pension);
       if (fotoFile) fd.append('foto', fotoFile);
 
       if (editando) {
@@ -635,8 +647,32 @@ const Alumnos = () => {
                   placeholder="Nombres y apellidos"
                 />
               </div>
+                            <div>
+                <label className={labelClass}>Matrícula (S/.)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.monto_matricula}
+                  onChange={(e) => setForm({ ...form, monto_matricula: e.target.value })}
+                  className={inputClass}
+                  placeholder="0.00"
+                />
+              </div>
               <div>
-                <label className={labelClass}>Monto Pensión (S/.)</label>
+                <label className={labelClass}>Materiales (S/.)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.monto_materiales}
+                  onChange={(e) => setForm({ ...form, monto_materiales: e.target.value })}
+                  className={inputClass}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Pensión (S/.)</label>
                 <input
                   type="number"
                   step="0.01"
