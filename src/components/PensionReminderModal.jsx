@@ -14,7 +14,7 @@ const PensionReminderModal = ({ onClose, mesLabel, alumnos = [], titulo, cuerpo 
         )}
         {alumnos.length > 0 && (
           <div className="mb-4 text-left bg-primary-700/50 rounded-lg p-4">
-            <p className="text-sm text-primary-200 mb-2">Alumnos con pension pendiente:</p>
+            <p className="text-sm text-primary-200 mb-2">Alumnos con pensiÓn pendiente:</p>
             <ul className="space-y-1">
               {alumnos.map((nombre, i) => (
                 <li key={i} className="text-white text-sm font-medium">&bull; {nombre}</li>

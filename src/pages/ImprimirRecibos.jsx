@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -204,7 +204,7 @@ const ImprimirRecibos = () => {
       <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="page-title">Imprimir Recibos</h1>
-          <p className="text-sm text-primary-800/60">Seleccione recibos y genere hojas A4 con 4 recibos por pÃ¡gina.</p>
+          <p className="text-sm text-primary-800/60">Seleccione recibos y genere hojas A4 con 4 recibos por página.</p>
         </div>
         <button onClick={imprimir} className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700">
           <HiPrinter className="h-5 w-5" /> Imprimir seleccionados ({seleccionados.length})
@@ -250,7 +250,7 @@ const ImprimirRecibos = () => {
           <label className="mb-1 block text-xs font-medium text-gold-600">Buscar</label>
           <div className="relative max-w-xl">
             <HiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cream-400" />
-            <input value={filtros.buscar} onChange={(e) => setFiltros({ ...filtros, buscar: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && fetchTickets()} placeholder="Alumno, DNI, cÃ³digo de alumno o ticket..." className="w-full rounded-lg border border-cream-300 bg-white py-2 pl-9 pr-3 text-sm outline-none" />
+            <input value={filtros.buscar} onChange={(e) => setFiltros({ ...filtros, buscar: e.target.value })} onKeyDown={(e) => e.key === 'Enter' && fetchTickets()} placeholder="Alumno, DNI, código de alumno o ticket..." className="w-full rounded-lg border border-cream-300 bg-white py-2 pl-9 pr-3 text-sm outline-none" />
           </div>
         </div>
       </Card>
@@ -260,7 +260,7 @@ const ImprimirRecibos = () => {
           <div className="text-sm text-primary-800/70">{tickets.length} recibo(s) encontrados</div>
           <button onClick={toggleAll} className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-800">
             {allSelected ? <HiX className="h-4 w-4" /> : <HiCheck className="h-4 w-4" />}
-            {allSelected ? 'Quitar selecciÃ³n' : 'Seleccionar todos'}
+            {allSelected ? 'Quitar selección' : 'Seleccionar todos'}
           </button>
         </div>
         {tickets.length === 0 ? (

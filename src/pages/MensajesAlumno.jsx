@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, fileUrl } from '../utils/constants';
@@ -131,7 +131,7 @@ const MensajesAlumno = () => {
 
     try {
       await responderHilo(hiloActivo.id, { mensaje: textoEnviar, adjunto: adjuntoEnviar });
-      // El mensaje llegará via WebSocket (evento 'mensaje:nuevo' -> append)
+      // El mensaje llegará vÍa WebSocket (evento 'mensaje:nuevo' -> append)
     } catch (err) {
       // Restaurar texto si falla
       setRespuestaTexto(textoEnviar);

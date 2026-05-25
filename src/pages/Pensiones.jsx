@@ -66,7 +66,7 @@ const ticketHtml = (ticket) => {
     <body>
       <div class="ticket">
         <h1>Colegio Harvard</h1>
-        <h2>Ticket de pago de pension</h2>
+        <h2>Ticket de pago de pensiÓn</h2>
         <div class="code">${escapeHtml(ticket.codigo)}</div>
         <table>
           ${filas.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('')}

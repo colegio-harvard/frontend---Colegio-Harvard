@@ -74,9 +74,9 @@ const DashboardAdmin = () => {
           <div className="flex items-center gap-3 py-4">
             <HiExclamationCircle className="w-8 h-8 text-gold-600 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-gold-800 font-display">No hay aÃ±o escolar activo</p>
+              <p className="font-semibold text-gold-800 font-display">No hay año escolar activo</p>
               <p className="text-sm text-gold-600 mt-1">
-                Configure un aÃ±o escolar activo en{' '}
+                Configure un año escolar activo en{' '}
                 <span onClick={() => navigate('/config-escolar')} className="underline cursor-pointer font-medium">
                   Configuracion Escolar
                 </span>{' '}
@@ -147,14 +147,14 @@ const DashboardAdmin = () => {
   // Columns for absent students
   const ausentesColumns = [
     { header: 'Alumno', render: (row) => <span className="font-medium">{row.nombre}</span> },
-    { header: 'CÃ³digo', accessor: 'codigo' },
+    { header: 'Código', accessor: 'codigo' },
     { header: 'Aula', accessor: 'aula' },
   ];
 
   // Columns for late students
   const tardesColumns = [
     { header: 'Alumno', render: (row) => <span className="font-medium">{row.nombre}</span> },
-    { header: 'CÃ³digo', accessor: 'codigo' },
+    { header: 'Código', accessor: 'codigo' },
     { header: 'Aula', accessor: 'aula' },
     { header: 'Hora Ingreso', render: (row) => formatTime(row.hora_ingreso) },
   ];
@@ -254,7 +254,7 @@ const DashboardAdmin = () => {
         </div>
       </div>
 
-      {/* Alertas rÃ¡pidas */}
+      {/* Alertas rápidas */}
       {alertasAbiertas > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {alertasAbiertas > 0 && (
@@ -263,7 +263,7 @@ const DashboardAdmin = () => {
                 <div className="flex items-center gap-3">
                   <HiBell className="w-8 h-8 text-primary-600" />
                   <div>
-                    <p className="text-sm font-medium text-primary-800">Alertas "No llegÃ³" abiertas</p>
+                    <p className="text-sm font-medium text-primary-800">Alertas "No llegó" abiertas</p>
                     <p className="text-2xl font-bold text-primary-700 font-display">{alertasAbiertas}</p>
                   </div>
                 </div>
@@ -273,8 +273,8 @@ const DashboardAdmin = () => {
         </div>
       )}
 
-      {/* Asistencia por SalÃ³n */}
-      <Card title="Asistencia por SalÃ³n - Hoy" className="mb-6">
+      {/* Asistencia por Salón */}
+      <Card title="Asistencia por Salón - Hoy" className="mb-6">
         <DataTable
           columns={aulasColumns}
           data={resumenAulas}
@@ -334,9 +334,9 @@ const DashboardAdmin = () => {
           { label: 'Mensajes', icon: HiChat, to: '/mensajes', color: 'bg-gold-600' },
           { label: 'Comunicados', icon: HiSpeakerphone, to: '/comunicados', color: 'bg-emerald-500' },
           { label: 'Pensiones', icon: HiCurrencyDollar, to: '/pensiones', color: 'bg-amber-500' },
-          { label: 'AÃ±o Escolar', icon: HiCalendar, to: '/anio-escolar', color: 'bg-primary-800' },
+          { label: 'Año Escolar', icon: HiCalendar, to: '/anio-escolar', color: 'bg-primary-800' },
           { label: 'Notificaciones', icon: HiBell, to: '/notificaciones', color: 'bg-gold-500' },
-          ...(usuario?.rol_codigo === ROLES.SUPER_ADMIN ? [{ label: 'AuditorÃ­a', icon: HiShieldCheck, to: '/auditoria', color: 'bg-primary-900' }] : []),
+          ...(usuario?.rol_codigo === ROLES.SUPER_ADMIN ? [{ label: 'Auditoría', icon: HiShieldCheck, to: '/auditoria', color: 'bg-primary-900' }] : []),
         ].map(item => (
           <div key={item.label} onClick={() => navigate(item.to)} className="cursor-pointer group">
             <Card>

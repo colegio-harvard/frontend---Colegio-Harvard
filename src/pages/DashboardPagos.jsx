@@ -125,11 +125,11 @@ const DashboardPagos = () => {
       <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="page-title">Dashboard Pagos</h1>
-          <p className="text-sm text-primary-800/60">Resumen financiero del aÃ±o escolar {data.anio}.</p>
+          <p className="text-sm text-primary-800/60">Resumen financiero del año escolar {data.anio}.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => navigate('/pensiones')} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">
-            Ir a cuadrÃ­cula
+            Ir a cuadrícula
           </button>
           <button onClick={descargarGeneral} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
             <HiDownload className="h-4 w-4" /> Exportar general

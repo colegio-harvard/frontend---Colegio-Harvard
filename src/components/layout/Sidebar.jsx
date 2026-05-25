@@ -27,7 +27,7 @@ const menuItems = {
     { to: '/importar-pagos', icon: HiUpload, label: 'Importar Pagos' },
     { to: '/anio-escolar', icon: HiCalendar, label: 'Año Escolar' },
     { to: '/notificaciones', icon: HiBell, label: 'Notificaciones' },
-    { to: '/auditoria', icon: HiShieldCheck, label: 'Auditoria' },
+    { to: '/auditoria', icon: HiShieldCheck, label: 'AuditorÍa' },
   ],
   [ROLES.ADMIN]: [
     { to: '/dashboard', icon: HiHome, label: 'Dashboard' },

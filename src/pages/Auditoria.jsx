@@ -33,7 +33,7 @@ const Auditoria = () => {
       setRegistros(registrosR.data.data || []);
       setAcciones(accionesR.data.data || []);
     } catch {
-      toast.error('Error al cargar auditorÃ­a');
+      toast.error('Error al cargar auditoría');
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,7 @@ const Auditoria = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      toast.success('AuditorÃ­a exportada');
+      toast.success('Auditoría exportada');
     } catch {
       toast.error('Error al exportar');
     }
@@ -81,7 +81,7 @@ const Auditoria = () => {
     <div>
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="page-title">AuditorÃ­a</h1>
+          <h1 className="page-title">Auditoría</h1>
           <p className="text-sm text-primary-800/60">Registro de acciones sensibles del sistema.</p>
         </div>
         <button onClick={handleExportar} className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
@@ -92,7 +92,7 @@ const Auditoria = () => {
       <Card className="mb-4">
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_190px_190px_160px] lg:items-end">
           <div>
-            <label className="block text-xs font-medium text-gold-600 mb-1">AcciÃ³n</label>
+            <label className="block text-xs font-medium text-gold-600 mb-1">Acción</label>
             <select value={filtros.accion} onChange={(e) => setFiltros({ ...filtros, accion: e.target.value })}
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm bg-white">
               <option value="">Todas</option>
@@ -121,7 +121,7 @@ const Auditoria = () => {
             <input
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Usuario, acciÃ³n, alumno, entidad, resumen, IP..."
+              placeholder="Usuario, acción, alumno, entidad, resumen, IP..."
               className="w-full pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm bg-white"
             />
           </div>
@@ -137,7 +137,7 @@ const Auditoria = () => {
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase text-gold-600">Fecha</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase text-gold-600">Usuario</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase text-gold-600">Rol</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase text-gold-600">AcciÃ³n</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold uppercase text-gold-600">Acción</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase text-gold-600">Entidad</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase text-gold-600">Resumen</th>
                 <th className="px-3 py-2 text-center text-xs font-semibold uppercase text-gold-600">Detalle</th>
@@ -147,7 +147,7 @@ const Auditoria = () => {
               {loading ? (
                 <tr><td colSpan="7" className="px-3 py-8 text-center text-primary-800/40">Cargando...</td></tr>
               ) : registrosFiltrados.length === 0 ? (
-                <tr><td colSpan="7" className="px-3 py-8 text-center text-primary-800/40">No hay registros de auditorÃ­a</td></tr>
+                <tr><td colSpan="7" className="px-3 py-8 text-center text-primary-800/40">No hay registros de auditoría</td></tr>
               ) : registrosFiltrados.map(r => (
                 <tr key={r.id} className="border-t hover:bg-cream-50">
                   <td className="px-3 py-2 text-sm whitespace-nowrap">{formatFechaHora(r.fecha_hora)}</td>
@@ -177,7 +177,7 @@ const Auditoria = () => {
         </div>
       </Card>
 
-      <Modal isOpen={!!detalle} onClose={() => setDetalle(null)} title="Detalle de auditorÃ­a" size="xl">
+      <Modal isOpen={!!detalle} onClose={() => setDetalle(null)} title="Detalle de auditoría" size="xl">
         {detalle && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -187,7 +187,7 @@ const Auditoria = () => {
                 <p className="text-xs text-primary-800/60">{detalle.usuario?.username || '-'}</p>
               </div>
               <div className="rounded-lg bg-cream-50 p-3">
-                <p className="text-xs text-gold-600">AcciÃ³n</p>
+                <p className="text-xs text-gold-600">Acción</p>
                 <p className="font-semibold text-primary-800">{detalle.accion}</p>
                 <p className="text-xs text-primary-800/60">{formatFechaHora(detalle.fecha_hora)}</p>
               </div>
@@ -197,7 +197,7 @@ const Auditoria = () => {
               <p className="rounded-lg border border-cream-200 p-3 text-sm text-primary-800/80">{detalle.resumen}</p>
             </div>
             <div>
-              <p className="text-sm font-semibold text-primary-800 mb-1">Detalle tÃ©cnico</p>
+              <p className="text-sm font-semibold text-primary-800 mb-1">Detalle técnico</p>
               <pre className="max-h-96 overflow-auto rounded-lg bg-primary-950 p-4 text-xs text-cream-50">
                 {JSON.stringify(detalle.meta || {}, null, 2)}
               </pre>
