@@ -1,4 +1,4 @@
-﻿import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { ROLES } from '../../utils/constants';
 import {
   HiHome, HiUsers, HiAcademicCap, HiUserGroup,
@@ -21,6 +21,7 @@ const menuItems = {
     { to: '/mensajes', icon: HiChat, label: 'Chats' },
     { to: '/comunicados', icon: HiSpeakerphone, label: 'Comunicados' },
     { to: '/pensiones', icon: HiCurrencyDollar, label: 'Pensiones' },
+    { to: '/dashboard-pagos', icon: HiChartBar, label: 'Dashboard Pagos' },
     { to: '/reporte-pagos', icon: HiChartBar, label: 'Reporte Pagos' },
     { to: '/imprimir-recibos', icon: HiPrinter, label: 'Imprimir Recibos' },
     { to: '/importar-pagos', icon: HiUpload, label: 'Importar Pagos' },
@@ -39,6 +40,7 @@ const menuItems = {
     { to: '/mensajes', icon: HiChat, label: 'Chats' },
     { to: '/comunicados', icon: HiSpeakerphone, label: 'Comunicados' },
     { to: '/pensiones', icon: HiCurrencyDollar, label: 'Pensiones' },
+    { to: '/dashboard-pagos', icon: HiChartBar, label: 'Dashboard Pagos' },
     { to: '/reporte-pagos', icon: HiChartBar, label: 'Reporte Pagos' },
     { to: '/imprimir-recibos', icon: HiPrinter, label: 'Imprimir Recibos' },
     { to: '/importar-pagos', icon: HiUpload, label: 'Importar Pagos' },

@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
@@ -22,6 +22,7 @@ import ComunicadosAula from './pages/ComunicadosAula';
 import ComunicadosAlumno from './pages/ComunicadosAlumno';
 import Pensiones from './pages/Pensiones';
 import ReportePagos from './pages/ReportePagos';
+import DashboardPagos from './pages/DashboardPagos';
 import ImprimirRecibos from './pages/ImprimirRecibos';
 import ImportarPagosExcel from './pages/ImportarPagosExcel';
 import Notificaciones from './pages/Notificaciones';
@@ -123,6 +124,10 @@ function App() {
 
             <Route path="/pensiones" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN, PADRE]}><Pensiones /></ProtectedRoute>
+            } />
+
+            <Route path="/dashboard-pagos" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><DashboardPagos /></ProtectedRoute>
             } />
 
             <Route path="/reporte-pagos" element={
