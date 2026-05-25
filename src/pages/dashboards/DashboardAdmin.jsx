@@ -1,15 +1,17 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import DataTable from '../../components/ui/DataTable';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { dashboardAdmin } from '../../services/asistenciaService';
+import { descargarRespaldoSistema } from '../../services/backupService';
 import {
   HiUsers, HiAcademicCap, HiUserGroup, HiClipboardCheck,
   HiExclamationCircle, HiClock, HiXCircle, HiCheckCircle,
   HiTrendingUp, HiBell, HiCog, HiBookOpen, HiChat,
-  HiSpeakerphone, HiCurrencyDollar, HiCalendar, HiShieldCheck, HiDocumentText,
+  HiSpeakerphone, HiCurrencyDollar, HiCalendar, HiShieldCheck, HiDocumentText, HiDownload,
 } from 'react-icons/hi';
 import { useSocket } from '../../hooks/useSocket';
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +22,7 @@ const DashboardAdmin = () => {
   const { usuario } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [backupLoading, setBackupLoading] = useState(false);
 
   const refetchData = async () => {
     try {
@@ -36,6 +39,31 @@ const DashboardAdmin = () => {
   useSocket('alerta:nueva', () => refetchData());
   useSocket('alerta:cerrada', () => refetchData());
 
+
+  const handleDescargarRespaldo = async () => {
+    if (backupLoading) return;
+    const loadingToast = toast.loading('Preparando respaldo...');
+    try {
+      setBackupLoading(true);
+      const response = await descargarRespaldoSistema();
+      const blob = new Blob([response.data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const disposition = response.headers?.['content-disposition'] || '';
+      const match = disposition.match(/filename="?([^"]+)"?/i);
+      link.href = url;
+      link.download = match?.[1] || `respaldo-sistema-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Respaldo descargado', { id: loadingToast });
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'No se pudo descargar el respaldo', { id: loadingToast });
+    } finally {
+      setBackupLoading(false);
+    }
+  };
   if (loading) return <LoadingSpinner />;
 
   if (!data || data.sinAnioActivo) {
@@ -46,9 +74,9 @@ const DashboardAdmin = () => {
           <div className="flex items-center gap-3 py-4">
             <HiExclamationCircle className="w-8 h-8 text-gold-600 flex-shrink-0" />
             <div>
-              <p className="font-semibold text-gold-800 font-display">No hay año escolar activo</p>
+              <p className="font-semibold text-gold-800 font-display">No hay aÃ±o escolar activo</p>
               <p className="text-sm text-gold-600 mt-1">
-                Configure un año escolar activo en{' '}
+                Configure un aÃ±o escolar activo en{' '}
                 <span onClick={() => navigate('/config-escolar')} className="underline cursor-pointer font-medium">
                   Configuracion Escolar
                 </span>{' '}
@@ -119,25 +147,38 @@ const DashboardAdmin = () => {
   // Columns for absent students
   const ausentesColumns = [
     { header: 'Alumno', render: (row) => <span className="font-medium">{row.nombre}</span> },
-    { header: 'Código', accessor: 'codigo' },
+    { header: 'CÃ³digo', accessor: 'codigo' },
     { header: 'Aula', accessor: 'aula' },
   ];
 
   // Columns for late students
   const tardesColumns = [
     { header: 'Alumno', render: (row) => <span className="font-medium">{row.nombre}</span> },
-    { header: 'Código', accessor: 'codigo' },
+    { header: 'CÃ³digo', accessor: 'codigo' },
     { header: 'Aula', accessor: 'aula' },
     { header: 'Hora Ingreso', render: (row) => formatTime(row.hora_ingreso) },
   ];
 
   return (
     <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="page-title">Dashboard</h1>
-        <span className="text-sm text-gold-600 font-medium">
-          {new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </span>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          {usuario?.rol_codigo === ROLES.SUPER_ADMIN && (
+            <button
+              type="button"
+              onClick={handleDescargarRespaldo}
+              disabled={backupLoading}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold shadow-sm hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <HiDownload className="w-5 h-5" />
+              {backupLoading ? 'Preparando...' : 'Respaldar sistema'}
+            </button>
+          )}
+          <span className="text-sm text-gold-600 font-medium">
+            {new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </span>
+        </div>
       </div>
 
       {/* KPI Cards - Asistencia de Hoy */}
@@ -213,7 +254,7 @@ const DashboardAdmin = () => {
         </div>
       </div>
 
-      {/* Alertas rápidas */}
+      {/* Alertas rÃ¡pidas */}
       {alertasAbiertas > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {alertasAbiertas > 0 && (
@@ -222,7 +263,7 @@ const DashboardAdmin = () => {
                 <div className="flex items-center gap-3">
                   <HiBell className="w-8 h-8 text-primary-600" />
                   <div>
-                    <p className="text-sm font-medium text-primary-800">Alertas "No llegó" abiertas</p>
+                    <p className="text-sm font-medium text-primary-800">Alertas "No llegÃ³" abiertas</p>
                     <p className="text-2xl font-bold text-primary-700 font-display">{alertasAbiertas}</p>
                   </div>
                 </div>
@@ -232,8 +273,8 @@ const DashboardAdmin = () => {
         </div>
       )}
 
-      {/* Asistencia por Salón */}
-      <Card title="Asistencia por Salón - Hoy" className="mb-6">
+      {/* Asistencia por SalÃ³n */}
+      <Card title="Asistencia por SalÃ³n - Hoy" className="mb-6">
         <DataTable
           columns={aulasColumns}
           data={resumenAulas}
@@ -293,9 +334,9 @@ const DashboardAdmin = () => {
           { label: 'Mensajes', icon: HiChat, to: '/mensajes', color: 'bg-gold-600' },
           { label: 'Comunicados', icon: HiSpeakerphone, to: '/comunicados', color: 'bg-emerald-500' },
           { label: 'Pensiones', icon: HiCurrencyDollar, to: '/pensiones', color: 'bg-amber-500' },
-          { label: 'Año Escolar', icon: HiCalendar, to: '/anio-escolar', color: 'bg-primary-800' },
+          { label: 'AÃ±o Escolar', icon: HiCalendar, to: '/anio-escolar', color: 'bg-primary-800' },
           { label: 'Notificaciones', icon: HiBell, to: '/notificaciones', color: 'bg-gold-500' },
-          ...(usuario?.rol_codigo === ROLES.SUPER_ADMIN ? [{ label: 'Auditoría', icon: HiShieldCheck, to: '/auditoria', color: 'bg-primary-900' }] : []),
+          ...(usuario?.rol_codigo === ROLES.SUPER_ADMIN ? [{ label: 'AuditorÃ­a', icon: HiShieldCheck, to: '/auditoria', color: 'bg-primary-900' }] : []),
         ].map(item => (
           <div key={item.label} onClick={() => navigate(item.to)} className="cursor-pointer group">
             <Card>
