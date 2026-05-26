@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../../services/asistenciaService';
@@ -23,6 +23,25 @@ const PensionStatus = ({ mes }) => {
   return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-600"><HiX className="w-4 h-4" /></span>;
 };
 
+const detallePension = (mes) => {
+  const lineas = [
+    mes.nombre || mes.clave,
+    `Estado: ${mes.estado || 'PENDIENTE'}`,
+    `Pagado: ${formatMonto(mes.monto_pagado || 0)} / ${formatMonto(mes.monto_total || 0)}`,
+  ];
+  if (mes.saldo !== null && mes.saldo !== undefined) lineas.push(`Saldo: ${formatMonto(mes.saldo)}`);
+  if (mes.observacion_no_corresponde) lineas.push(`Obs.: ${mes.observacion_no_corresponde}`);
+  if (Array.isArray(mes.pagos) && mes.pagos.length > 0) {
+    lineas.push('Pagos:');
+    mes.pagos.forEach((p) => {
+      const fecha = p.fecha_pago ? new Date(p.fecha_pago).toLocaleDateString('es-PE') : '';
+      lineas.push(`- ${fecha} ${formatMonto(p.monto)}${p.observacion ? `: ${p.observacion}` : ''}`);
+    });
+  } else {
+    lineas.push('Sin comentarios registrados');
+  }
+  return lineas.join('\n');
+};
 const PensionResumen = ({ pensiones }) => {
   const meses = pensiones?.meses || [];
   if (meses.length === 0) return null;
@@ -40,7 +59,7 @@ const PensionResumen = ({ pensiones }) => {
 
       <div className="grid grid-cols-3 gap-2">
         {meses.map((mes) => (
-          <div key={mes.clave} className="rounded-lg border border-cream-200 bg-white px-2 py-2 text-center">
+          <button type="button" key={mes.clave} title={detallePension(mes)} onClick={() => toast(detallePension(mes), { duration: 7000 })} className="rounded-lg border border-cream-200 bg-white px-2 py-2 text-center hover:border-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-300">
             <p className="text-[11px] font-semibold text-primary-800 truncate">{mes.nombre || mes.clave}</p>
             <div className="flex justify-center mt-1">
               <PensionStatus mes={mes} />
@@ -51,7 +70,7 @@ const PensionResumen = ({ pensiones }) => {
             {mes.estado === 'PAGADO' && mes.monto_total && (
               <p className="text-[10px] text-emerald-700 font-semibold mt-1">{formatMonto(mes.monto_total)}</p>
             )}
-          </div>
+          </button>
         ))}
       </div>
     </div>
