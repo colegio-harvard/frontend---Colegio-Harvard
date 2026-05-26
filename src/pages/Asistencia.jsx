@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, ESTADO_ASISTENCIA_LABELS } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -9,7 +9,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { calendarioAlumno, obtenerHijosPadre, asistenciaHoy, obtenerAulasTutor, asistenciaGlobal, exportarExcelAsistencia, corregirAsistencia } from '../services/asistenciaService';
 import { listarNiveles, listarGrados, listarAulas } from '../services/configEscolarService';
 import { formatFecha, formatHora, todayLimaISO } from '../utils/formatters';
-import { HiDownload, HiCalendar, HiViewGrid, HiViewList } from 'react-icons/hi';
+import { HiDownload, HiCalendar, HiViewGrid, HiViewList, HiSearch } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../hooks/useSocket';
 
@@ -428,7 +428,7 @@ const AsistenciaAdmin = () => {
   const [datos, setDatos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fecha, setFecha] = useState(todayLimaISO());
-  const [filtros, setFiltros] = useState({ id_nivel: '', id_grado: '', id_aula: '', estado: '' });
+  const [filtros, setFiltros] = useState({ id_nivel: '', id_grado: '', id_aula: '', estado: '', buscar: '' });
   const [niveles, setNiveles] = useState([]);
   const [grados, setGrados] = useState([]);
   const [aulasDisponibles, setAulasDisponibles] = useState([]);
@@ -455,6 +455,7 @@ const AsistenciaAdmin = () => {
       if (filtros.id_grado) params.id_grado = filtros.id_grado;
       if (filtros.id_aula) params.id_aula = filtros.id_aula;
       if (filtros.estado) params.estado = filtros.estado;
+      if (filtros.buscar?.trim()) params.buscar = filtros.buscar.trim();
       const { data } = await asistenciaGlobal(params);
       setDatos(data.data || []);
     } catch {
@@ -493,6 +494,7 @@ const AsistenciaAdmin = () => {
       if (filtros.id_grado) params.id_grado = filtros.id_grado;
       if (filtros.id_aula) params.id_aula = filtros.id_aula;
       if (filtros.estado) params.estado = filtros.estado;
+      if (filtros.buscar?.trim()) params.buscar = filtros.buscar.trim();
       const response = await exportarExcelAsistencia(params);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -590,6 +592,21 @@ const AsistenciaAdmin = () => {
               <option value="TARDE">Tardanza</option>
               <option value="AUSENTE">Faltó</option>
             </select>
+          </div>
+
+          <div className="min-w-[240px] flex-1">
+            <label className="block text-xs font-medium text-gold-600 mb-1">Buscar</label>
+            <div className="relative">
+              <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cream-400" />
+              <input
+                type="text"
+                value={filtros.buscar}
+                onChange={(e) => setFiltros({...filtros, buscar: e.target.value})}
+                onKeyDown={(e) => e.key === 'Enter' && handleFiltrar()}
+                className="w-full pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm"
+                placeholder="Nombre, DNI, cÃ³digo..."
+              />
+            </div>
           </div>
           <button onClick={handleFiltrar} className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-medium">
             Filtrar
