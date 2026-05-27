@@ -1,4 +1,4 @@
-﻿import apiClient from './apiClient';
+import apiClient from './apiClient';
 
 export const listarAlumnos = (params) => apiClient.get('/alumnos', { params });
 export const obtenerAlumno = (id) => apiClient.get(`/alumnos/${id}`);
@@ -12,3 +12,4 @@ export const reemitirCarnet = (id_alumno) => apiClient.post(`/alumnos/reemitir-c
 export const eliminarAlumno = (id) => apiClient.delete(`/alumnos/${id}`);
 
 export const obtenerSiguienteCodigoAlumno = () => apiClient.get('/alumnos/siguiente-codigo');
+export const exportarAulasExcel = () => apiClient.get('/alumnos/exportar-aulas-excel', { responseType: 'blob' });

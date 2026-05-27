@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import CarnetCard from '../components/CarnetCard';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno } from '../services/alumnosService';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno, exportarAulasExcel } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash } from 'react-icons/hi';
@@ -509,14 +509,36 @@ const Alumnos = () => {
   const labelClass = 'block text-sm font-medium text-primary-800/80 mb-1';
   const sectionTitle = 'text-sm font-semibold text-primary-800 mb-3 flex items-center gap-2';
 
+
+  const handleExportarAulasExcel = async () => {
+    try {
+      const response = await exportarAulasExcel();
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `aulas-alumnos-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Excel de aulas descargado');
+    } catch {
+      toast.error('No se pudo descargar el Excel');
+    }
+  };
   // ===================== RENDER =====================
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="page-title">Alumnos</h1>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-medium">
-          <HiPlus className="w-4 h-4" /> Nuevo Alumno
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={handleExportarAulasExcel} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-sm text-sm font-medium">
+            <HiDownload className="w-4 h-4" /> Exportar Aulas Excel
+          </button>
+          <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm text-sm font-medium">
+            <HiPlus className="w-4 h-4" /> Nuevo Alumno
+          </button>
+        </div>
       </div>
 
       <Card>
