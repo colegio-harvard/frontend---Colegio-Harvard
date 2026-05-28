@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+﻿import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../services/asistenciaService';
@@ -305,7 +305,7 @@ const RegistroAsistencia = () => {
           <Card>
             {modo === 'CAMARA' ? (
               <div>
-                <label className="form-label mb-2">Apunte la camara al QR del carnet</label>
+                <label className="form-label mb-2">Apunte la cÃ¡mara al QR del carnet</label>
                 <div className="relative">
                   <CameraErrorBoundary>
                     <Suspense
@@ -370,7 +370,7 @@ const RegistroAsistencia = () => {
             ) : (
               <div className="relative">
                 <form onSubmit={handleCodigoSubmit}>
-                  <label className="form-label">Ingrese el cÓdigo del alumno</label>
+                  <label className="form-label">Ingrese el cÃ“digo del alumno</label>
                   <input
                     ref={codigoRef}
                     type="text"
@@ -429,7 +429,7 @@ const RegistroAsistencia = () => {
           </Card>
         </div>
 
-        {/* Columna derecha: Informacion del alumno */}
+        {/* Columna derecha: InformaciÃ³n del alumno */}
         <div>
           {scanResult ? (
             <Card className="border-emerald-200 bg-emerald-50/30 h-full">
@@ -475,7 +475,7 @@ const RegistroAsistencia = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <p className="text-base text-cream-400 font-medium font-display">Informacion del Alumno</p>
+                <p className="text-base text-cream-400 font-medium font-display">InformaciÃ³n del Alumno</p>
                 <p className="text-sm text-cream-300 mt-1">Escanee un QR o ingrese un codigo</p>
               </div>
             </Card>
@@ -591,4 +591,5 @@ const RegistroAsistencia = () => {
 };
 
 export default RegistroAsistencia;
+
 

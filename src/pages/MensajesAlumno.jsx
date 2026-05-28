@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, fileUrl } from '../utils/constants';
@@ -131,7 +131,7 @@ const MensajesAlumno = () => {
 
     try {
       await responderHilo(hiloActivo.id, { mensaje: textoEnviar, adjunto: adjuntoEnviar });
-      // El mensaje llegará vÍa WebSocket (evento 'mensaje:nuevo' -> append)
+      // El mensaje llegarÃ¡ vÃ­a WebSocket (evento 'mensaje:nuevo' -> append)
     } catch (err) {
       // Restaurar texto si falla
       setRespuestaTexto(textoEnviar);
@@ -241,7 +241,7 @@ const MensajesAlumno = () => {
           </button>
         </form>
 
-        {/* Modal de previsualización de adjunto */}
+        {/* Modal de previsualizaciÃ³n de adjunto */}
         {preview && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="fixed inset-0 bg-primary-900/30 backdrop-blur-sm" onClick={() => setPreview(null)}></div>
@@ -343,7 +343,7 @@ const MensajesAlumno = () => {
       <Modal isOpen={modalNuevo} onClose={() => setModalNuevo(false)} title="Nuevo Mensaje">
         <form onSubmit={handleCrearHilo} className="space-y-4">
           <div className="bg-cream-50 p-3 rounded-lg">
-            <p className="text-xs text-gold-600">Conversación sobre:</p>
+            <p className="text-xs text-gold-600">ConversaciÃ³n sobre:</p>
             <p className="text-sm font-medium text-primary-800">{alumno.nombre_completo}</p>
             <p className="text-xs text-cream-400">{gradoNombre} "{seccion}"</p>
           </div>
@@ -375,4 +375,5 @@ const MensajesAlumno = () => {
 };
 
 export default MensajesAlumno;
+
 
