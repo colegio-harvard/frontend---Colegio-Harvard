@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, API_URL } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -66,7 +66,7 @@ const ticketHtml = (ticket) => {
     <body>
       <div class="ticket">
         <h1>Colegio Harvard</h1>
-        <h2>Ticket de pago de pensiÓn</h2>
+        <h2>Ticket de pago de pensiÃ“n</h2>
         <div class="code">${escapeHtml(ticket.codigo)}</div>
         <table>
           ${filas.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('')}
@@ -333,7 +333,7 @@ const PensionAdmin = () => {
 
   const handleBuscarTicket = async () => {
     const codigo = ticketBusqueda.trim().toUpperCase();
-    if (!codigo) return toast.error('Ingrese el cÓdigo del ticket');
+    if (!codigo) return toast.error('Ingrese el cÃ“digo del ticket');
     try {
       const { data } = await obtenerTicketPension(codigo);
       imprimirTicket(data.data);
@@ -405,7 +405,7 @@ const PensionAdmin = () => {
 
   const hayFiltros = filtros.id_nivel || filtros.id_grado || filtros.id_aula || busqueda;
 
-  // Paginación
+  // PaginaciÃ³n
   const ROWS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(cuadriculaFiltrada.length / ROWS_PER_PAGE));
@@ -421,7 +421,7 @@ const PensionAdmin = () => {
 
   return (
     <div>
-      <h1 className="page-title mb-6">Cuadrícula de Pensiones</h1>
+      <h1 className="page-title mb-6">CuadrÃ­cula de Pensiones</h1>
 
       {/* Filtros */}
       <Card className="mb-4">
@@ -451,7 +451,7 @@ const PensionAdmin = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gold-600 mb-1">Sección</label>
+            <label className="block text-xs font-medium text-gold-600 mb-1">SecciÃ³n</label>
             <select
               value={filtros.id_aula}
               onChange={(e) => setFiltros({ ...filtros, id_aula: e.target.value })}
@@ -550,9 +550,9 @@ const PensionAdmin = () => {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">DNI</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Padre/Apoderado</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Aula</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Matrícula</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">MatrÃ­cula</th>
                 <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Materiales</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Pensión</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">PensiÃ³n</th>
                 {plantilla.map(p => (
                   <th key={p.clave} className="px-3 py-2 text-center text-xs font-medium text-gold-600 uppercase">{nombreMes(p)}</th>
                 ))}
@@ -611,7 +611,7 @@ const PensionAdmin = () => {
           </table>
         </div>
 
-        {/* Paginación */}
+        {/* PaginaciÃ³n */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-cream-200 bg-cream-50/50">
             <span className="text-sm text-primary-800/60">
@@ -716,7 +716,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
         const d = res.data.data;
         setDetalle(d);
 
-        // Pre-seleccionar accion según estado actual
+        // Pre-seleccionar accion segÃºn estado actual
         if (d.estado === 'PAGO_PARCIAL') {
           setAccion('NUEVO_PAGO');
           setMontoTotal(montoInicial);
@@ -761,7 +761,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
     } else if (accion === 'NUEVO_PAGO') {
       if (montoPago === '' || parseFloat(montoPago) < 0) return toast.error('Ingrese el monto del pago');
     } else if (accion === 'NO_CORRESPONDE') {
-      if (!observacion.trim()) return toast.error('Ingrese la observaciÓn');
+      if (!observacion.trim()) return toast.error('Ingrese la observaciÃ“n');
     }
 
     setSaving(true);
@@ -820,7 +820,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={`Pensión - ${nombreMes(mes)}`} size="lg">
+    <Modal isOpen={true} onClose={onClose} title={`PensiÃ³n - ${nombreMes(mes)}`} size="lg">
       {loading ? (
         <div className="flex justify-center py-8"><LoadingSpinner /></div>
       ) : (
@@ -831,7 +831,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               <p className="text-sm font-semibold text-primary-800">{alumno.nombre_completo}</p>
                             <p className="text-xs text-primary-800/60">
                 {alumno.codigo_alumno} {alumno.aula ? `| ${alumno.aula.grado?.nombre || ''} ${alumno.aula.seccion}` : ''}
-                {alumno.monto_pension != null ? ` | Pensión: ${formatMonto(alumno.monto_pension)}` : ''}
+                {alumno.monto_pension != null ? ` | PensiÃ³n: ${formatMonto(alumno.monto_pension)}` : ''}
               </p>
             </div>
             <EstadoBadge estado={detalle?.estado || 'PENDIENTE'} />
@@ -865,7 +865,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                     <tr className="bg-cream-50">
                       <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">Fecha</th>
                       <th className="px-3 py-2 text-right text-xs font-medium text-gold-600">Monto</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">ObservaciÓn</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gold-600">ObservaciÃ“n</th>
                       <th className="px-3 py-2 text-right text-xs font-medium text-gold-600">Ticket</th>
                     </tr>
                   </thead>
@@ -897,7 +897,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
             </div>
           )}
 
-          {/* Acciones según estado actual */}
+          {/* Acciones segÃºn estado actual */}
           {detalle?.estado === 'PENDIENTE' && (
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-primary-800">Registrar pago</h4>
@@ -932,11 +932,11 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-medium text-gold-600 mb-1">Monto Total (S/.)</label>
-                    <input type="number" step="0.01" min="0" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)}
+                    <input type="text" inputMode="decimal" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: 450.00" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">Observación (opcional)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÃ³n (opcional)</label>
                     <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: Pago en efectivo" />
                   </div>
@@ -947,13 +947,13 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               {accion === 'PAGO_PARCIAL' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">Monto Total de la pensión (S/.)</label>
-                    <input type="number" step="0.01" min="0" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)}
+                    <label className="block text-xs font-medium text-gold-600 mb-1">Monto Total de la pensiÃ³n (S/.)</label>
+                    <input type="text" inputMode="decimal" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: 450.00" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gold-600 mb-1">Monto de este pago (S/.)</label>
-                    <input type="number" step="0.01" min="0" value={montoPago} onChange={(e) => setMontoPago(e.target.value)}
+                    <input type="text" inputMode="decimal" value={montoPago} onChange={(e) => setMontoPago(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: 200.00" />
                   </div>
                   {montoTotal && montoPago !== '' && (
@@ -962,7 +962,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                     </p>
                   )}
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">Observación (opcional)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÃ³n (opcional)</label>
                     <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: Primer pago" />
                   </div>
@@ -971,7 +971,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               {accion === 'NO_CORRESPONDE' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÓn (obligatoria)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÃ“n (obligatoria)</label>
                     <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: Alumno ingreso en abril" />
                   </div>
@@ -984,7 +984,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
             <div className="space-y-4">
               <div className="rounded-lg border border-sky-200 bg-sky-50 p-3">
                 <p className="text-sm font-semibold text-sky-800">No corresponde pago</p>
-                <p className="text-xs text-sky-700 mt-1">{detalle.observacion_no_corresponde || 'Sin observaciÓn registrada'}</p>
+                <p className="text-xs text-sky-700 mt-1">{detalle.observacion_no_corresponde || 'Sin observaciÃ“n registrada'}</p>
               </div>
               <div className="flex gap-3">
                 <label className={`flex-1 flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${accion === 'PENDIENTE' ? 'border-red-400 bg-red-50' : 'border-cream-200 hover:border-cream-300'}`}>
@@ -1023,18 +1023,18 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-medium text-gold-600 mb-1">Monto del pago (S/.)</label>
-                    <input type="number" step="0.01" min="0" max={saldo} value={montoPago} onChange={(e) => setMontoPago(e.target.value)}
+                    <input type="text" inputMode="decimal" value={montoPago} onChange={(e) => setMontoPago(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder={`Max: ${saldo.toFixed(2)}`} />
                   </div>
                   {montoPago !== '' && (
                     <p className="text-xs font-medium text-emerald-700">
                       {parseFloat(montoPago) >= saldo
-                        ? 'Este pago completará el total - se marcará como Pagado'
+                        ? 'Este pago completarÃ¡ el total - se marcarÃ¡ como Pagado'
                         : `Saldo restante: ${formatMonto(saldo - parseFloat(montoPago))}`}
                     </p>
                   )}
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">Observación (opcional)</label>
+                    <label className="block text-xs font-medium text-gold-600 mb-1">ObservaciÃ³n (opcional)</label>
                     <input type="text" value={observacion} onChange={(e) => setObservacion(e.target.value)}
                       className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" />
                   </div>
@@ -1080,5 +1080,6 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 };
 
 export default Pensiones;
+
 
 
