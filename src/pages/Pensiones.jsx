@@ -810,7 +810,6 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 
       const ticket = res?.data?.data?.ticket;
       toast.success(ticket?.codigo ? `Pension actualizada - Ticket ${ticket.codigo}` : 'Pension actualizada');
-      if (ticket) imprimirTicket(ticket);
       onSaved();
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al registrar pago');
@@ -1080,6 +1079,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 };
 
 export default Pensiones;
+
 
 
 
