@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
@@ -56,7 +56,7 @@ const AlumnoDetalle = () => {
         </button>
         <div>
           <h1 className="text-xl font-bold text-primary-800 font-display">Vista del Alumno</h1>
-          <p className="text-sm text-gold-600">InformaciÃ³n completa</p>
+          <p className="text-sm text-gold-600">Informacion completa</p>
         </div>
       </div>
 
@@ -165,4 +165,3 @@ const AlumnoDetalle = () => {
 };
 
 export default AlumnoDetalle;
-

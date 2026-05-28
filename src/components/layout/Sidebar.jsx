@@ -1,4 +1,4 @@
-﻿import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { ROLES } from '../../utils/constants';
 import {
   HiHome, HiUsers, HiAcademicCap, HiUserGroup,
@@ -25,9 +25,9 @@ const menuItems = {
     { to: '/reporte-pagos', icon: HiChartBar, label: 'Reporte Pagos' },
     { to: '/imprimir-recibos', icon: HiPrinter, label: 'Imprimir Recibos' },
     { to: '/importar-pagos', icon: HiUpload, label: 'Importar Pagos' },
-    { to: '/anio-escolar', icon: HiCalendar, label: 'AÃ±o Escolar' },
+    { to: '/anio-escolar', icon: HiCalendar, label: 'Año Escolar' },
     { to: '/notificaciones', icon: HiBell, label: 'Notificaciones' },
-    { to: '/auditoria', icon: HiShieldCheck, label: 'AuditorÃ­a' },
+    { to: '/auditoria', icon: HiShieldCheck, label: 'AuditorÍa' },
   ],
   [ROLES.ADMIN]: [
     { to: '/dashboard', icon: HiHome, label: 'Dashboard' },
@@ -44,7 +44,7 @@ const menuItems = {
     { to: '/reporte-pagos', icon: HiChartBar, label: 'Reporte Pagos' },
     { to: '/imprimir-recibos', icon: HiPrinter, label: 'Imprimir Recibos' },
     { to: '/importar-pagos', icon: HiUpload, label: 'Importar Pagos' },
-    { to: '/anio-escolar', icon: HiCalendar, label: 'AÃ±o Escolar' },
+    { to: '/anio-escolar', icon: HiCalendar, label: 'Año Escolar' },
     { to: '/notificaciones', icon: HiBell, label: 'Notificaciones' },
   ],
   [ROLES.TUTOR]: [
@@ -124,5 +124,4 @@ const Sidebar = ({ isOpen, onClose }) => {
 };
 
 export default Sidebar;
-
 

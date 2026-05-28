@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, ESTADO_ASISTENCIA_LABELS } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -31,7 +31,7 @@ const AsistenciaPadre = () => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' }));
   });
-  const [aÃ±o, setAÃ±o] = useState(() => {
+  const [año, setAño] = useState(() => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' }));
   });
@@ -56,7 +56,7 @@ const AsistenciaPadre = () => {
       setLoading(true);
       setDiaSeleccionado(null);
       try {
-        const { data } = await calendarioAlumno({ id_alumno: hijoSeleccionado, mes, anio: aÃ±o });
+        const { data } = await calendarioAlumno({ id_alumno: hijoSeleccionado, mes, anio: año });
         setDatos(data.data || []);
       } catch {
         setDatos([]);
@@ -65,7 +65,7 @@ const AsistenciaPadre = () => {
       }
     };
     fetch();
-  }, [mes, aÃ±o, hijoSeleccionado]);
+  }, [mes, año, hijoSeleccionado]);
 
   const estadoColor = (estado) => {
     const conf = ESTADO_ASISTENCIA_LABELS[estado];
@@ -124,7 +124,7 @@ const AsistenciaPadre = () => {
         <select value={mes} onChange={(e) => setMes(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none">
           {Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{new Date(2000, i).toLocaleString('es-PE', { month: 'long' })}</option>)}
         </select>
-        <input type="number" value={aÃ±o} onChange={(e) => setAÃ±o(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24" />
+        <input type="number" value={año} onChange={(e) => setAño(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24" />
       </div>
 
       {loading ? <LoadingSpinner /> : (
@@ -138,7 +138,7 @@ const AsistenciaPadre = () => {
             <div className="space-y-4">
               <Card>
                 <div className="grid grid-cols-7 gap-1">
-                  {['Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b', 'Dom'].map(d => (
+                  {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
                     <div key={d} className="text-center text-sm font-semibold text-primary-700 py-2">{d}</div>
                   ))}
                   {datos.map((dia, i) => (
@@ -158,7 +158,7 @@ const AsistenciaPadre = () => {
                 <div className="flex flex-wrap gap-4 mt-4 pt-3 border-t border-cream-200">
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-emerald-100 border border-emerald-300"></span>
-                    <span className="text-primary-800 font-medium">AsistiÃ³</span>
+                    <span className="text-primary-800 font-medium">Asistió</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-amber-100 border border-amber-300"></span>
@@ -166,12 +166,12 @@ const AsistenciaPadre = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-red-100 border border-red-300"></span>
-                    <span className="text-primary-800 font-medium">FaltÃ³</span>
+                    <span className="text-primary-800 font-medium">Faltó</span>
                   </div>
                 </div>
               </Card>
 
-              {/* Detalle del dÃ­a seleccionado */}
+              {/* Detalle del día seleccionado */}
               {diaSeleccionado && (
                 <Card>
                   <div className="flex items-center justify-between mb-3">
@@ -189,7 +189,7 @@ const AsistenciaPadre = () => {
                         {diaSeleccionado.hora_ingreso ? formatHora(diaSeleccionado.hora_ingreso) : '-'}
                       </p>
                       {diaSeleccionado.metodo_ingreso && (
-                        <p className="text-xs text-gold-500 mt-0.5">MÃ©todo: {diaSeleccionado.metodo_ingreso}</p>
+                        <p className="text-xs text-gold-500 mt-0.5">Método: {diaSeleccionado.metodo_ingreso}</p>
                       )}
                     </div>
                     <div className="bg-cream-50 rounded-lg p-3">
@@ -266,7 +266,7 @@ const AsistenciaTutor = () => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' }));
   });
-  const [calAÃ±o, setCalAÃ±o] = useState(() => {
+  const [calAño, setCalAño] = useState(() => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' }));
   });
@@ -300,13 +300,13 @@ const AsistenciaTutor = () => {
 
   useSocket('asistencia:evento', () => fetchAsistencia());
 
-  // Cargar calendario cuando cambia alumno/mes/aÃ±o
+  // Cargar calendario cuando cambia alumno/mes/año
   useEffect(() => {
     if (!calAlumno) return;
     const fetchCal = async () => {
       setCalLoading(true);
       try {
-        const { data } = await calendarioAlumno({ id_alumno: calAlumno.id, mes: calMes, anio: calAÃ±o });
+        const { data } = await calendarioAlumno({ id_alumno: calAlumno.id, mes: calMes, anio: calAño });
         setCalDatos(data.data || []);
       } catch {
         setCalDatos([]);
@@ -315,12 +315,12 @@ const AsistenciaTutor = () => {
       }
     };
     fetchCal();
-  }, [calAlumno, calMes, calAÃ±o]);
+  }, [calAlumno, calMes, calAño]);
 
   const abrirCalendario = (alumno) => {
     const now = new Date();
     setCalMes(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' })));
-    setCalAÃ±o(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' })));
+    setCalAño(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' })));
     setCalAlumno(alumno);
     setCalDatos([]);
     setCalModal(true);
@@ -384,14 +384,14 @@ const AsistenciaTutor = () => {
           <select value={calMes} onChange={(e) => setCalMes(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
             {Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{new Date(2000, i).toLocaleString('es-PE', { month: 'long' })}</option>)}
           </select>
-          <input type="number" value={calAÃ±o} onChange={(e) => setCalAÃ±o(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24 text-sm" />
+          <input type="number" value={calAño} onChange={(e) => setCalAño(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24 text-sm" />
         </div>
 
         {calLoading ? <LoadingSpinner /> : calDatos.length === 0 ? (
           <p className="text-center text-gold-600 py-8">No hay registros para este periodo</p>
         ) : (
           <div className="grid grid-cols-7 gap-1">
-            {['Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b', 'Dom'].map(d => (
+            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
               <div key={d} className="text-center text-sm font-semibold text-primary-700 py-2">{d}</div>
             ))}
             {calDatos.map((dia, i) => (
@@ -408,7 +408,7 @@ const AsistenciaTutor = () => {
         <div className="flex flex-wrap gap-4 mt-4 pt-3 border-t border-cream-200">
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-emerald-100 border border-emerald-300"></span>
-            <span className="text-primary-800 font-medium">AsistiÃ³</span>
+            <span className="text-primary-800 font-medium">Asistió</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-amber-100 border border-amber-300"></span>
@@ -416,7 +416,7 @@ const AsistenciaTutor = () => {
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-red-100 border border-red-300"></span>
-            <span className="text-primary-800 font-medium">FaltÃ³</span>
+            <span className="text-primary-800 font-medium">Faltó</span>
           </div>
         </div>
       </Modal>
@@ -573,7 +573,7 @@ const AsistenciaAdmin = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gold-600 mb-1">SecciÃ³n</label>
+            <label className="block text-xs font-medium text-gold-600 mb-1">Sección</label>
             <select value={filtros.id_aula} onChange={(e) => setFiltros({...filtros, id_aula: e.target.value})}
               className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
               <option value="">Todas</option>
@@ -588,9 +588,9 @@ const AsistenciaAdmin = () => {
             <select value={filtros.estado} onChange={(e) => setFiltros({...filtros, estado: e.target.value})}
               className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
               <option value="">Todos</option>
-              <option value="PRESENTE">AsistiÃ³</option>
+              <option value="PRESENTE">Asistió</option>
               <option value="TARDE">Tardanza</option>
-              <option value="AUSENTE">FaltÃ³</option>
+              <option value="AUSENTE">Faltó</option>
             </select>
           </div>
 
@@ -624,9 +624,9 @@ const AsistenciaAdmin = () => {
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Nuevo Estado</label>
             <select value={correccionForm.nuevo_estado} onChange={(e) => setCorreccionForm({...correccionForm, nuevo_estado: e.target.value})}
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none">
-              <option value="PRESENTE">AsistiÃ³</option>
+              <option value="PRESENTE">Asistió</option>
               <option value="TARDE">Tardanza</option>
-              <option value="AUSENTE">FaltÃ³</option>
+              <option value="AUSENTE">Faltó</option>
             </select>
           </div>
           {correccionForm.tiene_ingreso && (
@@ -639,7 +639,7 @@ const AsistenciaAdmin = () => {
                 disabled={correccionForm.eliminar_ingreso}
                 className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100 disabled:text-primary-800/40"
               />
-              <p className="text-xs text-gold-500 mt-1">Dejar vacÃo si no desea modificar</p>
+              <p className="text-xs text-gold-500 mt-1">Dejar vacÍo si no desea modificar</p>
               <label className="mt-2 flex items-center gap-2 text-sm text-red-700">
                 <input
                   type="checkbox"
@@ -661,7 +661,7 @@ const AsistenciaAdmin = () => {
                 disabled={correccionForm.eliminar_salida}
                 className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100 disabled:text-primary-800/40"
               />
-              <p className="text-xs text-gold-500 mt-1">Dejar vacÃo si no desea modificar</p>
+              <p className="text-xs text-gold-500 mt-1">Dejar vacÍo si no desea modificar</p>
               <label className="mt-2 flex items-center gap-2 text-sm text-red-700">
                 <input
                   type="checkbox"
@@ -698,6 +698,5 @@ const AsistenciaAdmin = () => {
 };
 
 export default Asistencia;
-
 
 
