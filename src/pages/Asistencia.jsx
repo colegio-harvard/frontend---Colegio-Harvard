@@ -7,7 +7,8 @@ import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { calendarioAlumno, obtenerHijosPadre, asistenciaHoy, obtenerAulasTutor, asistenciaGlobal, exportarExcelAsistencia, corregirAsistencia } from '../services/asistenciaService';
-import { listarNiveles, listarGrados, listarAulas, listarAÃ±os as listarAnios, obtenerCalendario, actualizarDiaCalendario } from '../services/configEscolarService';
+import { listarNiveles, listarGrados, listarAulas, obtenerCalendario, actualizarDiaCalendario } from '../services/configEscolarService';
+import * as configEscolarService from '../services/configEscolarService';
 import { formatFecha, formatHora, todayLimaISO } from '../utils/formatters';
 import { HiDownload, HiCalendar, HiViewGrid, HiViewList, HiSearch } from 'react-icons/hi';
 import toast from 'react-hot-toast';
@@ -443,7 +444,7 @@ const CalendarizacionAdmin = () => {
   const [loading, setLoading] = useState(false);
 
   const cargarAnios = async () => {
-    const { data } = await listarAnios();
+    const { data } = await configEscolarService['listarA\u00f1os']();
     const lista = data.data || [];
     setAnios(lista);
     const activo = lista.find(a => a.activo) || lista[0];
