@@ -441,6 +441,7 @@ const CalendarizacionAdmin = () => {
   const [desde, setDesde] = useState(todayLimaISO());
   const [hasta, setHasta] = useState(todayLimaISO());
   const [nota, setNota] = useState('Vacaciones');
+  const [motivoLibre, setMotivoLibre] = useState('');
   const [loading, setLoading] = useState(false);
 
   const cargarAnios = async () => {
@@ -495,13 +496,18 @@ const CalendarizacionAdmin = () => {
 
   const guardarRango = async (esLectivo) => {
     if (!anioActivo || !desde || !hasta) return;
+    const notaFinal = nota === 'Otro' ? motivoLibre.trim() : nota;
+    if (!esLectivo && !notaFinal) {
+      toast.error('Ingrese el motivo');
+      return;
+    }
     try {
       await Promise.all(fechasRango().map(fecha =>
         actualizarDiaCalendario({
           id_anio_escolar: anioActivo,
           fecha,
           es_dia_lectivo: esLectivo,
-          nota: esLectivo ? '' : nota
+          nota: esLectivo ? '' : notaFinal
         })
       ));
       toast.success(esLectivo ? 'Fechas restauradas' : 'Fechas marcadas');
@@ -541,13 +547,22 @@ const CalendarizacionAdmin = () => {
           <div>
             <label className="block text-xs font-medium text-gold-600 mb-1">Motivo</label>
             <select value={nota} onChange={(e) => setNota(e.target.value)} className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
-              {['Vacaciones', 'Feriado', 'Dia no laborable', 'Desfile', 'Suspension de clases', 'Otro'].map(x => <option key={x} value={x}>{x}</option>)}
+              {['Vacaciones', 'Feriado', 'DÃ­a no laborable', 'Otro'].map(x => <option key={x} value={x}>{x}</option>)}
             </select>
+            {nota === 'Otro' && (
+              <input
+                type="text"
+                value={motivoLibre}
+                onChange={(e) => setMotivoLibre(e.target.value)}
+                placeholder="Escriba el motivo"
+                className="w-full mt-2 px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm"
+              />
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-3 mt-4">
           <button onClick={() => guardarRango(false)} className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 text-sm font-medium">Marcar fecha especial</button>
-          <button onClick={() => guardarRango(true)} className="px-4 py-2 bg-cream-100 text-primary-700 rounded-lg hover:bg-cream-200 text-sm font-medium">Restaurar como lectivo</button>
+          <button onClick={() => guardarRango(true)} className="px-4 py-2 bg-white border border-cream-300 text-primary-700 shadow-sm hover:bg-cream-50 rounded-lg hover:bg-cream-200 text-sm font-medium">Restaurar como lectivo</button>
         </div>
       </Card>
       <Card>
@@ -686,7 +701,7 @@ const AsistenciaAdmin = () => {
     return (
       <div>
         <div className="flex gap-2 mb-6">
-          <button onClick={() => setAdminTab('global')} className="px-4 py-2 rounded-lg bg-cream-100 text-primary-700">Asistencia Global</button>
+          <button onClick={() => setAdminTab('global')} className="px-4 py-2 rounded-lg bg-white border border-cream-300 text-primary-700 shadow-sm hover:bg-cream-50">Asistencia Global</button>
           <button onClick={() => setAdminTab('calendarizacion')} className="px-4 py-2 rounded-lg bg-primary-700 text-white">Calendarizacion</button>
         </div>
         <CalendarizacionAdmin />
@@ -698,7 +713,7 @@ const AsistenciaAdmin = () => {
     <div>
       <div className="flex gap-2 mb-6">
         <button onClick={() => setAdminTab('global')} className="px-4 py-2 rounded-lg bg-primary-700 text-white">Asistencia Global</button>
-        <button onClick={() => setAdminTab('calendarizacion')} className="px-4 py-2 rounded-lg bg-cream-100 text-primary-700">Calendarizacion</button>
+        <button onClick={() => setAdminTab('calendarizacion')} className="px-4 py-2 rounded-lg bg-white border border-cream-300 text-primary-700 shadow-sm hover:bg-cream-50">Calendarizacion</button>
       </div>
 <div className="flex items-center justify-between mb-6">
         <h1 className="page-title">Asistencia Global</h1>
