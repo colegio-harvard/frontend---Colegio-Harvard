@@ -688,16 +688,16 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
   const [montoPago, setMontoPago] = useState('');
   const [observacion, setObservacion] = useState('');
 
-  const conceptoPago = () => String(mes?.clave || mes?.nombre || '')
+  const conceptoPago = () => String((mes?.clave || '') + ' ' + (mes?.nombre || ''))
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase();
 
   const montoTotalSugerido = () => {
     const clave = conceptoPago();
-    const monto = clave === 'MATRICULA'
+    const monto = clave.includes('MATRICULA')
       ? alumno?.monto_matricula
-      : clave === 'MATERIALES'
+      : clave.includes('MATERIAL')
         ? alumno?.monto_materiales
         : alumno?.monto_pension;
 
@@ -707,8 +707,8 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 
   const etiquetaMontoConcepto = () => {
     const clave = conceptoPago();
-    if (clave === 'MATRICULA') return 'MatrÃ­cula';
-    if (clave === 'MATERIALES') return 'Materiales';
+    if (clave.includes('MATRICULA')) return 'MatrÃ­cula';
+    if (clave.includes('MATERIAL')) return 'Materiales';
     return 'PensiÃ³n';
   };
 
@@ -1088,6 +1088,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 };
 
 export default Pensiones;
+
 
 
 
