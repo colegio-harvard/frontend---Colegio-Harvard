@@ -25,7 +25,8 @@ const Login = () => {
     fetch(`${API_URL}/landing`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data?.portada_imagen_url) setLoginLogo(data.portada_imagen_url);
+        const portada = data?.data?.portada_imagen_url || data?.portada_imagen_url;
+        if (portada) setLoginLogo(portada);
       })
       .catch(() => {});
   }, []);
@@ -135,6 +136,7 @@ const Login = () => {
 };
 
 export default Login;
+
 
 
 
