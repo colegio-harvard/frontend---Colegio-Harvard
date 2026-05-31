@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, API_URL } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -688,21 +688,28 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
   const [montoPago, setMontoPago] = useState('');
   const [observacion, setObservacion] = useState('');
 
-  const montoTotalSugerido = () => {
-    const clave = String(mes?.clave || mes?.nombre || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toUpperCase();
+  const conceptoPago = () => String(mes?.clave || mes?.nombre || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase();
 
-    const monto =
-      clave === 'MATRICULA'
-        ? alumno?.monto_matricula
-        : clave === 'MATERIALES'
-          ? alumno?.monto_materiales
-          : alumno?.monto_pension;
+  const montoTotalSugerido = () => {
+    const clave = conceptoPago();
+    const monto = clave === 'MATRICULA'
+      ? alumno?.monto_matricula
+      : clave === 'MATERIALES'
+        ? alumno?.monto_materiales
+        : alumno?.monto_pension;
 
     const numero = Number(monto);
     return Number.isFinite(numero) && numero > 0 ? numero.toFixed(2) : '';
+  };
+
+  const etiquetaMontoConcepto = () => {
+    const clave = conceptoPago();
+    if (clave === 'MATRICULA') return 'MatrÃ­cula';
+    if (clave === 'MATERIALES') return 'Materiales';
+    return 'PensiÃ³n';
   };
 
   const completarMontoTotal = () => {
@@ -714,12 +721,14 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
       try {
         const res = await obtenerDetalleMes(alumno.id, mes.clave);
         const d = res.data.data;
-        setDetalle(d);
+        const sugerido = montoTotalSugerido();
+        const detalleAjustado = sugerido ? { ...d, monto_total: Number(sugerido) } : d;
+        setDetalle(detalleAjustado);
 
         // Pre-seleccionar accion según estado actual
         if (d.estado === 'PAGO_PARCIAL') {
           setAccion('NUEVO_PAGO');
-          setMontoTotal(montoInicial);
+          setMontoTotal(montoTotalSugerido() || String(d.monto_total || ''));
         } else if (d.estado === 'NO_CORRESPONDE') {
           setAccion('');
           setObservacion(d.observacion_no_corresponde || '');
@@ -1079,6 +1088,8 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 };
 
 export default Pensiones;
+
+
 
 
 
