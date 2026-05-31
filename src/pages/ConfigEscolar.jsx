@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import DataTable from '../components/ui/DataTable';
@@ -217,7 +217,7 @@ const ConfigEscolar = () => {
   const [sendingNotif, setSendingNotif] = useState(false);
   const [confirmDeleteNotif, setConfirmDeleteNotif] = useState(null);
   // Sitio Web tab state
-  const [colegioForm, setColegioForm] = useState({ lema: '', descripcion: '', direccion: '', email: '', telefono: '', telefono_whatsapp: '' });
+  const [colegioForm, setColegioForm] = useState({ lema: '', descripcion: '', direccion: '', email: '', telefono: '', telefono_whatsapp: '', portada_imagen_url: '' });
   const [savingColegio, setSavingColegio] = useState(false);
   // Niveles y Grados modals
   const [modalNivel, setModalNivel] = useState(false);
@@ -290,7 +290,8 @@ const ConfigEscolar = () => {
       setColegioForm({
         lema: col.lema || '', descripcion: col.descripcion || '',
         direccion: col.direccion || '', email: col.email || '',
-        telefono: col.telefono || '', telefono_whatsapp: col.telefono_whatsapp || '',
+        telefono: col.telefono || '',
+        portada_imagen_url: col.portada_imagen_url || '', telefono_whatsapp: col.telefono_whatsapp || '',
       });
     } catch {
       toast.error('Error al cargar datos');
@@ -545,6 +546,21 @@ const ConfigEscolar = () => {
     }
   };
 
+  const handlePortadaChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Seleccione una imagen valida');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('La imagen no debe superar 2MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setColegioForm(prev => ({ ...prev, portada_imagen_url: reader.result }));
+    reader.readAsDataURL(file);
+  };
   const handleGuardarColegio = async () => {
     setSavingColegio(true);
     try {
@@ -1083,6 +1099,30 @@ const ConfigEscolar = () => {
             Configure la información que se muestra en la página de inicio pública del colegio.
           </p>
           <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-primary-800/80 mb-1">Imagen principal de la caratula</label>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 border border-cream-200 rounded-lg bg-cream-50/40">
+                {colegioForm.portada_imagen_url ? (
+                  <img src={colegioForm.portada_imagen_url} alt="Vista previa de portada" className="w-28 h-28 rounded-full object-cover border-2 border-gold-300 bg-white" />
+                ) : (
+                  <div className="w-28 h-28 rounded-full border-2 border-dashed border-cream-300 flex items-center justify-center text-cream-400 bg-white">
+                    <HiPhotograph className="w-9 h-9" />
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="px-4 py-2 text-sm font-medium text-primary-700 bg-white border border-cream-300 rounded-lg cursor-pointer hover:border-gold-400 transition-colors">
+                    Cambiar imagen
+                    <input type="file" accept="image/*" onChange={handlePortadaChange} className="hidden" />
+                  </label>
+                  {colegioForm.portada_imagen_url && (
+                    <button type="button" onClick={() => setColegioForm({ ...colegioForm, portada_imagen_url: '' })} className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 transition-colors">
+                      Quitar
+                    </button>
+                  )}
+                  <p className="w-full text-xs text-cream-400">JPG, PNG o WEBP. Max 2MB. Se muestra como imagen central de la caratula.</p>
+                </div>
+              </div>
+            </div>
             <div>
               <label className="block text-sm font-medium text-primary-800/80 mb-1">Lema / Eslogan</label>
               <input type="text" value={colegioForm.lema} maxLength={300}

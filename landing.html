@@ -234,7 +234,7 @@
       <div class="hero-logo-wrapper">
         <div class="hero-logo-glow"></div>
         <div class="hero-logo-ring"></div>
-        <img src="src/assets/logo-harvard.jpeg" alt="Escudo Colegio Harvard" class="hero-logo" />
+        <img id="hero-logo-img" src="src/assets/logo-harvard.jpeg" alt="Escudo Colegio Harvard" class="hero-logo" />
       </div>
       <h1 id="hero-title">Colegio <em>Harvard</em></h1>
       <p class="hero-subtitle" id="hero-subtitle">Formando líderes con valores, comprometidos con la excelencia académica y el desarrollo integral de cada estudiante.</p>
@@ -451,6 +451,7 @@
         if (!data) return;
         if (data.lema) document.getElementById('hero-title').textContent = data.lema;
         if (data.descripcion) document.getElementById('hero-subtitle').textContent = data.descripcion;
+        if (data.portada_imagen_url) document.getElementById('hero-logo-img').src = data.portada_imagen_url;
         if (data.direccion) document.getElementById('contacto-direccion').textContent = data.direccion;
         if (data.telefono) document.getElementById('contacto-telefono').textContent = data.telefono;
         if (data.email) { const el = document.getElementById('contacto-email'); el.textContent = data.email; el.href = 'mailto:' + data.email; }
