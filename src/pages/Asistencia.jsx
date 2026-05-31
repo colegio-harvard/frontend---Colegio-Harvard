@@ -149,7 +149,7 @@ const AsistenciaPadre = () => {
                       className={`text-center py-3 rounded text-sm transition-all ${dia.estado ? `${estadoColor(dia.estado)} font-semibold ${dia.estado ? 'cursor-pointer hover:ring-2 hover:ring-gold-300' : ''}` : dia.dia ? 'bg-cream-50 text-cream-500' : ''} ${diaSeleccionado?.dia === dia.dia ? 'ring-2 ring-primary-500 scale-105' : ''}`}
                     >
                       {dia.dia && <div className="font-semibold text-base">{dia.dia}</div>}
-                      {dia.estado && <div className="text-xs font-medium">{dia.estado === 'NO_LECTIVO' ? 'E' : ESTADO_ASISTENCIA_LABELS[dia.estado]?.label?.charAt(0)}</div>}
+                      {dia.estado && (dia.estado === 'NO_LECTIVO' ? <div className="text-[10px] font-semibold leading-tight px-0.5 break-words">{dia.nota || 'Especial'}</div> : <div className="text-xs font-medium">{ESTADO_ASISTENCIA_LABELS[dia.estado]?.label?.charAt(0)}</div>)}
                       {dia.salida_no_registrada && <div className="text-[10px] text-amber-700 font-medium">Sin salida</div>}
                     </div>
                   ))}
@@ -405,7 +405,7 @@ const AsistenciaTutor = () => {
             {calDatos.map((dia, i) => (
               <div key={i} className={`text-center py-3 rounded text-sm ${dia.estado ? `${estadoColor(dia.estado)} font-semibold` : dia.dia ? 'bg-cream-50 text-cream-500' : ''}`}>
                 {dia.dia && <div className="font-semibold text-base">{dia.dia}</div>}
-                {dia.estado && <div className="text-xs font-medium">{dia.estado === 'NO_LECTIVO' ? 'E' : ESTADO_ASISTENCIA_LABELS[dia.estado]?.label?.charAt(0)}</div>}
+                {dia.estado && (dia.estado === 'NO_LECTIVO' ? <div className="text-[10px] font-semibold leading-tight px-0.5 break-words">{dia.nota || 'Especial'}</div> : <div className="text-xs font-medium">{ESTADO_ASISTENCIA_LABELS[dia.estado]?.label?.charAt(0)}</div>)}
                 {dia.salida_no_registrada && <div className="text-[10px] text-amber-700 font-medium">Sin salida</div>}
               </div>
             ))}
