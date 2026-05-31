@@ -6,18 +6,29 @@ import { login } from '../services/authService';
 import { HiEye, HiEyeOff, HiArrowLeft } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import logoHarvard from '../assets/logo-harvard.png';
+import { API_URL } from '../utils/constants';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loginLogo, setLoginLogo] = useState(logoHarvard);
   const { usuario, iniciarSesion } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (usuario) navigate('/dashboard');
   }, [usuario, navigate]);
+
+  useEffect(() => {
+    fetch(${API_URL}/landing)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.portada_imagen_url) setLoginLogo(data.portada_imagen_url);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,7 +75,7 @@ const Login = () => {
           <div className="p-8">
             {/* Header with shield motif */}
             <div className="text-center mb-8">
-              <img src={logoHarvard} alt="Colegio Harvard" className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-3 border-gold-400 shadow-gold-lg" />
+              <img src={loginLogo} alt="Colegio Harvard" className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-3 border-gold-400 shadow-gold-lg" />
               <h1 className="text-2xl font-bold text-primary-800 font-display tracking-tight">Colegio Harvard</h1>
               <div className="gold-line w-32 mx-auto my-3"></div>
               <p className="text-sm text-gold-600 font-medium">Sistema de Gestión Escolar</p>
@@ -124,4 +135,5 @@ const Login = () => {
 };
 
 export default Login;
+
 

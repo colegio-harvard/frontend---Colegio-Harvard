@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -87,7 +87,7 @@
     .hero-logo-wrapper { display: inline-block; position: relative; margin-top: auto; margin-bottom: auto; }
     .hero-logo-ring { position: absolute; inset: -12px; border-radius: 50%; border: 2px solid transparent; background: var(--grad-gold) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: rotate-slow 20s linear infinite; }
     .hero-logo-glow { position: absolute; inset: -30px; border-radius: 50%; background: radial-gradient(circle, rgba(197,150,58,0.15) 0%, transparent 70%); animation: pulse-ring 3s ease-out infinite; }
-    .hero-logo { width: clamp(130px, 28vh, 240px); height: clamp(130px, 28vh, 240px); border-radius: 50%; object-fit: cover; border: 4px solid var(--gold-400); box-shadow: var(--shadow-gold), 0 0 60px rgba(197,150,58,0.2); position: relative; z-index: 1; animation: fadeIn 1s ease-out; }
+    .hero-logo { width: clamp(170px, 36vh, 312px); height: clamp(170px, 36vh, 312px); border-radius: 50%; object-fit: cover; border: 4px solid var(--gold-400); box-shadow: var(--shadow-gold), 0 0 60px rgba(197,150,58,0.2); position: relative; z-index: 1; animation: fadeIn 1s ease-out; }
     .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid var(--gold-200); border-radius: 100px; padding: 0.4rem 1.2rem; font-size: 0.8rem; font-weight: 600; color: var(--gold-700); letter-spacing: 0.05em; margin-bottom: 2rem; animation: fadeUp 0.8s ease-out 0.3s both; }
     .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-500); animation: pulse-ring 2s ease-out infinite; }
     .hero h1 { font-family: var(--font-display); font-size: clamp(2rem, 6vw, 4.2rem); font-weight: 800; color: var(--crimson-800); line-height: 1.1; margin-bottom: clamp(0.75rem, 2vh, 1.5rem); letter-spacing: -0.02em; animation: fadeUp 0.8s ease-out 0.5s both; }
@@ -188,15 +188,15 @@
       .nav-links.open { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: rgba(253,248,243,0.98); backdrop-filter: blur(20px); padding: 1.5rem; gap: 1rem; border-bottom: 1px solid var(--cream-200); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
       .nav-hamburger { display: flex; }
       .hero { min-height: 100vh; min-height: 100svh; padding: 5rem 1.5rem 3rem; }
-      .hero-logo-wrapper { transform: translateY(-45%); }
-      .hero-logo { width: 160px; height: 160px; }
+      .hero-logo-wrapper { transform: none; margin-top: 2.75rem; margin-bottom: 2.25rem; }
+      .hero-logo { width: 208px; height: 208px; }
       .hero-scroll-hint { display: none; }
       .niveles-grid { grid-template-columns: 1fr; } .valores-grid { grid-template-columns: 1fr; }
       .plataforma-layout { grid-template-columns: 1fr; gap: 2rem; }
       .contacto-grid { grid-template-columns: 1fr; } .contacto-card { padding: 2.5rem 1.5rem; }
       .footer .container { flex-direction: column; text-align: center; } .footer-links { flex-direction: column; gap: 0.75rem; }
     }
-    @media (max-width: 480px) { .hero-actions { flex-direction: column; width: 100%; } .hero-actions a { width: 100%; justify-content: center; } .hero-ornament { display: none; } .hero-logo { width: 130px; height: 130px; } .hero-logo-wrapper { margin-bottom: 1.5rem; } .mockup-kpi-row { grid-template-columns: 1fr; } }
+    @media (max-width: 480px) { .hero-actions { flex-direction: column; width: 100%; } .hero-actions a { width: 100%; justify-content: center; } .hero-ornament { display: none; } .hero-logo { width: 170px; height: 170px; } .hero-logo-wrapper { margin-bottom: 1.5rem; } .mockup-kpi-row { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -467,3 +467,4 @@
   </script>
 </body>
 </html>
+
