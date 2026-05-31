@@ -186,7 +186,7 @@ const AsistenciaPadre = () => {
                   {diaSeleccionado.estado === 'NO_LECTIVO' ? (
                     <div className="bg-sky-50 rounded-lg p-3 border border-sky-100">
                       <p className="text-xs text-sky-700 mb-1">Fecha especial</p>
-                      <p className="text-base font-semibold text-sky-900">{diaSeleccionado.nota || 'DÃ­a no lectivo'}</p>
+                      <p className="text-base font-semibold text-sky-900">{diaSeleccionado.nota || 'D\u00eda no lectivo'}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-4">
@@ -433,7 +433,7 @@ const AsistenciaTutor = () => {
 };
 
 
-const CalendarizaciÃ³nAdmin = () => {
+const CalendarizacionAdmin = () => {
   const [anios, setAnios] = useState([]);
   const [anioActivo, setAnioActivo] = useState('');
   const [mes, setMes] = useState(() => new Date().getMonth() + 1);
@@ -513,19 +513,19 @@ const CalendarizaciÃ³nAdmin = () => {
       toast.success(esLectivo ? 'Fechas restauradas' : 'Fechas marcadas');
       cargarCalendario();
     } catch {
-      toast.error('No se pudo guardar la calendarizaciÃ³n');
+      toast.error('No se pudo guardar la calendarizacion');
     }
   };
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="page-title">CalendarizaciÃ³n</h1>
+        <h1 className="page-title">{'Calendarizaci\u00f3n'}</h1>
       </div>
       <Card className="mb-4">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-gold-600 mb-1">AÃ±o escolar</label>
+            <label className="block text-xs font-medium text-gold-600 mb-1">{'A\u00f1o escolar'}</label>
             <select value={anioActivo} onChange={(e) => setAnioActivo(e.target.value)} className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
               {anios.map(a => <option key={a.id} value={a.id}>{a.anio}</option>)}
             </select>
@@ -547,7 +547,7 @@ const CalendarizaciÃ³nAdmin = () => {
           <div>
             <label className="block text-xs font-medium text-gold-600 mb-1">Motivo</label>
             <select value={nota} onChange={(e) => setNota(e.target.value)} className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
-              {['Vacaciones', 'Feriado', 'DÃ­a no laborable', 'Otro'].map(x => <option key={x} value={x}>{x}</option>)}
+              {['Vacaciones', 'Feriado', 'D\u00eda no laborable', 'Otro'].map(x => <option key={x} value={x}>{x}</option>)}
             </select>
             {nota === 'Otro' && (
               <input
@@ -572,7 +572,7 @@ const CalendarizaciÃ³nAdmin = () => {
             {diasMes().map((d, i) => d ? (
               <button key={i} type="button" onClick={() => { setDesde(d.fecha); setHasta(d.fecha); }} className={`min-h-[72px] rounded p-2 text-left text-sm border ${d.especial && d.especial.es_dia_lectivo === false ? 'bg-sky-50 border-sky-200 text-sky-900' : 'bg-cream-50 border-cream-100 text-primary-800'}`}>
                 <div className="font-semibold">{d.dia}</div>
-                {d.especial && d.especial.es_dia_lectivo === false && <div className="text-xs mt-1 leading-tight">{d.especial.nota || 'DÃ­a no lectivo'}</div>}
+                {d.especial && d.especial.es_dia_lectivo === false && <div className="text-xs mt-1 leading-tight">{d.especial.nota || 'D\u00eda no lectivo'}</div>}
               </button>
             ) : <div key={i} />)}
           </div>
@@ -697,14 +697,14 @@ const AsistenciaAdmin = () => {
     )},
   ];
 
-  if (adminTab === 'calendarizaciÃ³n') {
+  if (adminTab === 'calendarizacion') {
     return (
       <div>
         <div className="flex gap-2 mb-6">
           <button onClick={() => setAdminTab('global')} className="px-4 py-2 rounded-lg bg-white border border-cream-300 text-primary-700 shadow-sm hover:bg-cream-50">Asistencia Global</button>
-          <button onClick={() => setAdminTab('calendarizaciÃ³n')} className="px-4 py-2 rounded-lg bg-primary-700 text-white">CalendarizaciÃ³n</button>
+          <button onClick={() => setAdminTab('calendarizacion')} className="px-4 py-2 rounded-lg bg-primary-700 text-white">{'Calendarizaci\u00f3n'}</button>
         </div>
-        <CalendarizaciÃ³nAdmin />
+        <CalendarizacionAdmin />
       </div>
     );
   }
@@ -713,7 +713,7 @@ const AsistenciaAdmin = () => {
     <div>
       <div className="flex gap-2 mb-6">
         <button onClick={() => setAdminTab('global')} className="px-4 py-2 rounded-lg bg-primary-700 text-white">Asistencia Global</button>
-        <button onClick={() => setAdminTab('calendarizaciÃ³n')} className="px-4 py-2 rounded-lg bg-white border border-cream-300 text-primary-700 shadow-sm hover:bg-cream-50">CalendarizaciÃ³n</button>
+        <button onClick={() => setAdminTab('calendarizacion')} className="px-4 py-2 rounded-lg bg-white border border-cream-300 text-primary-700 shadow-sm hover:bg-cream-50">{'Calendarizaci\u00f3n'}</button>
       </div>
 <div className="flex items-center justify-between mb-6">
         <h1 className="page-title">Asistencia Global</h1>
@@ -779,7 +779,7 @@ const AsistenciaAdmin = () => {
                 onChange={(e) => setFiltros({...filtros, buscar: e.target.value})}
                 onKeyDown={(e) => e.key === 'Enter' && handleFiltrar()}
                 className="w-full pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm"
-                placeholder="Nombre, DNI, cÃ³digo..."
+                placeholder={'Nombre, DNI, c\u00f3digo...'}
               />
             </div>
           </div>
