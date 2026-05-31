@@ -22,7 +22,7 @@ const Login = () => {
   }, [usuario, navigate]);
 
   useEffect(() => {
-    fetch(${API_URL}/landing)
+    fetch(`${API_URL}/landing`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data?.portada_imagen_url) setLoginLogo(data.portada_imagen_url);
@@ -135,5 +135,6 @@ const Login = () => {
 };
 
 export default Login;
+
 
 
