@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, ESTADO_ASISTENCIA_LABELS } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -10,7 +10,7 @@ import { calendarioAlumno, obtenerHijosPadre, asistenciaHoy, obtenerAulasTutor, 
 import { listarNiveles, listarGrados, listarAulas, obtenerCalendario, actualizarDiaCalendario } from '../services/configEscolarService';
 import * as configEscolarService from '../services/configEscolarService';
 import { formatFecha, formatHora, todayLimaISO } from '../utils/formatters';
-import { HiDownload, HiCalendar, HiViewGrid, HiViewList, HiSearch } from 'react-icons/hi';
+import { HiDownload, HiCalendar, HiViewGrid, HiViewList, HiSearch, HiPrinter } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../hooks/useSocket';
 
@@ -32,7 +32,7 @@ const AsistenciaPadre = () => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' }));
   });
-  const [año, setAño] = useState(() => {
+  const [aÃ±o, setAÃ±o] = useState(() => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' }));
   });
@@ -57,7 +57,7 @@ const AsistenciaPadre = () => {
       setLoading(true);
       setDiaSeleccionado(null);
       try {
-        const { data } = await calendarioAlumno({ id_alumno: hijoSeleccionado, mes, anio: año });
+        const { data } = await calendarioAlumno({ id_alumno: hijoSeleccionado, mes, anio: aÃ±o });
         setDatos(data.data || []);
       } catch {
         setDatos([]);
@@ -66,7 +66,7 @@ const AsistenciaPadre = () => {
       }
     };
     fetch();
-  }, [mes, año, hijoSeleccionado]);
+  }, [mes, aÃ±o, hijoSeleccionado]);
 
   const estadoColor = (estado) => {
     const conf = ESTADO_ASISTENCIA_LABELS[estado];
@@ -125,7 +125,7 @@ const AsistenciaPadre = () => {
         <select value={mes} onChange={(e) => setMes(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none">
           {Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{new Date(2000, i).toLocaleString('es-PE', { month: 'long' })}</option>)}
         </select>
-        <input type="number" value={año} onChange={(e) => setAño(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24" />
+        <input type="number" value={aÃ±o} onChange={(e) => setAÃ±o(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24" />
       </div>
 
       {loading ? <LoadingSpinner /> : (
@@ -139,7 +139,7 @@ const AsistenciaPadre = () => {
             <div className="space-y-4">
               <Card>
                 <div className="grid grid-cols-7 gap-1">
-                  {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
+                  {['Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b', 'Dom'].map(d => (
                     <div key={d} className="text-center text-sm font-semibold text-primary-700 py-2">{d}</div>
                   ))}
                   {datos.map((dia, i) => (
@@ -159,7 +159,7 @@ const AsistenciaPadre = () => {
                 <div className="flex flex-wrap gap-4 mt-4 pt-3 border-t border-cream-200">
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-emerald-100 border border-emerald-300"></span>
-                    <span className="text-primary-800 font-medium">Asistió</span>
+                    <span className="text-primary-800 font-medium">AsistiÃ³</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-amber-100 border border-amber-300"></span>
@@ -167,12 +167,12 @@ const AsistenciaPadre = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <span className="w-4 h-4 rounded bg-red-100 border border-red-300"></span>
-                    <span className="text-primary-800 font-medium">Faltó</span>
+                    <span className="text-primary-800 font-medium">FaltÃ³</span>
                   </div>
                 </div>
               </Card>
 
-              {/* Detalle del día seleccionado */}
+              {/* Detalle del dÃ­a seleccionado */}
               {diaSeleccionado && (
                 <Card>
                   <div className="flex items-center justify-between mb-3">
@@ -274,7 +274,7 @@ const AsistenciaTutor = () => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' }));
   });
-  const [calAño, setCalAño] = useState(() => {
+  const [calAÃ±o, setCalAÃ±o] = useState(() => {
     const now = new Date();
     return parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' }));
   });
@@ -308,13 +308,13 @@ const AsistenciaTutor = () => {
 
   useSocket('asistencia:evento', () => fetchAsistencia());
 
-  // Cargar calendario cuando cambia alumno/mes/año
+  // Cargar calendario cuando cambia alumno/mes/aÃ±o
   useEffect(() => {
     if (!calAlumno) return;
     const fetchCal = async () => {
       setCalLoading(true);
       try {
-        const { data } = await calendarioAlumno({ id_alumno: calAlumno.id, mes: calMes, anio: calAño });
+        const { data } = await calendarioAlumno({ id_alumno: calAlumno.id, mes: calMes, anio: calAÃ±o });
         setCalDatos(data.data || []);
       } catch {
         setCalDatos([]);
@@ -323,12 +323,12 @@ const AsistenciaTutor = () => {
       }
     };
     fetchCal();
-  }, [calAlumno, calMes, calAño]);
+  }, [calAlumno, calMes, calAÃ±o]);
 
   const abrirCalendario = (alumno) => {
     const now = new Date();
     setCalMes(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', month: 'numeric' })));
-    setCalAño(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' })));
+    setCalAÃ±o(parseInt(now.toLocaleString('en-US', { timeZone: 'America/Lima', year: 'numeric' })));
     setCalAlumno(alumno);
     setCalDatos([]);
     setCalModal(true);
@@ -392,14 +392,14 @@ const AsistenciaTutor = () => {
           <select value={calMes} onChange={(e) => setCalMes(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
             {Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{new Date(2000, i).toLocaleString('es-PE', { month: 'long' })}</option>)}
           </select>
-          <input type="number" value={calAño} onChange={(e) => setCalAño(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24 text-sm" />
+          <input type="number" value={calAÃ±o} onChange={(e) => setCalAÃ±o(parseInt(e.target.value))} className="px-3 py-2 border border-cream-300 rounded-lg outline-none w-24 text-sm" />
         </div>
 
         {calLoading ? <LoadingSpinner /> : calDatos.length === 0 ? (
           <p className="text-center text-gold-600 py-8">No hay registros para este periodo</p>
         ) : (
           <div className="grid grid-cols-7 gap-1">
-            {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(d => (
+            {['Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b', 'Dom'].map(d => (
               <div key={d} className="text-center text-sm font-semibold text-primary-700 py-2">{d}</div>
             ))}
             {calDatos.map((dia, i) => (
@@ -416,7 +416,7 @@ const AsistenciaTutor = () => {
         <div className="flex flex-wrap gap-4 mt-4 pt-3 border-t border-cream-200">
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-emerald-100 border border-emerald-300"></span>
-            <span className="text-primary-800 font-medium">Asistió</span>
+            <span className="text-primary-800 font-medium">AsistiÃ³</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-amber-100 border border-amber-300"></span>
@@ -424,7 +424,7 @@ const AsistenciaTutor = () => {
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="w-4 h-4 rounded bg-red-100 border border-red-300"></span>
-            <span className="text-primary-800 font-medium">Faltó</span>
+            <span className="text-primary-800 font-medium">FaltÃ³</span>
           </div>
         </div>
       </Modal>
@@ -586,7 +586,8 @@ const AsistenciaAdmin = () => {
   const [adminTab, setAdminTab] = useState('global');
   const [datos, setDatos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fecha, setFecha] = useState(todayLimaISO());
+  const [fechaInicio, setFechaInicio] = useState(todayLimaISO());
+  const [fechaFin, setFechaFin] = useState(todayLimaISO());
   const [filtros, setFiltros] = useState({ id_nivel: '', id_grado: '', id_aula: '', estado: '', buscar: '' });
   const [niveles, setNiveles] = useState([]);
   const [grados, setGrados] = useState([]);
@@ -609,7 +610,7 @@ const AsistenciaAdmin = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const params = { fecha };
+      const params = { fecha_inicio: fechaInicio, fecha_fin: fechaFin };
       if (filtros.id_nivel) params.id_nivel = filtros.id_nivel;
       if (filtros.id_grado) params.id_grado = filtros.id_grado;
       if (filtros.id_aula) params.id_aula = filtros.id_aula;
@@ -624,7 +625,7 @@ const AsistenciaAdmin = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, [fecha]);
+  useEffect(() => { fetchData(); }, [fechaInicio, fechaFin]);
 
   const handleFiltrar = () => fetchData();
 
@@ -648,7 +649,7 @@ const AsistenciaAdmin = () => {
 
   const handleExportar = async () => {
     try {
-      const params = { fecha };
+      const params = { fecha_inicio: fechaInicio, fecha_fin: fechaFin };
       if (filtros.id_nivel) params.id_nivel = filtros.id_nivel;
       if (filtros.id_grado) params.id_grado = filtros.id_grado;
       if (filtros.id_aula) params.id_aula = filtros.id_aula;
@@ -658,7 +659,7 @@ const AsistenciaAdmin = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'asistencia.xlsx');
+      link.setAttribute('download', sistencia--a-.xlsx);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -668,7 +669,39 @@ const AsistenciaAdmin = () => {
     }
   };
 
+  const resumenPeriodo = datos.reduce((acc, registro) => {
+    if (registro.estado === 'PRESENTE') acc.asistencias += 1;
+    if (registro.estado === 'TARDE') acc.tardanzas += 1;
+    if (registro.estado === 'AUSENTE') acc.faltas += 1;
+    return acc;
+  }, { asistencias: 0, tardanzas: 0, faltas: 0 });
+
+  const handleImprimir = () => {
+    if (!datos.length) return toast.error('No hay registros para imprimir');
+    const filas = datos.map((r) => `
+      <tr>
+        <td>${formatFecha(r.fecha)}</td>
+        <td>${r.alumno?.nombre_completo || ''}</td>
+        <td>${r.alumno?.codigo_alumno || ''}</td>
+        <td>${r.alumno?.aula ? `${r.alumno.aula.grado?.nombre || ''} ${r.alumno.aula.seccion}` : '-'}</td>
+        <td>${ESTADO_ASISTENCIA_LABELS[r.estado]?.label || r.estado || '-'}</td>
+        <td>${r.hora_ingreso ? formatHora(r.hora_ingreso) : '-'}</td>
+        <td>${r.salida_no_registrada ? 'No registrada' : (r.hora_salida ? formatHora(r.hora_salida) : '-')}</td>
+      </tr>`).join('');
+    const ventana = window.open('', '_blank', 'width=1100,height=800');
+    if (!ventana) return toast.error('Permita las ventanas emergentes para imprimir');
+    ventana.document.write(`<!doctype html><html><head><title>Reporte de asistencia</title><style>
+      body{font-family:Arial,sans-serif;color:#4b1d1d;padding:24px}h1{margin:0 0 8px}.meta{margin-bottom:18px;color:#665}
+      .resumen{display:flex;gap:24px;margin:14px 0 20px;font-weight:bold}table{width:100%;border-collapse:collapse;font-size:12px}
+      th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#faf5ed}@media print{body{padding:0}}
+    </style></head><body><h1>Reporte de asistencia</h1><div class="meta">Periodo: ${formatFecha(fechaInicio)} al ${formatFecha(fechaFin)}</div>
+      <div class="resumen"><span>Asistencias: ${resumenPeriodo.asistencias}</span><span>Tardanzas: ${resumenPeriodo.tardanzas}</span><span>Faltas: ${resumenPeriodo.faltas}</span></div>
+      <table><thead><tr><th>Fecha</th><th>Alumno</th><th>Codigo</th><th>Aula</th><th>Estado</th><th>Ingreso</th><th>Salida</th></tr></thead><tbody>${filas}</tbody></table>
+      <script>window.onload=()=>window.print();<\/script></body></html>`);
+    ventana.document.close();
+  };
   const columns = [
+    { header: 'Fecha', render: (r) => formatFecha(r.fecha) },
     { header: 'Alumno', render: (r) => r.alumno?.nombre_completo },
     { header: 'Aula', render: (r) => r.alumno?.aula ? `${r.alumno.aula.grado?.nombre || ''} ${r.alumno.aula.seccion}` : '-' },
     { header: 'Estado', render: (r) => {
@@ -715,18 +748,28 @@ const AsistenciaAdmin = () => {
         <button onClick={() => setAdminTab('global')} className="px-4 py-2 rounded-lg bg-primary-700 text-white">Asistencia Global</button>
         <button onClick={() => setAdminTab('calendarizacion')} className="px-4 py-2 rounded-lg bg-white border border-cream-300 text-primary-700 shadow-sm hover:bg-cream-50">{'Calendarizaci\u00f3n'}</button>
       </div>
-<div className="flex items-center justify-between mb-6">
+<div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="page-title">Asistencia Global</h1>
-        <button onClick={handleExportar} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
-          <HiDownload className="w-4 h-4" /> Exportar Excel
-        </button>
+        <div className="flex gap-2">
+          <button onClick={handleImprimir} className="flex items-center gap-2 px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700 text-sm font-medium">
+            <HiPrinter className="w-4 h-4" /> Imprimir reporte
+          </button>
+          <button onClick={handleExportar} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
+            <HiDownload className="w-4 h-4" /> Exportar Excel
+          </button>
+        </div>
       </div>
 
       <Card className="mb-4">
         <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-gold-600 mb-1">Fecha</label>
-            <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)}
+            <label className="block text-xs font-medium text-gold-600 mb-1">Desde</label>
+            <input type="date" value={fechaInicio} max={fechaFin} onChange={(e) => setFechaInicio(e.target.value)}
+              className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gold-600 mb-1">Hasta</label>
+            <input type="date" value={fechaFin} min={fechaInicio} onChange={(e) => setFechaFin(e.target.value)}
               className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" />
           </div>
           <div>
@@ -748,7 +791,7 @@ const AsistenciaAdmin = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gold-600 mb-1">Sección</label>
+            <label className="block text-xs font-medium text-gold-600 mb-1">SecciÃ³n</label>
             <select value={filtros.id_aula} onChange={(e) => setFiltros({...filtros, id_aula: e.target.value})}
               className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
               <option value="">Todas</option>
@@ -763,9 +806,9 @@ const AsistenciaAdmin = () => {
             <select value={filtros.estado} onChange={(e) => setFiltros({...filtros, estado: e.target.value})}
               className="px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm">
               <option value="">Todos</option>
-              <option value="PRESENTE">Asistió</option>
+              <option value="PRESENTE">AsistiÃ³</option>
               <option value="TARDE">Tardanza</option>
-              <option value="AUSENTE">Faltó</option>
+              <option value="AUSENTE">FaltÃ³</option>
             </select>
           </div>
 
@@ -789,8 +832,14 @@ const AsistenciaAdmin = () => {
         </div>
       </Card>
 
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <Card className="text-center"><p className="text-xs text-gold-600">Asistencias</p><p className="text-2xl font-bold text-emerald-600">{resumenPeriodo.asistencias}</p></Card>
+        <Card className="text-center"><p className="text-xs text-gold-600">Tardanzas</p><p className="text-2xl font-bold text-amber-600">{resumenPeriodo.tardanzas}</p></Card>
+        <Card className="text-center"><p className="text-xs text-gold-600">Faltas</p><p className="text-2xl font-bold text-red-600">{resumenPeriodo.faltas}</p></Card>
+      </div>
+
       <Card>
-        <DataTable columns={columns} data={datos} loading={loading} emptyMessage="No hay registros para esta fecha" rowsPerPage={15} />
+        <DataTable columns={columns} data={datos} loading={loading} emptyMessage="No hay registros para este periodo" rowsPerPage={30} />
       </Card>
 
       <Modal isOpen={correccionModal} onClose={() => setCorreccionModal(false)} title="Corregir Asistencia" size="sm">
@@ -799,9 +848,9 @@ const AsistenciaAdmin = () => {
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Nuevo Estado</label>
             <select value={correccionForm.nuevo_estado} onChange={(e) => setCorreccionForm({...correccionForm, nuevo_estado: e.target.value})}
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none">
-              <option value="PRESENTE">Asistió</option>
+              <option value="PRESENTE">AsistiÃ³</option>
               <option value="TARDE">Tardanza</option>
-              <option value="AUSENTE">Faltó</option>
+              <option value="AUSENTE">FaltÃ³</option>
             </select>
           </div>
           {correccionForm.tiene_ingreso && (
@@ -814,7 +863,7 @@ const AsistenciaAdmin = () => {
                 disabled={correccionForm.eliminar_ingreso}
                 className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100 disabled:text-primary-800/40"
               />
-              <p className="text-xs text-gold-500 mt-1">Dejar vacÍo si no desea modificar</p>
+              <p className="text-xs text-gold-500 mt-1">Dejar vacÃo si no desea modificar</p>
               <label className="mt-2 flex items-center gap-2 text-sm text-red-700">
                 <input
                   type="checkbox"
@@ -836,7 +885,7 @@ const AsistenciaAdmin = () => {
                 disabled={correccionForm.eliminar_salida}
                 className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none disabled:bg-cream-100 disabled:text-primary-800/40"
               />
-              <p className="text-xs text-gold-500 mt-1">Dejar vacÍo si no desea modificar</p>
+              <p className="text-xs text-gold-500 mt-1">Dejar vacÃo si no desea modificar</p>
               <label className="mt-2 flex items-center gap-2 text-sm text-red-700">
                 <input
                   type="checkbox"
@@ -873,5 +922,6 @@ const AsistenciaAdmin = () => {
 };
 
 export default Asistencia;
+
 
 
