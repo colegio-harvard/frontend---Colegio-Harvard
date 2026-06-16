@@ -3,7 +3,7 @@ import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { registrarAsistencia, historialPorteria } from '../../services/asistenciaService';
 import { formatHora, todayLimaISO } from '../../utils/formatters';
-import { HiQrcode, HiKey, HiCheck, HiClock, HiX } from 'react-icons/hi';
+import { HiQrcode, HiKey, HiCheck, HiClock, HiMinus, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../../hooks/useSocket';
 import { fileUrl } from '../../utils/constants';
@@ -19,6 +19,9 @@ const PensionStatus = ({ mes }) => {
   }
   if (mes.estado === 'PAGO_PARCIAL') {
     return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 text-amber-700"><HiClock className="w-4 h-4" /></span>;
+  }
+  if (mes.estado === 'NO_CORRESPONDE') {
+    return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-sky-100 text-sky-700"><HiMinus className="w-4 h-4" /></span>;
   }
   return <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-600"><HiX className="w-4 h-4" /></span>;
 };
