@@ -30,11 +30,11 @@ const Usuarios = () => {
       const [usuariosRes, rolesRes] = await Promise.all([listarUsuarios(), listarRoles()]);
       setUsuarios(usuariosRes.data.data || []);
       const allRoles = rolesRes.data.data || [];
-      // ADMIN solo puede crear PADRE; SUPER_ADMIN ve todos excepto PADRE
+      // ADMIN solo puede crear PADRE; SUPER_ADMIN puede corregir cualquier rol.
       if (currentUser?.rol_codigo === 'ADMIN') {
         setRoles(allRoles.filter(r => r.codigo === 'PADRE'));
       } else {
-        setRoles(allRoles.filter(r => r.codigo !== 'PADRE'));
+        setRoles(allRoles);
       }
     } catch {
       toast.error('Error al cargar usuarios');
