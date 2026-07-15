@@ -695,7 +695,10 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 
   const montoTotalSugerido = () => {
     const clave = conceptoPago();
-    const monto = clave.includes('MATRICULA')
+    const montoPersonalizado = Number(mes?.monto);
+    const monto = Number.isFinite(montoPersonalizado) && montoPersonalizado > 0
+      ? montoPersonalizado
+      : clave.includes('MATRICULA')
       ? alumno?.monto_matricula
       : clave.includes('MATERIAL')
         ? alumno?.monto_materiales
@@ -709,11 +712,11 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
     const clave = conceptoPago();
     if (clave.includes('MATRICULA')) return 'MatrÃ­cula';
     if (clave.includes('MATERIAL')) return 'Materiales';
-    return 'PensiÃ³n';
+    return mes?.nombre || 'PensiÃ³n';
   };
 
   const completarMontoTotal = () => {
-    setMontoTotal((actual) => actual || montoTotalSugerido());
+    setMontoTotal((actual) => actual || String(detalle?.monto_total || montoTotalSugerido()));
   };
 
   useEffect(() => {
@@ -721,14 +724,13 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
       try {
         const res = await obtenerDetalleMes(alumno.id, mes.clave);
         const d = res.data.data;
-        const sugerido = montoTotalSugerido();
-        const detalleAjustado = sugerido ? { ...d, monto_total: Number(sugerido) } : d;
-        setDetalle(detalleAjustado);
+        setDetalle(d);
+        setMontoTotal(String(d.monto_total || montoTotalSugerido()));
 
         // Pre-seleccionar accion según estado actual
         if (d.estado === 'PAGO_PARCIAL') {
           setAccion('NUEVO_PAGO');
-          setMontoTotal(montoTotalSugerido() || String(d.monto_total || ''));
+          setMontoTotal(String(d.monto_total || montoTotalSugerido()));
         } else if (d.estado === 'NO_CORRESPONDE') {
           setAccion('');
           setObservacion(d.observacion_no_corresponde || '');
@@ -839,7 +841,7 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               <p className="text-sm font-semibold text-primary-800">{alumno.nombre_completo}</p>
                             <p className="text-xs text-primary-800/60">
                 {alumno.codigo_alumno} {alumno.aula ? `| ${alumno.aula.grado?.nombre || ''} ${alumno.aula.seccion}` : ''}
-                {alumno.monto_pension != null ? ` | Pensión: ${formatMonto(alumno.monto_pension)}` : ''}
+                {detalle?.monto_total != null ? ` | ${nombreMes(mes)}: ${formatMonto(detalle.monto_total)}` : ''}
               </p>
             </div>
             <EstadoBadge estado={detalle?.estado || 'PENDIENTE'} />
@@ -940,8 +942,8 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-medium text-gold-600 mb-1">Monto Total (S/.)</label>
-                    <input type="text" inputMode="decimal" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)}
-                      className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: 450.00" />
+                    <input type="text" inputMode="decimal" value={montoTotal} readOnly
+                      className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm bg-cream-50" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gold-600 mb-1">Observación (opcional)</label>
@@ -955,9 +957,9 @@ const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
               {accion === 'PAGO_PARCIAL' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-gold-600 mb-1">Monto Total de la pensión (S/.)</label>
-                    <input type="text" inputMode="decimal" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)}
-                      className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm" placeholder="Ej: 450.00" />
+                    <label className="block text-xs font-medium text-gold-600 mb-1">Monto total del concepto (S/.)</label>
+                    <input type="text" inputMode="decimal" value={montoTotal} readOnly
+                      className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none text-sm bg-cream-50" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gold-600 mb-1">Monto de este pago (S/.)</label>
