@@ -35,9 +35,10 @@ import RegistroAsistencia from './pages/RegistroAsistencia';
 import CarnetView from './pages/CarnetView';
 import AulaDetalle from './pages/AulaDetalle';
 import AlumnoDetalle from './pages/AlumnoDetalle';
+import Libretas from './pages/Libretas';
 import { ROLES } from './utils/constants';
 
-const { SUPER_ADMIN, ADMIN, TUTOR, PADRE, PORTERIA, PSICOLOGIA } = ROLES;
+const { SUPER_ADMIN, ADMIN, TUTOR, DOCENTE, PADRE, PORTERIA, PSICOLOGIA } = ROLES;
 
 function App() {
   return (
@@ -161,6 +162,10 @@ function App() {
 
             <Route path="/auditoria" element={
               <ProtectedRoute roles={[SUPER_ADMIN]}><Auditoria /></ProtectedRoute>
+            } />
+
+            <Route path="/libretas" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, TUTOR, DOCENTE]}><Libretas /></ProtectedRoute>
             } />
           </Route>
 

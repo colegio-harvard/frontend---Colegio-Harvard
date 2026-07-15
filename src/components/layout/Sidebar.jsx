@@ -15,6 +15,7 @@ const menuItems = {
     { to: '/config-escolar', icon: HiCog, label: 'Config. Escolar' },
     { to: '/padres', icon: HiUserGroup, label: 'Padres' },
     { to: '/alumnos', icon: HiAcademicCap, label: 'Alumnos' },
+    { to: '/libretas', icon: HiAcademicCap, label: 'Libretas' },
     { to: '/asistencia', icon: HiClipboardCheck, label: 'Asistencia' },
     { to: '/agenda', icon: HiBookOpen, label: 'Agenda' },
     { to: '/reportes-semanales', icon: HiDocumentText, label: 'Reportes' },
@@ -49,10 +50,16 @@ const menuItems = {
   ],
   [ROLES.TUTOR]: [
     { to: '/dashboard', icon: HiHome, label: 'Dashboard' },
+    { to: '/libretas', icon: HiAcademicCap, label: 'Mis notas' },
     { to: '/asistencia', icon: HiClipboardCheck, label: 'Asistencia Hoy' },
     { to: '/agenda', icon: HiBookOpen, label: 'Agenda' },
     { to: '/reportes-semanales', icon: HiDocumentText, label: 'Reportes' },
     { to: '/mensajes', icon: HiChat, label: 'Chats' },
+    { to: '/notificaciones', icon: HiBell, label: 'Notificaciones' },
+  ],
+  [ROLES.DOCENTE]: [
+    { to: '/dashboard', icon: HiHome, label: 'Dashboard' },
+    { to: '/libretas', icon: HiAcademicCap, label: 'Mis notas' },
     { to: '/notificaciones', icon: HiBell, label: 'Notificaciones' },
   ],
   [ROLES.PADRE]: [
