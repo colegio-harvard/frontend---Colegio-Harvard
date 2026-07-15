@@ -20,6 +20,8 @@ import { CSS } from '@dnd-kit/utilities';
 const SortablePaymentItem = ({ item, onRemove, onUpdate }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.clave });
   const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 50 : undefined, opacity: isDragging ? 0.8 : 1 };
+  const usaMontoPersonalizado = item.tipo === 'personalizado'
+    && !['MATRICULA', 'MATERIALES'].includes(item.clave?.toUpperCase());
 
   return (
     <div ref={setNodeRef} style={style} className={`relative rounded-xl border-2 p-3 bg-white transition-shadow ${isDragging ? 'shadow-lg border-gold-400' : 'border-cream-200 hover:border-cream-300'}`}>
@@ -57,7 +59,7 @@ const SortablePaymentItem = ({ item, onRemove, onUpdate }) => {
         maxLength={300}
         className="w-full px-2 py-1 text-[11px] text-cream-500 border border-cream-200 rounded-lg outline-none focus:border-gold-400 transition-colors resize-none bg-cream-50/30"
       />
-      {item.tipo === 'personalizado' && (
+      {usaMontoPersonalizado && (
         <div className="mt-2">
           <label className="block mb-1 text-[11px] font-medium text-primary-700">Monto (S/)</label>
           <input
@@ -421,7 +423,9 @@ const ConfigEscolar = () => {
       toast.error('Todos los pagos personalizados deben tener nombre');
       return;
     }
-    const sinMonto = pagosActivos.find(p => p.tipo === 'personalizado' && (!Number.isFinite(Number(p.monto)) || Number(p.monto) <= 0));
+    const sinMonto = pagosActivos.find(p => p.tipo === 'personalizado'
+      && !['MATRICULA', 'MATERIALES'].includes(p.clave?.toUpperCase())
+      && (!Number.isFinite(Number(p.monto)) || Number(p.monto) <= 0));
     if (sinMonto) {
       toast.error('Todos los pagos personalizados deben tener un monto mayor a cero');
       return;
@@ -434,7 +438,10 @@ const ConfigEscolar = () => {
         nombre: p.nombre,
         tipo: p.tipo,
         comentario: p.comentario?.trim() || '',
-        monto: p.tipo === 'personalizado' ? Number(p.monto) : null,
+        monto: p.tipo === 'personalizado'
+          && !['MATRICULA', 'MATERIALES'].includes(p.clave?.toUpperCase())
+          ? Number(p.monto)
+          : null,
       }));
       await apiClient.post('/pensiones/plantilla', { meses });
       toast.success('Plantilla de pensión guardada');
