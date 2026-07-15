@@ -16,6 +16,11 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+const CONCEPTOS_FIJOS = [
+  { clave: 'MATRICULA', nombre: 'Matrícula' },
+  { clave: 'MATERIALES', nombre: 'Materiales' },
+];
+
 // Componente sortable card para cada pago en el grid DnD
 const SortablePaymentItem = ({ item, onRemove, onUpdate }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.clave });
@@ -30,17 +35,19 @@ const SortablePaymentItem = ({ item, onRemove, onUpdate }) => {
         <button type="button" {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-cream-400 hover:text-cream-600 p-0.5" title="Arrastrar">
           <HiMenuAlt4 className="w-4 h-4" />
         </button>
-        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${item.tipo === 'mes' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
-          {item.tipo === 'mes' ? 'Mes' : 'Custom'}
+        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+          item.tipo === 'mes' ? 'bg-blue-100 text-blue-700'
+            : item.tipo === 'concepto' ? 'bg-emerald-100 text-emerald-700'
+              : 'bg-purple-100 text-purple-700'
+        }`}>
+          {item.tipo === 'mes' ? 'Mes' : item.tipo === 'concepto' ? 'Concepto' : 'Custom'}
         </span>
         <button type="button" onClick={() => onRemove(item.clave)} className="text-cream-300 hover:text-red-500 transition-colors p-0.5" title="Eliminar">
           <HiX className="w-3.5 h-3.5" />
         </button>
       </div>
       {/* Nombre */}
-      {item.tipo === 'mes' ? (
-        <p className="text-sm font-bold text-primary-800 text-center mb-2 truncate">{item.nombre}</p>
-      ) : (
+      {item.tipo === 'personalizado' ? (
         <input
           type="text"
           value={item.nombre}
@@ -49,6 +56,8 @@ const SortablePaymentItem = ({ item, onRemove, onUpdate }) => {
           maxLength={100}
           className="w-full text-sm font-bold text-primary-800 text-center mb-2 px-1.5 py-1 border border-cream-200 rounded-lg outline-none focus:border-gold-400 bg-cream-50/50"
         />
+      ) : (
+        <p className="text-sm font-bold text-primary-800 text-center mb-2 truncate">{item.nombre}</p>
       )}
       {/* Comentario */}
       <textarea
@@ -80,6 +89,7 @@ const SortablePaymentItem = ({ item, onRemove, onUpdate }) => {
 // Componente del tab Pension con DnD
 const PensionTab = ({ catalogoMeses, pagosActivos, setPagosActivos, pensionMeses, savingPension, onGuardar }) => {
   const mesesActivos = new Set(pagosActivos.filter(p => p.tipo === 'mes').map(p => p.clave));
+  const clavesActivas = new Set(pagosActivos.map(p => p.clave));
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -91,6 +101,14 @@ const PensionTab = ({ catalogoMeses, pagosActivos, setPagosActivos, pensionMeses
       setPagosActivos(prev => prev.filter(p => p.clave !== mesKey));
     } else {
       setPagosActivos(prev => [...prev, { clave: mesKey, nombre: mesNombre, tipo: 'mes', comentario: '' }]);
+    }
+  };
+
+  const toggleConceptoFijo = (concepto) => {
+    if (clavesActivas.has(concepto.clave)) {
+      setPagosActivos(prev => prev.filter(p => p.clave !== concepto.clave));
+    } else {
+      setPagosActivos(prev => [...prev, { ...concepto, tipo: 'concepto', comentario: '', monto: null }]);
     }
   };
 
@@ -132,8 +150,25 @@ const PensionTab = ({ catalogoMeses, pagosActivos, setPagosActivos, pensionMeses
         {pagosActivos.length === 0 && ' No hay plantilla configurada aún.'}
       </p>
 
-      {/* Grid compacto de 12 meses */}
-      <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2 mb-6">
+      {/* Conceptos fijos y meses */}
+      <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-14 gap-2 mb-6">
+        {CONCEPTOS_FIJOS.map(concepto => {
+          const activo = clavesActivas.has(concepto.clave);
+          return (
+            <button
+              key={concepto.clave}
+              type="button"
+              onClick={() => toggleConceptoFijo(concepto)}
+              className={`px-2 py-2 rounded-lg text-xs font-semibold border-2 transition-all ${
+                activo
+                  ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm'
+                  : 'border-cream-200 bg-cream-50/30 text-cream-400 hover:border-cream-300 hover:text-cream-500'
+              }`}
+            >
+              {concepto.nombre}
+            </button>
+          );
+        })}
         {catalogoMeses.map(m => {
           const activo = mesesActivos.has(m.clave_mes);
           return (
@@ -271,13 +306,16 @@ const ConfigEscolar = () => {
       setCatalogoMeses(mesesData);
 
       // Construir pagosActivos desde la plantilla
-      const pagos = pensionData.map(p => ({
-        clave: p.clave,
-        nombre: p.nombre,
-        tipo: p.tipo || 'mes',
-        comentario: p.comentario || '',
-        monto: p.monto ?? '',
-      }));
+      const pagos = pensionData.map(p => {
+        const conceptoFijo = CONCEPTOS_FIJOS.find(c => c.clave === p.clave?.toUpperCase());
+        return {
+          clave: conceptoFijo?.clave || p.clave,
+          nombre: conceptoFijo?.nombre || p.nombre,
+          tipo: conceptoFijo ? 'concepto' : (p.tipo || 'mes'),
+          comentario: p.comentario || '',
+          monto: conceptoFijo ? null : (p.monto ?? ''),
+        };
+      });
       setPagosActivos(pagos);
       const cp = configPensionR.data.data;
       if (cp && cp.id) setConfigPension({ dia_inicio: cp.dia_inicio, frecuencia_dias: cp.frecuencia_dias, activa: cp.activa });
