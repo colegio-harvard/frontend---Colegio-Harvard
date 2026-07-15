@@ -49,6 +49,9 @@ const DashboardPagos = () => {
   const [loading, setLoading] = useState(true);
   const [conceptoActivo, setConceptoActivo] = useState('');
   const [exportando, setExportando] = useState(false);
+  const [exportandoGeneral, setExportandoGeneral] = useState(false);
+  const [conceptoDesde, setConceptoDesde] = useState('');
+  const [conceptoHasta, setConceptoHasta] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,8 +74,18 @@ const DashboardPagos = () => {
   }, [data, conceptoActivo]);
 
   const descargarGeneral = async () => {
+    if (!conceptoDesde || !conceptoHasta) {
+      return toast.error('Seleccione el concepto inicial y final del reporte');
+    }
+    const listaConceptos = data?.conceptos || [];
+    const indiceDesde = listaConceptos.findIndex(c => c.clave === conceptoDesde);
+    const indiceHasta = listaConceptos.findIndex(c => c.clave === conceptoHasta);
+    if (indiceDesde > indiceHasta) {
+      return toast.error('El concepto inicial debe estar antes del concepto final');
+    }
     try {
-      const res = await exportarReportePagosExcel();
+      setExportandoGeneral(true);
+      const res = await exportarReportePagosExcel({ concepto_desde: conceptoDesde, concepto_hasta: conceptoHasta });
       const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -85,6 +98,8 @@ const DashboardPagos = () => {
       toast.success('Reporte general descargado');
     } catch {
       toast.error('No se pudo descargar el reporte general');
+    } finally {
+      setExportandoGeneral(false);
     }
   };
 
@@ -127,12 +142,26 @@ const DashboardPagos = () => {
           <h1 className="page-title">Dashboard Pagos</h1>
           <p className="text-sm text-primary-800/60">Resumen financiero del año escolar {data.anio}.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-end gap-2">
           <button onClick={() => navigate('/pensiones')} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">
             Ir a cuadrícula
           </button>
-          <button onClick={descargarGeneral} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
-            <HiDownload className="h-4 w-4" /> Exportar general
+          <label className="flex flex-col gap-1 text-xs font-medium text-primary-800/70">
+            Desde concepto
+            <select value={conceptoDesde} onChange={(e) => setConceptoDesde(e.target.value)} className="rounded-lg border border-cream-300 bg-white px-3 py-2 text-sm text-primary-800 outline-none focus:border-gold-400">
+              <option value="">Seleccionar</option>
+              {conceptos.map(c => <option key={c.clave} value={c.clave}>{c.nombre}</option>)}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-medium text-primary-800/70">
+            Hasta concepto
+            <select value={conceptoHasta} onChange={(e) => setConceptoHasta(e.target.value)} className="rounded-lg border border-cream-300 bg-white px-3 py-2 text-sm text-primary-800 outline-none focus:border-gold-400">
+              <option value="">Seleccionar</option>
+              {conceptos.map(c => <option key={c.clave} value={c.clave}>{c.nombre}</option>)}
+            </select>
+          </label>
+          <button onClick={descargarGeneral} disabled={exportandoGeneral} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
+            <HiDownload className="h-4 w-4" /> {exportandoGeneral ? 'Exportando...' : 'Exportar deudas'}
           </button>
         </div>
       </div>

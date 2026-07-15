@@ -10,6 +10,6 @@ export const listarTicketsPension = (params) => apiClient.get('/pensiones/ticket
 
 export const previewImportacionPensiones = (formData) => apiClient.post('/pensiones/importar-excel/preview', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const aplicarImportacionPensiones = (formData) => apiClient.post('/pensiones/importar-excel/aplicar', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const exportarReportePagosExcel = () => apiClient.get('/pensiones/reporte-pagos/exportar-excel', { responseType: 'blob' });
+export const exportarReportePagosExcel = (params = {}) => apiClient.get('/pensiones/reporte-pagos/exportar-excel', { params, responseType: 'blob' });
 export const exportarDeudoresPensionesExcel = (params) => apiClient.get('/pensiones/deudores/exportar-excel', { params, responseType: 'blob' });
 export const dashboardPensiones = () => apiClient.get('/pensiones/dashboard');
