@@ -57,6 +57,20 @@ const SortablePaymentItem = ({ item, onRemove, onUpdate }) => {
         maxLength={300}
         className="w-full px-2 py-1 text-[11px] text-cream-500 border border-cream-200 rounded-lg outline-none focus:border-gold-400 transition-colors resize-none bg-cream-50/30"
       />
+      {item.tipo === 'personalizado' && (
+        <div className="mt-2">
+          <label className="block mb-1 text-[11px] font-medium text-primary-700">Monto (S/)</label>
+          <input
+            type="number"
+            value={item.monto ?? ''}
+            onChange={(e) => onUpdate(item.clave, 'monto', e.target.value)}
+            placeholder="Ej. 50"
+            min="0.01"
+            step="0.01"
+            className="w-full px-2 py-1 text-sm text-primary-800 border border-cream-200 rounded-lg outline-none focus:border-gold-400 bg-cream-50/30"
+          />
+        </div>
+      )}
     </div>
   );
 };
@@ -84,7 +98,7 @@ const PensionTab = ({ catalogoMeses, pagosActivos, setPagosActivos, pensionMeses
       const match = p.clave.match(/^PAGO_(\d+)$/);
       return match ? Math.max(max, parseInt(match[1])) : max;
     }, 0);
-    setPagosActivos(prev => [...prev, { clave: `PAGO_${maxNum + 1}`, nombre: '', tipo: 'personalizado', comentario: '' }]);
+    setPagosActivos(prev => [...prev, { clave: `PAGO_${maxNum + 1}`, nombre: '', tipo: 'personalizado', comentario: '', monto: '' }]);
   };
 
   const removerPago = (clave) => {
@@ -260,6 +274,7 @@ const ConfigEscolar = () => {
         nombre: p.nombre,
         tipo: p.tipo || 'mes',
         comentario: p.comentario || '',
+        monto: p.monto ?? '',
       }));
       setPagosActivos(pagos);
       const cp = configPensionR.data.data;
@@ -406,10 +421,21 @@ const ConfigEscolar = () => {
       toast.error('Todos los pagos personalizados deben tener nombre');
       return;
     }
+    const sinMonto = pagosActivos.find(p => p.tipo === 'personalizado' && (!Number.isFinite(Number(p.monto)) || Number(p.monto) <= 0));
+    if (sinMonto) {
+      toast.error('Todos los pagos personalizados deben tener un monto mayor a cero');
+      return;
+    }
 
     setSavingPension(true);
     try {
-      const meses = pagosActivos.map(p => ({ clave: p.clave, nombre: p.nombre, tipo: p.tipo, comentario: p.comentario?.trim() || '' }));
+      const meses = pagosActivos.map(p => ({
+        clave: p.clave,
+        nombre: p.nombre,
+        tipo: p.tipo,
+        comentario: p.comentario?.trim() || '',
+        monto: p.tipo === 'personalizado' ? Number(p.monto) : null,
+      }));
       await apiClient.post('/pensiones/plantilla', { meses });
       toast.success('Plantilla de pensión guardada');
       fetchAll();
