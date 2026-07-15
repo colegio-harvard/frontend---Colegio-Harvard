@@ -21,6 +21,12 @@ const CONCEPTOS_FIJOS = [
   { clave: 'MATERIALES', nombre: 'Materiales' },
 ];
 
+const normalizarNombreConcepto = (value = '') => value
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .trim()
+  .toUpperCase();
+
 // Componente sortable card para cada pago en el grid DnD
 const SortablePaymentItem = ({ item, onRemove, onUpdate }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.clave });
@@ -307,7 +313,10 @@ const ConfigEscolar = () => {
 
       // Construir pagosActivos desde la plantilla
       const pagos = pensionData.map(p => {
-        const conceptoFijo = CONCEPTOS_FIJOS.find(c => c.clave === p.clave?.toUpperCase());
+        const claveNormalizada = p.clave?.toUpperCase();
+        const nombreNormalizado = normalizarNombreConcepto(p.nombre);
+        const conceptoFijo = CONCEPTOS_FIJOS.find(c => c.clave === claveNormalizada
+          || c.clave === nombreNormalizado);
         return {
           clave: conceptoFijo?.clave || p.clave,
           nombre: conceptoFijo?.nombre || p.nombre,
