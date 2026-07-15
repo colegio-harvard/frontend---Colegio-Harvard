@@ -14,6 +14,7 @@ const Usuarios = () => {
   const { usuario: currentUser } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [rolFiltro, setRolFiltro] = useState('TODOS');
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
@@ -99,7 +100,7 @@ const Usuarios = () => {
     { header: 'ID', accessor: 'id' },
     { header: 'Usuario', accessor: 'username' },
     { header: 'Nombres', accessor: 'nombres' },
-    { header: 'Rol', render: (row) => <Badge variant="info">{ROLES_LABELS[row.rol?.codigo] || row.rol?.codigo}</Badge> },
+    { header: 'Rol', sortValue: (row) => ROLES_LABELS[row.rol?.codigo] || row.rol?.codigo, render: (row) => <Badge variant="info">{ROLES_LABELS[row.rol?.codigo] || row.rol?.codigo}</Badge> },
     { header: 'Estado', render: (row) => (
       <Badge variant={row.estado === 'ACTIVO' ? 'success' : 'danger'}>{row.estado}</Badge>
     )},
@@ -118,6 +119,10 @@ const Usuarios = () => {
     )},
   ];
 
+  const usuariosFiltrados = rolFiltro === 'TODOS'
+    ? usuarios
+    : usuarios.filter(u => u.rol?.codigo === rolFiltro);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -128,7 +133,16 @@ const Usuarios = () => {
       </div>
 
       <Card>
-        <DataTable columns={columns} data={usuarios} loading={loading} emptyMessage="No hay usuarios registrados" rowsPerPage={10} />
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <label htmlFor="filtro-rol" className="text-sm font-medium text-primary-800">Filtrar por rol</label>
+          <select id="filtro-rol" value={rolFiltro} onChange={(e) => setRolFiltro(e.target.value)}
+            className="min-w-56 px-3 py-2 border border-cream-300 rounded-lg bg-white focus:ring-2 focus:ring-gold-300 outline-none">
+            <option value="TODOS">Todos los usuarios ({usuarios.length})</option>
+            {roles.map(r => <option key={r.id} value={r.codigo}>{r.nombre} ({usuarios.filter(u => u.rol?.codigo === r.codigo).length})</option>)}
+          </select>
+          {rolFiltro !== 'TODOS' && <button type="button" onClick={() => setRolFiltro('TODOS')} className="text-sm text-primary-600 hover:underline">Quitar filtro</button>}
+        </div>
+        <DataTable columns={columns} data={usuariosFiltrados} loading={loading} emptyMessage="No hay usuarios con este rol" rowsPerPage={10} />
       </Card>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editando ? 'Editar Usuario' : 'Nuevo Usuario'}>
