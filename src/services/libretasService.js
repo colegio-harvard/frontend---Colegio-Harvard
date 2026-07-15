@@ -2,7 +2,11 @@ import apiClient from './apiClient';
 
 export const cargarLibretas = () => apiClient.get('/libretas/bootstrap');
 export const crearArea = data => apiClient.post('/libretas/areas', data);
+export const editarArea = (id, data) => apiClient.put(`/libretas/areas/${id}`, data);
+export const eliminarArea = id => apiClient.delete(`/libretas/areas/${id}`);
 export const crearCurso = data => apiClient.post('/libretas/cursos', data);
+export const editarCurso = (id, data) => apiClient.put(`/libretas/cursos/${id}`, data);
+export const eliminarCurso = id => apiClient.delete(`/libretas/cursos/${id}`);
 export const asignarCurso = data => apiClient.post('/libretas/asignaciones', data);
 export const cambiarPeriodo = (id, estado) => apiClient.put(`/libretas/periodos/${id}`, { estado });
 export const cargarNotas = params => apiClient.get('/libretas/notas', { params });
