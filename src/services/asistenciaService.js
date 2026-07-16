@@ -1,6 +1,7 @@
 import apiClient from './apiClient';
 
 export const registrarAsistencia = (data) => apiClient.post('/asistencia/registrar', data);
+export const obtenerPensionesEscaneo = (idAlumno) => apiClient.get(`/asistencia/pensiones-escaneo/${idAlumno}`);
 export const calendarioAlumno = (params) => apiClient.get('/asistencia/calendario', { params });
 export const obtenerHijosPadre = () => apiClient.get('/asistencia/hijos');
 export const asistenciaHoy = (params) => apiClient.get('/asistencia/hoy', { params });

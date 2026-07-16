@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
-import { registrarAsistencia, historialPorteria } from '../services/asistenciaService';
+import { registrarAsistencia, obtenerPensionesEscaneo, historialPorteria } from '../services/asistenciaService';
 import { formatHora, todayLimaISO } from '../utils/formatters';
 import { HiQrcode, HiKey, HiChevronLeft, HiChevronRight, HiCheck, HiClock, HiMinus, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
@@ -118,6 +118,7 @@ const RegistroAsistencia = () => {
   const REGISTROS_POR_PAGINA = 20;
   const codigoRef = useRef(null);
   const cooldownTimerRef = useRef(null);
+  const qrRegistradosRef = useRef(new Map());
 
   const cargarHistorial = async (page = paginaHistorial, filtros = {}) => {
     try {
@@ -143,11 +144,22 @@ const RegistroAsistencia = () => {
       const { data } = await registrarAsistencia(payload);
       playSuccessBeep();
       setScanResult(data.data);
+      if (payload.qr_token) qrRegistradosRef.current.set(payload.qr_token, Date.now());
       setCodigoAlumno('');
       setPaginaHistorial(1);
       cargarHistorial(1);
 
       const resultado = data.data;
+      // La asistencia ya quedó confirmada; los datos financieros se completan sin bloquear la cámara.
+      if (resultado.id_alumno) {
+        obtenerPensionesEscaneo(resultado.id_alumno)
+          .then(({ data: pensionesRes }) => {
+            setScanResult(actual => actual?.id_alumno === resultado.id_alumno
+              ? { ...actual, pensiones: pensionesRes.data }
+              : actual);
+          })
+          .catch(() => {});
+      }
       const esIngreso = resultado.tipo_evento === 'CHECKIN';
 
       // Toast invasivo para ambos modos
@@ -224,6 +236,16 @@ const RegistroAsistencia = () => {
 
   const handleCameraScan = (decodedText) => {
     if (loading || cooldown) return;
+    const ultimoRegistro = qrRegistradosRef.current.get(decodedText);
+    if (ultimoRegistro) {
+      const transcurrido = Date.now() - ultimoRegistro;
+      if (transcurrido < 5000) {
+        const restantes = Math.max(1, Math.ceil((5000 - transcurrido) / 1000));
+        playErrorBeep();
+        toast.error(`Este mismo QR acaba de marcar. Espere ${restantes} segundo${restantes === 1 ? '' : 's'}.`, { duration: 2200, position: 'top-center' });
+        return;
+      }
+    }
     registrar({ qr_token: decodedText });
   };
 
