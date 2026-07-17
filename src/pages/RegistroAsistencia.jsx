@@ -138,6 +138,7 @@ const RegistroAsistencia = () => {
 
   const registrar = async (payload) => {
     if (loading || cooldown) return;
+    const inicioLectura = Date.now();
     setLoading(true);
     if (modo === 'CAMARA') setScannerPaused(true);
     try {
@@ -199,8 +200,15 @@ const RegistroAsistencia = () => {
         { duration: 3000, position: 'top-center' }
       );
 
-      // Cooldown para AMBOS modos (bloqueo de 3 segundos)
-      let remaining = COOLDOWN_SECONDS;
+      // El segundo de seguridad se cuenta desde la lectura, no después de esperar al servidor.
+      const esperaRestanteMs = Math.max(0, (COOLDOWN_SECONDS * 1000) - (Date.now() - inicioLectura));
+      if (esperaRestanteMs === 0) {
+        if (modo === 'CAMARA') setScannerPaused(false);
+        else codigoRef.current?.focus();
+        return;
+      }
+
+      let remaining = Math.max(1, Math.ceil(esperaRestanteMs / 1000));
       setCooldown({
         alumno: resultado.alumno,
         tipo_evento: resultado.tipo_evento,
@@ -209,20 +217,11 @@ const RegistroAsistencia = () => {
         dni: resultado.dni,
         segundos: remaining,
       });
-      cooldownTimerRef.current = setInterval(() => {
-        remaining -= 1;
-        if (remaining <= 0) {
-          clearInterval(cooldownTimerRef.current);
-          setCooldown(null);
-          if (modo === 'CAMARA') {
-            setScannerPaused(false);
-          } else {
-            codigoRef.current?.focus();
-          }
-        } else {
-          setCooldown(prev => prev ? { ...prev, segundos: remaining } : null);
-        }
-      }, 1000);
+      cooldownTimerRef.current = setTimeout(() => {
+        setCooldown(null);
+        if (modo === 'CAMARA') setScannerPaused(false);
+        else codigoRef.current?.focus();
+      }, esperaRestanteMs);
     } catch (err) {
       playErrorBeep();
       toast.error(err.response?.data?.error || 'Error al registrar');
@@ -258,7 +257,7 @@ const RegistroAsistencia = () => {
   useEffect(() => {
     cargarHistorial(1);
     return () => {
-      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+      if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current);
     };
   }, []);
 
