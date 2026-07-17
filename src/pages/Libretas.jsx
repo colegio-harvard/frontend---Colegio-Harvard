@@ -134,7 +134,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .spread>.panel.brand>p.serif{margin:2.2mm 2mm 1.5mm;font-size:2.7mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child{margin-top:1mm;padding:2mm 4mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child:after{content:'❦';position:absolute;left:50%;bottom:1mm;transform:translateX(-50%);color:#b9822f;font-size:4.5mm}
-    .sheet:first-of-type .cover-children{display:block;width:90%;height:43mm;object-fit:contain;object-position:center bottom;margin:auto auto 0;mix-blend-mode:multiply}
+    .sheet:first-of-type .cover-children{display:block;width:100%;height:51mm;object-fit:contain;object-position:center bottom;margin:auto auto -1mm}
   </style>`;
   let htmlFinal = html
     .replace(/<tbody><tr><td>Acompañamiento y apoyo familiar<\/td>.*?<\/tr><\/tbody>/, `<tbody>${filasPadre}</tbody>`)
