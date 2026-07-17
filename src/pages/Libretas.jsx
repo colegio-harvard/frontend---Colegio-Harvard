@@ -152,7 +152,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:nth-of-type(2) .side-emblem{display:block;width:64mm;height:64mm;object-fit:contain;margin:0 auto -2mm}
     .sheet:nth-of-type(2) .side-motto{font:italic 3.1mm Georgia;line-height:1.35;text-align:center;color:#7f1018;margin:0}
     .sheet:nth-of-type(2) .side-motto b{display:block;font-size:3.6mm;font-style:normal;letter-spacing:.35mm;margin-bottom:1mm}
-    .sheet:nth-of-type(2) .side-family{display:block;width:78mm;height:70mm;object-fit:contain;object-position:center bottom;margin:auto auto -2mm}
+    .sheet:nth-of-type(2) .side-family{display:block;width:100%;height:90mm;object-fit:contain;object-position:center bottom;margin:auto auto -3mm;transform:scale(1.12);transform-origin:center bottom}
   </style>`;
   let htmlFinal = html
     .replace(/<tbody><tr><td>Acompañamiento y apoyo familiar<\/td>.*?<\/tr><\/tbody>/, `<tbody>${filasPadre}</tbody>`)
@@ -168,7 +168,7 @@ function imprimirLibreta(data, ventana) {
   );
   htmlFinal = htmlFinal.replace(
     /<aside class="panel sidebrand">.*?<\/aside>/,
-    `<aside class="panel sidebrand"><p class="verse">“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”<br><b>(Proverbios 22:6)</b></p><img class="side-emblem" src="${insigniaFamilia}" alt="Insignia del Colegio Harvard con familia"><p class="side-motto"><b>DESDE 1985</b>Cultivamos mentes curiosas<br>y corazones felices</p><img class="side-family" src="${familiaLeyendo}" alt="Familia acompañando el aprendizaje"></aside>`
+    `<aside class="panel sidebrand"><p class="verse">“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”<br><b>(Proverbios 22:6)</b></p><img class="side-emblem" src="${insigniaFamilia}" alt="Insignia del Colegio Harvard con familia"><p class="side-motto"><b>DESDE EL 2002</b>Cultivamos mentes curiosas<br>y corazones felices</p><img class="side-family" src="${familiaLeyendo}" alt="Familia acompañando el aprendizaje"></aside>`
   );
   htmlFinal = htmlFinal.replace(
     /(<div class="identity"><b>Tutor\(a\):<\/b>.*?<\/div>)(<\/div><\/div><\/section>)/,
