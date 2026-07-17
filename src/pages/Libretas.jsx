@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { HiAcademicCap, HiBookOpen, HiClipboardCheck, HiCog, HiPrinter, HiShieldCheck, HiPencil, HiTrash, HiChevronDown } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../services/libretasService';
-import insigniaHarvard from '../assets/insignia-harvard.jpeg';
+import insigniaHarvard from '../assets/logo-oficial-padre.webp';
 import { fileUrl } from '../utils/constants';
 
 const NOTAS = ['', 'AD', 'A', 'B', 'C'];
@@ -75,7 +75,36 @@ function imprimirLibreta(data, ventana) {
     <div class="legend">${[['AD','#1499a8','LOGRO DESTACADO','Supera lo esperado respecto a la competencia.'],['A','#4ca564','LOGRO ESPERADO','Alcanza satisfactoriamente lo programado.'],['B','#e29a17','EN PROCESO','Requiere acompañamiento para lograrlo.'],['C','#d9343a','EN INICIO','Necesita mayor tiempo y apoyo docente.']].map(x=>`<div class="legend-row"><div class="legend-key" style="background:${x[1]}">${x[0]}</div><div class="legend-text"><b>${x[2]}</b><br>${x[3]}</div></div>`).join('')}</div>
   </div><div class="panel brand"><div class="small">Colegio</div><div class="college">Harvard</div><div class="small">INICIAL – PRIMARIA – SECUNDARIA</div><div class="orn"></div><div class="cover-grid">${foto?`<img class="photo" src="${foto}">`:'<div class="photo empty">FOTO</div>'}<img class="logo" src="${insigniaHarvard}"></div><div class="titlebar">LIBRETA DE NOTAS</div><div class="identity"><b>ALUMNO:</b>${esc(alumno.nombre_completo)}<br><b>CÓDIGO:</b>${esc(alumno.codigo_alumno)}<br><b>GRADO:</b>${esc(alumno.grado)} &nbsp; <b>SECCIÓN:</b>${esc(alumno.seccion)}<br><b>NIVEL:</b>${esc(alumno.nivel)} &nbsp; <b>AÑO:</b>${esc(alumno.anio)}<br><b>TELÉFONO:</b>${esc(alumno.celular)}</div><p class="serif"><i>“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”</i></p><div class="identity"><b>Tutor(a):</b>${esc(alumno.tutor)}</div></div></div></section>
   <section class="sheet"><div class="back"><div class="leftcol"><div class="back-title">DISTRIBUCIÓN DE HORAS POR ÁREA Y CURSO</div><table class="grades"><thead><tr><th>ÁREAS CURRICULARES</th><th>CURSOS POR ÁREA</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasCursos}</tbody></table><div class="bottom"><div><div class="section-title">CONDUCTA Y HÁBITOS</div><table class="grades conduct"><thead><tr><th>CONCEPTOS</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasConducta}</tbody></table></div><div class="comments"><div class="section-title">COMENTARIO DEL PROFESOR</div>${[1,2,3,4].map(p=>`<div class="comment"><span class="bubble">${p}</span>${observacion('COMENTARIO_TUTOR',p)||observacion('COMENTARIO_DOCENTE',p)}</div>`).join('')}</div></div><div class="footer">Colegio Harvard · UGEL 06 · Año ${esc(alumno.anio)}</div></div><aside class="panel sidebrand"><p class="verse">“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”<br>(Proverbios 22:6)</p><img class="logo" src="${insigniaHarvard}"><div><b class="serif wine">DESDE 1985</b><p class="verse">Cultivamos mentes curiosas<br>y corazones felices</p></div><div class="family">COLEGIO<br>HARVARD</div></aside></div></section><script>window.onload=()=>setTimeout(()=>window.print(),450)</script></body></html>`;
-  ventana.document.open(); ventana.document.write(html); ventana.document.close();
+  const conceptosPadre = [
+    'Ayuda al niño en sus tareas', 'Ayuda a corregir las malas conductas del niño',
+    'Asiste a los llamados del profesor', 'Cumple el Reglamento del Colegio',
+    'Participa en las actividades', 'Asiste a las reuniones', 'Conducta del padre',
+  ];
+  const filasPadre = conceptosPadre.map(concepto => `<tr><td>${concepto}</td>${[1,2,3,4].map(() => '<td></td>').join('')}</tr>`).join('')
+    + `<tr class="parent-observation"><td>Observación registrada</td>${[1,2,3,4].map(p => `<td>${observacion('NOTA_PADRE',p)}</td>`).join('')}</tr>`;
+  const mejorasCaraUno = `<style>
+    .sheet:first-of-type .spread{gap:3mm}.sheet:first-of-type .panel{padding:4mm 5mm;border-radius:2.5mm}
+    .sheet:first-of-type .status{grid-template-columns:35mm 1fr 28mm;gap:3mm;align-items:start}
+    .sheet:first-of-type .statusbox{min-height:68mm;padding:5mm 3mm 3mm;text-align:left;font-size:3.1mm;line-height:1.65;border:1px dashed #c18b36;background:rgba(255,255,255,.32)}
+    .sheet:first-of-type .statusbox:before{content:'▣';display:block;margin:0 auto 2mm;width:10mm;height:10mm;border-radius:50%;background:#791018;color:white;text-align:center;line-height:10mm;font-size:5mm}
+    .sheet:first-of-type .status .brand p{margin:0 0 1mm;font-size:3.5mm}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-weight:bold;margin-top:1mm}
+    .sheet:first-of-type .brand .small{font-size:5.2mm}.sheet:first-of-type .brand .college{font-size:14mm;line-height:.85;letter-spacing:-.5mm}
+    .sheet:first-of-type .status .brand .college:after{content:'◆';display:block;font-size:3mm;color:#c08b35;letter-spacing:4mm;border-top:1px solid #c08b35;margin:2mm auto 0;width:80%}
+    .sheet:first-of-type .logo.small{width:42mm;height:42mm;border:0;object-fit:contain;margin-top:1mm}
+    .sheet:first-of-type .scale{margin-top:21mm;padding-left:4mm;border-left:1px solid #c08b35;font:3.1mm Georgia;line-height:1.85}.sheet:first-of-type .scale b{font-size:3.3mm}
+    .sheet:first-of-type .parent-title{margin-top:1mm;padding:1.7mm;font-size:4.5mm;border-radius:4mm 4mm 0 0}
+    .sheet:first-of-type .parent-table{font-size:2.05mm}.sheet:first-of-type .parent-table th,.sheet:first-of-type .parent-table td{padding:.65mm 1mm;height:4.2mm}.sheet:first-of-type .parent-table th:first-child,.sheet:first-of-type .parent-table td:first-child{width:56%}.sheet:first-of-type .parent-observation{font-size:1.65mm;color:#6f4c30}
+    .sheet:first-of-type .legend{margin-top:2mm}.sheet:first-of-type .legend-row{grid-template-columns:11mm 1fr;font-size:2.05mm;min-height:11.2mm}.sheet:first-of-type .legend-key{font-size:5.3mm;padding:2.2mm 1mm}.sheet:first-of-type .legend-text{padding:1.1mm 1.5mm;line-height:1.25}.sheet:first-of-type .legend-text b{font-size:2.25mm}
+    .sheet:first-of-type .panel:first-child:after{content:'❧';display:block;text-align:center;color:#c08b35;font-size:6mm;margin-top:2mm}
+  </style>`;
+  const htmlFinal = html
+    .replace(/<tbody><tr><td>Acompañamiento y apoyo familiar<\/td>.*?<\/tr><\/tbody>/, `<tbody>${filasPadre}</tbody>`)
+    .replace('Supera lo esperado respecto a la competencia.','Cuando el estudiante evidencia un nivel superior a lo esperado respecto a la competencia. Demuestra aprendizajes que van más allá del nivel esperado.')
+    .replace('Alcanza satisfactoriamente lo programado.','Cuando el estudiante evidencia el nivel esperado respecto a la competencia, demostrando manejo satisfactorio en todas las áreas propuestas y en el tiempo programado.')
+    .replace('Requiere acompañamiento para lograrlo.','Cuando el estudiante está próximo o cerca al nivel esperado respecto a la competencia, requiere acompañamiento durante un tiempo razonable para lograrlo.')
+    .replace('Necesita mayor tiempo y apoyo docente.','Cuando el estudiante muestra un progreso mínimo y evidencia dificultades frecuentes, necesita mayor tiempo de acompañamiento e intervención del docente.')
+    .replace('</head>', `${mejorasCaraUno}</head>`);
+  ventana.document.open(); ventana.document.write(htmlFinal); ventana.document.close();
 }
 
 export default function Libretas() {
