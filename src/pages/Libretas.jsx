@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import * as api from '../services/libretasService';
 import insigniaHarvard from '../assets/logo-oficial-padre.webp';
 import insigniaJesus from '../assets/insignia-jesus.webp';
+import ninosPortada from '../assets/ninos-portada.png';
 import { fileUrl } from '../utils/constants';
 
 const NOTAS = ['', 'AD', 'A', 'B', 'C'];
@@ -133,6 +134,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .spread>.panel.brand>p.serif{margin:2.2mm 2mm 1.5mm;font-size:2.7mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child{margin-top:1mm;padding:2mm 4mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child:after{content:'❦';position:absolute;left:50%;bottom:1mm;transform:translateX(-50%);color:#b9822f;font-size:4.5mm}
+    .sheet:first-of-type .cover-children{display:block;width:90%;height:43mm;object-fit:contain;object-position:center bottom;margin:auto auto 0;mix-blend-mode:multiply}
   </style>`;
   let htmlFinal = html
     .replace(/<tbody><tr><td>Acompañamiento y apoyo familiar<\/td>.*?<\/tr><\/tbody>/, `<tbody>${filasPadre}</tbody>`)
@@ -145,6 +147,10 @@ function imprimirLibreta(data, ventana) {
   htmlFinal = htmlFinal.replace(
     /(<div class="titlebar">LIBRETA DE NOTAS<\/div>)<div class="identity">.*?<\/div>(<p class="serif">)/,
     `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span><span class="school-levels">Inicial – Primaria – Secundaria</span></div>$2`
+  );
+  htmlFinal = htmlFinal.replace(
+    /(<div class="identity"><b>Tutor\(a\):<\/b>.*?<\/div>)(<\/div><\/div><\/section>)/,
+    `$1<img class="cover-children" src="${ninosPortada}" alt="Niños estudiando">$2`
   );
   ventana.document.open(); ventana.document.write(htmlFinal); ventana.document.close();
 }
