@@ -83,19 +83,20 @@ function imprimirLibreta(data, ventana) {
   const filasPadre = conceptosPadre.map(concepto => `<tr><td>${concepto}</td>${[1,2,3,4].map(() => '<td></td>').join('')}</tr>`).join('')
     + `<tr class="parent-observation"><td>Observación registrada</td>${[1,2,3,4].map(p => `<td>${observacion('NOTA_PADRE',p)}</td>`).join('')}</tr>`;
   const mejorasCaraUno = `<style>
-    .sheet:first-of-type .spread{gap:3mm}.sheet:first-of-type .panel{padding:4mm 5mm;border-radius:2.5mm}
-    .sheet:first-of-type .status{grid-template-columns:35mm 1fr 28mm;gap:3mm;align-items:start}
-    .sheet:first-of-type .statusbox{min-height:68mm;padding:5mm 3mm 3mm;text-align:left;font-size:3.1mm;line-height:1.65;border:1px dashed #c18b36;background:rgba(255,255,255,.32)}
-    .sheet:first-of-type .statusbox:before{content:'▣';display:block;margin:0 auto 2mm;width:10mm;height:10mm;border-radius:50%;background:#791018;color:white;text-align:center;line-height:10mm;font-size:5mm}
-    .sheet:first-of-type .status .brand p{margin:0 0 1mm;font-size:3.5mm}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-weight:bold;margin-top:1mm}
-    .sheet:first-of-type .brand .small{font-size:5.2mm}.sheet:first-of-type .brand .college{font-size:14mm;line-height:.85;letter-spacing:-.5mm}
+    html,body,.sheet,.panel,.brand,.identity,.family,.parent-table,.grades,.comment,.legend-text{background:#fff!important;background-image:none!important}
+    .sheet:first-of-type .spread{gap:3mm}.sheet:first-of-type .panel{padding:4mm 5mm;border-radius:1.5mm}
+    .sheet:first-of-type .status{grid-template-columns:36mm 1fr 28mm;gap:3mm;align-items:start}
+    .sheet:first-of-type .statusbox{min-height:65mm;padding:4mm 3mm 3mm;text-align:center;font-size:3.05mm;line-height:1.55;border:1px dashed #b9822f;background:#fff}
+    .sheet:first-of-type .statusbox:before{content:'▤';display:block;margin:0 auto 2mm;width:10mm;height:10mm;border-radius:50%;background:#791018;color:white;text-align:center;line-height:10mm;font-size:5mm}
+    .sheet:first-of-type .status .brand p{margin:0 0 1mm;font-size:3.05mm;white-space:nowrap}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-size:2.8mm;font-weight:bold;margin:1mm 2mm 0 0}
+    .sheet:first-of-type .brand .small{font-size:5.4mm;margin-top:1mm}.sheet:first-of-type .brand .college{font-size:14.5mm;line-height:.84;letter-spacing:-.6mm}
     .sheet:first-of-type .status .brand .college:after{content:'◆';display:block;font-size:3mm;color:#c08b35;letter-spacing:4mm;border-top:1px solid #c08b35;margin:2mm auto 0;width:80%}
-    .sheet:first-of-type .logo.small{width:42mm;height:42mm;border:0;object-fit:contain;margin-top:1mm}
-    .sheet:first-of-type .scale{margin-top:21mm;padding-left:4mm;border-left:1px solid #c08b35;font:3.1mm Georgia;line-height:1.85}.sheet:first-of-type .scale b{font-size:3.3mm}
-    .sheet:first-of-type .parent-title{margin-top:1mm;padding:1.7mm;font-size:4.5mm;border-radius:4mm 4mm 0 0}
-    .sheet:first-of-type .parent-table{font-size:2.05mm}.sheet:first-of-type .parent-table th,.sheet:first-of-type .parent-table td{padding:.65mm 1mm;height:4.2mm}.sheet:first-of-type .parent-table th:first-child,.sheet:first-of-type .parent-table td:first-child{width:56%}.sheet:first-of-type .parent-observation{font-size:1.65mm;color:#6f4c30}
-    .sheet:first-of-type .legend{margin-top:2mm}.sheet:first-of-type .legend-row{grid-template-columns:11mm 1fr;font-size:2.05mm;min-height:11.2mm}.sheet:first-of-type .legend-key{font-size:5.3mm;padding:2.2mm 1mm}.sheet:first-of-type .legend-text{padding:1.1mm 1.5mm;line-height:1.25}.sheet:first-of-type .legend-text b{font-size:2.25mm}
-    .sheet:first-of-type .panel:first-child:after{content:'❧';display:block;text-align:center;color:#c08b35;font-size:6mm;margin-top:2mm}
+    .sheet:first-of-type .logo.small{width:43mm;height:43mm;border:0;object-fit:contain;margin-top:0}
+    .sheet:first-of-type .scale{margin-top:20mm;padding-left:4mm;border-left:1px solid #b9822f;font:3.05mm Georgia;line-height:1.85}.sheet:first-of-type .scale b{font-size:3.25mm}
+    .sheet:first-of-type .parent-title{margin-top:0;padding:1.6mm;font-size:4.4mm;letter-spacing:.1mm;border-radius:3.5mm 3.5mm 0 0}
+    .sheet:first-of-type .parent-table{font-size:2.25mm}.sheet:first-of-type .parent-table th,.sheet:first-of-type .parent-table td{padding:.6mm 1mm;height:4.25mm}.sheet:first-of-type .parent-table th:first-child,.sheet:first-of-type .parent-table td:first-child{width:56%}.sheet:first-of-type .parent-observation{font-size:1.7mm;color:#6f4c30}
+    .sheet:first-of-type .legend{margin-top:2.2mm}.sheet:first-of-type .legend-row{grid-template-columns:11mm 1fr;font-size:2.15mm;min-height:11.4mm;background:#fff}.sheet:first-of-type .legend-key{font-size:5.3mm;padding:2.2mm 1mm}.sheet:first-of-type .legend-text{padding:1.15mm 1.5mm;line-height:1.22}.sheet:first-of-type .legend-text b{font-size:2.35mm;letter-spacing:.05mm}
+    .sheet:first-of-type .panel:first-child:after{content:'—  ❦  —';display:block;text-align:center;color:#b9822f;font-size:5mm;margin-top:2mm}
   </style>`;
   const htmlFinal = html
     .replace(/<tbody><tr><td>Acompañamiento y apoyo familiar<\/td>.*?<\/tr><\/tbody>/, `<tbody>${filasPadre}</tbody>`)
