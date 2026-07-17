@@ -118,8 +118,8 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .spread>.panel.brand>.small:first-of-type{font-size:5.7mm;margin-top:0}
     .sheet:first-of-type .spread>.panel.brand>.college{font-size:14.5mm}
     .sheet:first-of-type .spread>.panel.brand>.college+.small{font-size:3.2mm;width:72%;padding-top:1.1mm;margin-top:1mm}
-    .sheet:first-of-type .spread>.panel.brand .cover-grid{grid-template-columns:29mm 1fr;min-height:50mm;margin:1.5mm 0 2mm;padding-right:18mm}
-    .sheet:first-of-type .spread>.panel.brand .cover-grid:before{left:0;bottom:-1mm;font-size:3.35mm}
+    .sheet:first-of-type .spread>.panel.brand .cover-grid{grid-template-columns:29mm 1fr;min-height:50mm;margin:1.5mm 0 6mm;padding-right:18mm}
+    .sheet:first-of-type .spread>.panel.brand .cover-grid:before{left:0;bottom:-4mm;font-size:3.35mm;line-height:3.5mm}
     .sheet:first-of-type .spread>.panel.brand .cover-grid:after{right:0;top:8mm;font-size:2.75mm;line-height:1.45}
     .sheet:first-of-type .spread>.panel.brand .photo{width:25mm;height:32mm;margin-bottom:7mm}
     .sheet:first-of-type .spread>.panel.brand .logo{width:47mm;height:47mm;margin-left:2mm}
