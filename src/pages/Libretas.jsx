@@ -6,6 +6,8 @@ import * as api from '../services/libretasService';
 import insigniaHarvard from '../assets/logo-oficial-padre.webp';
 import insigniaJesus from '../assets/insignia-jesus.webp';
 import ninosPortada from '../assets/ninos-portada.png';
+import insigniaFamilia from '../assets/insignia-familia.png';
+import familiaLeyendo from '../assets/familia-leyendo.png';
 import { fileUrl } from '../utils/constants';
 
 const NOTAS = ['', 'AD', 'A', 'B', 'C'];
@@ -135,6 +137,22 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child{margin-top:1mm;padding:2mm 4mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child:after{content:'❦';position:absolute;left:50%;bottom:1mm;transform:translateX(-50%);color:#b9822f;font-size:4.5mm}
     .sheet:first-of-type .cover-children{display:block;width:100%;height:51mm;object-fit:contain;object-position:center bottom;margin:auto auto -1mm}
+    .sheet:nth-of-type(2){padding:4mm 5mm}
+    .sheet:nth-of-type(2) .back{grid-template-columns:2.18fr .82fr;gap:3mm}
+    .sheet:nth-of-type(2) .back-title{font-size:5.6mm;margin:1mm 0 2mm;padding-left:20mm;position:relative;line-height:1.05}
+    .sheet:nth-of-type(2) .back-title:before{content:'▤';position:absolute;left:1mm;top:-4mm;width:16mm;height:14mm;padding-top:3mm;text-align:center;background:#81121b;color:#f4d589;border-bottom:1mm solid #c99a37;font-size:7mm}
+    .sheet:nth-of-type(2) .back-title:after{content:'DE ACUERDO AL NUEVO CURRÍCULO NACIONAL';display:block;color:#c1842d;font:400 3.1mm Georgia;letter-spacing:.45mm;margin-top:1.2mm;border-bottom:1px solid #d6a64a;padding-bottom:1.2mm}
+    .sheet:nth-of-type(2) .grades{font-size:2.65mm}
+    .sheet:nth-of-type(2) .grades td{height:5.65mm;padding:1mm 1.2mm}
+    .sheet:nth-of-type(2) .bottom{margin-top:3mm;grid-template-columns:1.58fr .82fr}
+    .sheet:nth-of-type(2) .conduct td{height:5.55mm}
+    .sheet:nth-of-type(2) .comment{min-height:20.3mm;padding:2.3mm}
+    .sheet:nth-of-type(2) .sidebrand{padding:4mm 3mm 2mm;justify-content:flex-start;overflow:hidden;background:#fff!important}
+    .sheet:nth-of-type(2) .sidebrand .verse{font-size:3.15mm;margin:2mm 0 1mm;line-height:1.35}
+    .sheet:nth-of-type(2) .side-emblem{display:block;width:64mm;height:64mm;object-fit:contain;margin:0 auto -2mm}
+    .sheet:nth-of-type(2) .side-motto{font:italic 3.1mm Georgia;line-height:1.35;text-align:center;color:#7f1018;margin:0}
+    .sheet:nth-of-type(2) .side-motto b{display:block;font-size:3.6mm;font-style:normal;letter-spacing:.35mm;margin-bottom:1mm}
+    .sheet:nth-of-type(2) .side-family{display:block;width:78mm;height:70mm;object-fit:contain;object-position:center bottom;margin:auto auto -2mm}
   </style>`;
   let htmlFinal = html
     .replace(/<tbody><tr><td>Acompañamiento y apoyo familiar<\/td>.*?<\/tr><\/tbody>/, `<tbody>${filasPadre}</tbody>`)
@@ -147,6 +165,10 @@ function imprimirLibreta(data, ventana) {
   htmlFinal = htmlFinal.replace(
     /(<div class="titlebar">LIBRETA DE NOTAS<\/div>)<div class="identity">.*?<\/div>(<p class="serif">)/,
     `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span><span class="school-levels">Inicial – Primaria – Secundaria</span></div>$2`
+  );
+  htmlFinal = htmlFinal.replace(
+    /<aside class="panel sidebrand">.*?<\/aside>/,
+    `<aside class="panel sidebrand"><p class="verse">“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”<br><b>(Proverbios 22:6)</b></p><img class="side-emblem" src="${insigniaFamilia}" alt="Insignia del Colegio Harvard con familia"><p class="side-motto"><b>DESDE 1985</b>Cultivamos mentes curiosas<br>y corazones felices</p><img class="side-family" src="${familiaLeyendo}" alt="Familia acompañando el aprendizaje"></aside>`
   );
   htmlFinal = htmlFinal.replace(
     /(<div class="identity"><b>Tutor\(a\):<\/b>.*?<\/div>)(<\/div><\/div><\/section>)/,
