@@ -118,6 +118,8 @@ const RegistroAsistencia = () => {
   const REGISTROS_POR_PAGINA = 20;
   const codigoRef = useRef(null);
   const cooldownTimerRef = useRef(null);
+  const historyTimerRef = useRef(null);
+  const secondaryTimerRef = useRef(null);
   const qrRegistradosRef = useRef(new Map());
 
   const cargarHistorial = async (page = paginaHistorial, filtros = {}) => {
@@ -136,8 +138,14 @@ const RegistroAsistencia = () => {
     }
   };
 
+  const programarHistorial = (page = 1, delay = 300) => {
+    if (historyTimerRef.current) clearTimeout(historyTimerRef.current);
+    historyTimerRef.current = setTimeout(() => cargarHistorial(page), delay);
+  };
+
   const registrar = async (payload) => {
     if (loading || cooldown) return;
+    if (secondaryTimerRef.current) clearTimeout(secondaryTimerRef.current);
     const inicioLectura = Date.now();
     setLoading(true);
     if (modo === 'CAMARA') setScannerPaused(true);
@@ -158,11 +166,11 @@ const RegistroAsistencia = () => {
       if (payload.qr_token) qrRegistradosRef.current.set(payload.qr_token, Date.now());
       setCodigoAlumno('');
       setPaginaHistorial(1);
-      setTimeout(() => cargarHistorial(1), 0);
+      programarHistorial(1);
 
       // La asistencia ya quedó confirmada; los datos financieros se completan sin bloquear la cámara.
       if (resultado.id_alumno) {
-        setTimeout(() => {
+        secondaryTimerRef.current = setTimeout(() => {
           obtenerPensionesEscaneo(resultado.id_alumno)
             .then(({ data: pensionesRes }) => {
               setScanResult(actual => actual?.id_alumno === resultado.id_alumno
@@ -170,7 +178,7 @@ const RegistroAsistencia = () => {
                 : actual);
             })
             .catch(() => {});
-        }, 0);
+        }, 400);
       }
       const esIngreso = resultado.tipo_evento === 'CHECKIN';
 
@@ -259,23 +267,23 @@ const RegistroAsistencia = () => {
   const handleCodigoSubmit = (e) => {
     e.preventDefault();
     if (!codigoAlumno.trim()) return;
-    registrar({ codigo_alumno: codigoAlumno.trim() });
+    registrar({ codigo_alumno: codigoAlumno.trim().toUpperCase() });
   };
 
   useEffect(() => {
-    cargarHistorial(1);
     return () => {
       if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current);
+      if (historyTimerRef.current) clearTimeout(historyTimerRef.current);
+      if (secondaryTimerRef.current) clearTimeout(secondaryTimerRef.current);
     };
   }, []);
 
   useEffect(() => {
-    cargarHistorial();
-  }, [paginaHistorial]);
+    programarHistorial(paginaHistorial, 0);
+  }, [paginaHistorial, busquedaHistorial, fechaHistorial]);
 
   useEffect(() => {
     setPaginaHistorial(1);
-    cargarHistorial(1);
   }, [busquedaHistorial, fechaHistorial]);
 
   useEffect(() => {
@@ -284,7 +292,7 @@ const RegistroAsistencia = () => {
     }
   }, [modo]);
 
-  useSocket('asistencia:evento', () => cargarHistorial());
+  useSocket('asistencia:evento', () => programarHistorial(1));
 
   const cambiarPagina = (nuevaPagina) => {
     if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
