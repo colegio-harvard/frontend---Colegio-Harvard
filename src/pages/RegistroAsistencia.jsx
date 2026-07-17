@@ -143,23 +143,34 @@ const RegistroAsistencia = () => {
     if (modo === 'CAMARA') setScannerPaused(true);
     try {
       const { data } = await registrarAsistencia(payload);
+      const resultado = data.data;
+      const esperaRestanteMs = Math.max(0, (COOLDOWN_SECONDS * 1000) - (Date.now() - inicioLectura));
+
+      // Liberar primero el control de marcación; el resto de la pantalla se actualiza después.
+      if (esperaRestanteMs === 0) {
+        setLoading(false);
+        if (modo === 'CAMARA') setScannerPaused(false);
+        else setTimeout(() => codigoRef.current?.focus(), 0);
+      }
+
       playSuccessBeep();
-      setScanResult(data.data);
+      setScanResult(resultado);
       if (payload.qr_token) qrRegistradosRef.current.set(payload.qr_token, Date.now());
       setCodigoAlumno('');
       setPaginaHistorial(1);
-      cargarHistorial(1);
+      setTimeout(() => cargarHistorial(1), 0);
 
-      const resultado = data.data;
       // La asistencia ya quedó confirmada; los datos financieros se completan sin bloquear la cámara.
       if (resultado.id_alumno) {
-        obtenerPensionesEscaneo(resultado.id_alumno)
-          .then(({ data: pensionesRes }) => {
-            setScanResult(actual => actual?.id_alumno === resultado.id_alumno
-              ? { ...actual, pensiones: pensionesRes.data }
-              : actual);
-          })
-          .catch(() => {});
+        setTimeout(() => {
+          obtenerPensionesEscaneo(resultado.id_alumno)
+            .then(({ data: pensionesRes }) => {
+              setScanResult(actual => actual?.id_alumno === resultado.id_alumno
+                ? { ...actual, pensiones: pensionesRes.data }
+                : actual);
+            })
+            .catch(() => {});
+        }, 0);
       }
       const esIngreso = resultado.tipo_evento === 'CHECKIN';
 
@@ -201,10 +212,7 @@ const RegistroAsistencia = () => {
       );
 
       // El segundo de seguridad se cuenta desde la lectura, no después de esperar al servidor.
-      const esperaRestanteMs = Math.max(0, (COOLDOWN_SECONDS * 1000) - (Date.now() - inicioLectura));
       if (esperaRestanteMs === 0) {
-        if (modo === 'CAMARA') setScannerPaused(false);
-        else codigoRef.current?.focus();
         return;
       }
 
