@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import { HiAcademicCap, HiBookOpen, HiClipboardCheck, HiCog, HiPrinter, HiShieldCheck, HiPencil, HiTrash, HiChevronDown } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../services/libretasService';
+import insigniaHarvard from '../assets/insignia-harvard.jpeg';
+import { fileUrl } from '../utils/constants';
 
 const NOTAS = ['', 'AD', 'A', 'B', 'C'];
 const tabsAdmin = [
@@ -29,7 +31,7 @@ function SelectorCursos({ cursos, seleccionados, onChange }) {
   </div>;
 }
 
-function imprimirLibreta(data, ventana) {
+function imprimirLibretaAnterior(data, ventana) {
   if (!ventana) {
     ventana = window.open('', '_blank', 'width=1200,height=850');
     if (!ventana) return toast.error('Permita las ventanas emergentes para imprimir');
@@ -46,6 +48,34 @@ function imprimirLibreta(data, ventana) {
   ventana.document.open();
   ventana.document.write(html);
   ventana.document.close();
+}
+
+function imprimirLibreta(data, ventana) {
+  if (!ventana) {
+    ventana = window.open('', '_blank', 'width=1200,height=850');
+    if (!ventana) return toast.error('Permita las ventanas emergentes para imprimir');
+    ventana.opener = null;
+  }
+  const { alumno, notas = [], conducta = [], observaciones = [], criterios = [] } = data;
+  const esc = valor => String(valor ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const nota = (lista, nombre, periodo, campo = 'curso') => esc(lista.find(x => x[campo] === nombre && Number(x.numero) === periodo)?.calificacion || '');
+  const cursos = [...new Map(notas.map(n => [`${n.area}|${n.curso}`, { area:n.area, curso:n.curso }])).values()];
+  const grupos = cursos.reduce((m, c) => (m[c.area] = [...(m[c.area] || []), c], m), {});
+  const filasCursos = Object.entries(grupos).map(([area, lista]) => lista.map((c, i) => `<tr>${i === 0 ? `<td class="area" rowspan="${lista.length}">${esc(area)}</td>` : ''}<td>${esc(c.curso)}</td>${[1,2,3,4].map(p => `<td class="grade">${nota(notas,c.curso,p)}</td>`).join('')}</tr>`).join('')).join('');
+  const nombresConducta = criterios.length ? criterios.map(c => c.nombre) : [...new Set(conducta.map(c => c.nombre))];
+  const filasConducta = nombresConducta.map(n => `<tr><td>${esc(n)}</td>${[1,2,3,4].map(p => `<td class="grade">${nota(conducta,n,p,'nombre')}</td>`).join('')}</tr>`).join('');
+  const observacion = (tipo, p) => esc(observaciones.find(x => x.tipo === tipo && Number(x.numero) === p)?.texto || '');
+  const foto = alumno.foto_url ? fileUrl(alumno.foto_url) : '';
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Libreta - ${esc(alumno.nombre_completo)}</title><style>
+  @page{size:A4 landscape;margin:0}*{box-sizing:border-box}html,body{margin:0;background:#eee;color:#4b1115;font-family:Arial,sans-serif}.sheet{width:297mm;height:210mm;padding:5mm;background:#fffaf0;page-break-after:always;position:relative;overflow:hidden}.sheet:before{content:"";position:absolute;inset:2.5mm;border:1px solid #8c121b;outline:1px solid #d6a64a;outline-offset:1.2mm;pointer-events:none}.spread{height:100%;display:grid;grid-template-columns:1fr 1fr;gap:5mm}.panel{position:relative;border:1px solid #d39b3b;border-radius:4mm;padding:5mm;overflow:hidden}.orn{height:2px;background:linear-gradient(90deg,transparent,#b77b22 25%,#8c121b 50%,#b77b22 75%,transparent);margin:2mm 0}.serif{font-family:Georgia,serif}.wine{color:#7f1018}.brand{text-align:center}.brand .college{font:700 13mm Georgia;color:#681016;line-height:.9}.brand .small{font:700 4mm Georgia;letter-spacing:.4mm}.logo{width:35mm;height:35mm;border-radius:50%;object-fit:cover;border:1.5mm solid #d2a13e}.logo.small{width:27mm;height:27mm}.photo{width:28mm;height:34mm;object-fit:cover;border:1mm solid #d2a13e;border-radius:2mm;background:white}.photo.empty{display:flex;align-items:center;justify-content:center;color:#aa9476}.titlebar{background:#8c1019;color:white;border:1mm solid #c99a37;border-radius:5mm;padding:2mm 5mm;font:700 7mm Georgia;text-align:center}.identity{border:1px solid #d3a14a;border-radius:3mm;padding:3mm;text-align:left;margin-top:3mm;font-size:3.4mm;line-height:1.8}.identity b{display:inline-block;min-width:25mm}.cover-grid{display:grid;grid-template-columns:31mm 1fr;gap:4mm;align-items:center;margin:3mm 0}.status{display:grid;grid-template-columns:29mm 1fr 25mm;gap:4mm;align-items:center}.statusbox{border:1px dashed #c89a4a;border-radius:3mm;padding:3mm;font:700 3.1mm Georgia;line-height:1.8}.scale{font-size:3mm;line-height:1.7}.parent-title,.section-title{background:#8c1019;color:white;text-align:center;padding:1.5mm;font:700 4.2mm Georgia;border-radius:2mm 2mm 0 0}.parent-table,.grades{width:100%;border-collapse:collapse;background:#fffdf7;font-size:2.6mm}.parent-table th,.parent-table td,.grades th,.grades td{border:1px solid #d6b77e;padding:1.1mm}.parent-table th,.grades th{background:#8c1019;color:white}.legend{margin-top:2mm}.legend-row{display:grid;grid-template-columns:10mm 1fr;border:1px solid #d7b67b;border-bottom:0;font-size:2.4mm}.legend-row:last-child{border-bottom:1px solid #d7b67b}.legend-key{color:white;font:700 5mm Georgia;text-align:center;padding:2mm}.legend-text{padding:1.2mm}.back{display:grid;grid-template-columns:2.05fr .95fr;gap:4mm;height:100%}.leftcol{display:flex;flex-direction:column;min-height:0}.back-title{font:700 5.4mm Georgia;margin:1mm 0;color:#781019}.grades{font-size:2.55mm}.grades td{height:5.2mm}.grades .area{font-weight:bold;width:33mm}.grades .grade{width:10mm;text-align:center;font-weight:bold}.bottom{display:grid;grid-template-columns:1.55fr .85fr;gap:3mm;margin-top:3mm;min-height:0}.conduct td{height:4.8mm}.comments{border:1px solid #d5a24a;border-radius:3mm;overflow:hidden}.comment{min-height:18mm;border-bottom:1px solid #d6b77e;padding:2mm;font-size:2.6mm;background:#fffdf7}.comment:last-child{border:0}.bubble{display:inline-flex;width:7mm;height:7mm;align-items:center;justify-content:center;border-radius:50%;background:#8c1019;color:white;font-weight:bold;margin-right:2mm}.sidebrand{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-around;padding:3mm}.sidebrand .verse{font:italic 3.3mm Georgia;line-height:1.4}.family{width:100%;height:48mm;border-radius:50% 50% 12% 12%;background:radial-gradient(circle at 50% 30%,#fff6dc,#edd2a0);display:flex;align-items:center;justify-content:center;color:#8c1019;font:700 5mm Georgia;border:1px solid #d7ad65}.footer{text-align:center;font:italic 2.8mm Georgia;margin-top:auto}@media print{html,body{background:white}.sheet{margin:0}.sheet:last-child{page-break-after:auto}}@media screen{.sheet{margin:8px auto;box-shadow:0 3px 18px #999}}
+  </style></head><body>
+  <section class="sheet"><div class="spread"><div class="panel">
+    <div class="status"><div class="statusbox">SITUACIÓN AL FINALIZAR EL AÑO LECTIVO<br>Promovido: ____<br>Repite: ____<br>Recuperación:<br>____________</div><div class="brand"><p class="serif"><i>“La tradición es un reto para la educación”</i></p><div class="small">Colegio</div><div class="college">Harvard</div><img class="logo small" src="${insigniaHarvard}"></div><div class="scale"><b>Escala de equivalencia:</b><br>AD&nbsp; 16–20<br>A&nbsp;&nbsp; 11–15<br>B&nbsp;&nbsp; 06–10<br>C&nbsp;&nbsp; 00–05</div></div>
+    <div class="parent-title">NOTA DEL PADRE DE FAMILIA</div><table class="parent-table"><thead><tr><th>CONCEPTO</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody><tr><td>Acompañamiento y apoyo familiar</td>${[1,2,3,4].map(p=>`<td>${observacion('NOTA_PADRE',p)}</td>`).join('')}</tr></tbody></table>
+    <div class="legend">${[['AD','#1499a8','LOGRO DESTACADO','Supera lo esperado respecto a la competencia.'],['A','#4ca564','LOGRO ESPERADO','Alcanza satisfactoriamente lo programado.'],['B','#e29a17','EN PROCESO','Requiere acompañamiento para lograrlo.'],['C','#d9343a','EN INICIO','Necesita mayor tiempo y apoyo docente.']].map(x=>`<div class="legend-row"><div class="legend-key" style="background:${x[1]}">${x[0]}</div><div class="legend-text"><b>${x[2]}</b><br>${x[3]}</div></div>`).join('')}</div>
+  </div><div class="panel brand"><div class="small">Colegio</div><div class="college">Harvard</div><div class="small">INICIAL – PRIMARIA – SECUNDARIA</div><div class="orn"></div><div class="cover-grid">${foto?`<img class="photo" src="${foto}">`:'<div class="photo empty">FOTO</div>'}<img class="logo" src="${insigniaHarvard}"></div><div class="titlebar">LIBRETA DE NOTAS</div><div class="identity"><b>ALUMNO:</b>${esc(alumno.nombre_completo)}<br><b>CÓDIGO:</b>${esc(alumno.codigo_alumno)}<br><b>GRADO:</b>${esc(alumno.grado)} &nbsp; <b>SECCIÓN:</b>${esc(alumno.seccion)}<br><b>NIVEL:</b>${esc(alumno.nivel)} &nbsp; <b>AÑO:</b>${esc(alumno.anio)}<br><b>TELÉFONO:</b>${esc(alumno.celular)}</div><p class="serif"><i>“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”</i></p><div class="identity"><b>Tutor(a):</b>${esc(alumno.tutor)}</div></div></div></section>
+  <section class="sheet"><div class="back"><div class="leftcol"><div class="back-title">DISTRIBUCIÓN DE HORAS POR ÁREA Y CURSO</div><table class="grades"><thead><tr><th>ÁREAS CURRICULARES</th><th>CURSOS POR ÁREA</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasCursos}</tbody></table><div class="bottom"><div><div class="section-title">CONDUCTA Y HÁBITOS</div><table class="grades conduct"><thead><tr><th>CONCEPTOS</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasConducta}</tbody></table></div><div class="comments"><div class="section-title">COMENTARIO DEL PROFESOR</div>${[1,2,3,4].map(p=>`<div class="comment"><span class="bubble">${p}</span>${observacion('COMENTARIO_TUTOR',p)||observacion('COMENTARIO_DOCENTE',p)}</div>`).join('')}</div></div><div class="footer">Colegio Harvard · UGEL 06 · Año ${esc(alumno.anio)}</div></div><aside class="panel sidebrand"><p class="verse">“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”<br>(Proverbios 22:6)</p><img class="logo" src="${insigniaHarvard}"><div><b class="serif wine">DESDE 1985</b><p class="verse">Cultivamos mentes curiosas<br>y corazones felices</p></div><div class="family">COLEGIO<br>HARVARD</div></aside></div></section><script>window.onload=()=>setTimeout(()=>window.print(),450)</script></body></html>`;
+  ventana.document.open(); ventana.document.write(html); ventana.document.close();
 }
 
 export default function Libretas() {
