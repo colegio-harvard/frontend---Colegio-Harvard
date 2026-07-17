@@ -4,6 +4,7 @@ import { HiAcademicCap, HiBookOpen, HiClipboardCheck, HiCog, HiPrinter, HiShield
 import { useAuth } from '../context/AuthContext';
 import * as api from '../services/libretasService';
 import insigniaHarvard from '../assets/logo-oficial-padre.webp';
+import insigniaJesus from '../assets/insignia-jesus.webp';
 import { fileUrl } from '../utils/constants';
 
 const NOTAS = ['', 'AD', 'A', 'B', 'C'];
@@ -97,14 +98,26 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .parent-table{font-size:2.25mm}.sheet:first-of-type .parent-table th,.sheet:first-of-type .parent-table td{padding:.6mm 1mm;height:4.25mm}.sheet:first-of-type .parent-table th:first-child,.sheet:first-of-type .parent-table td:first-child{width:56%}.sheet:first-of-type .parent-observation{font-size:1.7mm;color:#6f4c30}
     .sheet:first-of-type .legend{margin-top:2.2mm}.sheet:first-of-type .legend-row{grid-template-columns:11mm 1fr;font-size:2.15mm;min-height:11.4mm;background:#fff}.sheet:first-of-type .legend-key{font-size:5.3mm;padding:2.2mm 1mm}.sheet:first-of-type .legend-text{padding:1.15mm 1.5mm;line-height:1.22}.sheet:first-of-type .legend-text b{font-size:2.35mm;letter-spacing:.05mm}
     .sheet:first-of-type .panel:first-child:after{content:'—  ❦  —';display:block;text-align:center;color:#b9822f;font-size:5mm;margin-top:2mm}
+    .sheet:first-of-type .spread>.panel.brand{padding:5mm 14mm 5mm 6mm;border:1px solid #a96f21;border-radius:1mm;box-shadow:inset 0 0 0 1.3mm #fff,inset 0 0 0 1.6mm #d7aa5c;justify-content:flex-start}
+    .sheet:first-of-type .spread>.panel.brand:before{content:'❦';display:block;color:#b9822f;font-size:6mm;line-height:5mm;margin:-1mm auto 1mm}
+    .sheet:first-of-type .spread>.panel.brand:after{content:'“Porque el Señor al que ama, disciplina” · Hebreos 12:6';position:absolute;right:0;top:0;width:9mm;height:100%;background:#741018;color:#fff;border-left:1mm solid #d3a348;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;justify-content:center;font:italic 3.1mm Georgia;letter-spacing:.15mm}
+    .sheet:first-of-type .spread>.panel.brand>.small:first-of-type{font-size:6.5mm;line-height:1;margin-top:1mm}.sheet:first-of-type .spread>.panel.brand>.college{font-size:16mm;line-height:.86}.sheet:first-of-type .spread>.panel.brand>.college+.small{font-size:3.6mm;border-top:1px solid #c28c34;padding-top:1.5mm;width:78%;margin:1.5mm auto 0}
+    .sheet:first-of-type .spread>.panel.brand>.orn{display:none}.sheet:first-of-type .spread>.panel.brand .cover-grid{position:relative;grid-template-columns:31mm 1fr;min-height:57mm;align-items:center;margin:2mm 0 0;padding-right:20mm}
+    .sheet:first-of-type .spread>.panel.brand .cover-grid:before{content:'AÑO: ${esc(alumno.anio)}';position:absolute;left:1mm;bottom:0;font:700 3.7mm Georgia;color:#701018}.sheet:first-of-type .spread>.panel.brand .cover-grid:after{content:'UGEL 06\\A R.D. 01009-02\\A R.D. 04890-07';white-space:pre;position:absolute;right:0;top:10mm;text-align:right;font:700 3mm Georgia;line-height:1.55;color:#381517}
+    .sheet:first-of-type .spread>.panel.brand .photo{width:28mm;height:36mm;border:1px solid #c79235;border-radius:2mm;margin-bottom:9mm}.sheet:first-of-type .spread>.panel.brand .logo{width:55mm;height:55mm;border:0;object-fit:contain;margin-left:1mm}
+    .sheet:first-of-type .spread>.panel.brand .titlebar{position:relative;width:84%;margin:-1mm auto 2mm;padding:2.1mm 3mm;border:1mm solid #c99a37;border-radius:1mm;font-size:6mm;box-shadow:0 0 0 .5mm #781019}.sheet:first-of-type .spread>.panel.brand .titlebar:before{content:'▤';display:inline-block;margin-right:3mm;color:#efd58d}.sheet:first-of-type .spread>.panel.brand .titlebar:after{content:'';position:absolute;inset:-2mm -6mm;border-top:1px solid #c99a37;border-bottom:1px solid #c99a37;z-index:-1}
+    .sheet:first-of-type .spread>.panel.brand .titlebar+.identity{margin-top:2mm;padding:3mm 4mm;font:3.05mm Georgia;line-height:1.65;border-radius:2mm;text-transform:none}.sheet:first-of-type .spread>.panel.brand .titlebar+.identity b{font-size:3.1mm;color:#431014}
+    .sheet:first-of-type .spread>.panel.brand>p.serif{font-size:2.85mm;line-height:1.35;margin:3mm 2mm 2mm;padding:0 7mm;position:relative}.sheet:first-of-type .spread>.panel.brand>p.serif:before,.sheet:first-of-type .spread>.panel.brand>p.serif:after{content:'❧';position:absolute;color:#b9822f;font-size:5mm;top:0}.sheet:first-of-type .spread>.panel.brand>p.serif:before{left:0}.sheet:first-of-type .spread>.panel.brand>p.serif:after{right:0;transform:scaleX(-1)}
+    .sheet:first-of-type .spread>.panel.brand>.identity:last-child{margin-top:1mm;padding:2.5mm 4mm;border-radius:2mm;font:3.1mm Georgia;text-align:center;border:1px solid #d3a14a}.sheet:first-of-type .spread>.panel.brand>.identity:last-child:before{content:'●';display:inline-block;margin-right:3mm;color:#7b1119;font-size:5mm;vertical-align:middle}
   </style>`;
-  const htmlFinal = html
+  let htmlFinal = html
     .replace(/<tbody><tr><td>Acompañamiento y apoyo familiar<\/td>.*?<\/tr><\/tbody>/, `<tbody>${filasPadre}</tbody>`)
     .replace('Supera lo esperado respecto a la competencia.','Cuando el estudiante evidencia un nivel superior a lo esperado respecto a la competencia. Demuestra aprendizajes que van más allá del nivel esperado.')
     .replace('Alcanza satisfactoriamente lo programado.','Cuando el estudiante evidencia el nivel esperado respecto a la competencia, demostrando manejo satisfactorio en todas las áreas propuestas y en el tiempo programado.')
     .replace('Requiere acompañamiento para lograrlo.','Cuando el estudiante está próximo o cerca al nivel esperado respecto a la competencia, requiere acompañamiento durante un tiempo razonable para lograrlo.')
     .replace('Necesita mayor tiempo y apoyo docente.','Cuando el estudiante muestra un progreso mínimo y evidencia dificultades frecuentes, necesita mayor tiempo de acompañamiento e intervención del docente.')
     .replace('</head>', `${mejorasCaraUno}</head>`);
+  htmlFinal = htmlFinal.replace(/(<div class="cover-grid">.*?<img class="logo" src=")[^"]+/, `$1${insigniaJesus}`);
   ventana.document.open(); ventana.document.write(htmlFinal); ventana.document.close();
 }
 
