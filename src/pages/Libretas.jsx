@@ -101,8 +101,8 @@ function imprimirLibreta(data, ventana) {
   const mejorasCaraUno = `<style>
     html,body,.sheet,.panel,.brand,.identity,.family,.parent-table,.grades,.comment,.legend-text{background:#fff!important;background-image:none!important}
     .sheet:first-of-type .spread{gap:3mm}.sheet:first-of-type .panel{padding:4mm 5mm;border-radius:1.5mm}
-    .sheet:first-of-type .status{grid-template-columns:36mm 1fr 28mm;gap:3mm;align-items:start}
-    .sheet:first-of-type .statusbox{min-height:65mm;padding:4mm 3mm 3mm;text-align:center;font-size:3.05mm;line-height:1.55;border:1px dashed #b9822f;background:#fff}
+    .sheet:first-of-type .status{grid-template-columns:45mm minmax(0,1fr) 27mm;gap:3mm;align-items:start}
+    .sheet:first-of-type .statusbox{width:45mm;min-height:65mm;padding:4mm 3mm 3mm;text-align:center;font-size:3.05mm;line-height:1.55;border:1px dashed #b9822f;background:#fff;overflow:hidden}
     .sheet:first-of-type .statusbox:before{content:'▤';display:block;margin:0 auto 2mm;width:10mm;height:10mm;border-radius:50%;background:#791018;color:white;text-align:center;line-height:10mm;font-size:5mm}
     .sheet:first-of-type .status .brand p{margin:0 0 1mm;font-size:3.05mm;white-space:nowrap;text-align:right;padding-right:2mm}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-size:2.8mm;font-weight:bold;margin:1mm 0 0}
     .sheet:first-of-type .brand .small{font-size:5.4mm;margin-top:1mm}.sheet:first-of-type .brand .college{font-size:14.5mm;line-height:.84;letter-spacing:-.6mm}
@@ -113,10 +113,12 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .parent-table{font-size:2.25mm;table-layout:fixed}.sheet:first-of-type .parent-table th,.sheet:first-of-type .parent-table td{padding:.6mm 1mm;height:4.25mm}.sheet:first-of-type .parent-table th:first-child,.sheet:first-of-type .parent-table td:first-child{width:56%}.sheet:first-of-type .parent-table th:not(:first-child),.sheet:first-of-type .parent-table td:not(:first-child){width:11%;text-align:center}
     .sheet:first-of-type .statusbox{display:flex;flex-direction:column;align-items:stretch;text-align:left!important}
     .sheet:first-of-type .statusbox:before{flex:0 0 auto}
-    .sheet:first-of-type .status-heading{text-align:center;font-weight:700;line-height:1.45;margin-bottom:2mm}
-    .sheet:first-of-type .status-choice{display:grid;grid-template-columns:1fr 12mm 12mm;gap:1mm;align-items:center;margin:.8mm 0;font-size:2.75mm}
-    .sheet:first-of-type .status-choice .box{border:1px solid #8b1820;border-radius:.7mm;padding:.5mm .7mm;text-align:center;font:700 2.4mm Arial;background:#fff}
-    .sheet:first-of-type .tutor-signature{margin-top:auto;padding-top:5mm;border-bottom:1px solid #6e311d;text-align:center;font:2.5mm Georgia;line-height:1.2}
+    .sheet:first-of-type .status-heading{text-align:center;font-weight:700;font-size:3mm;line-height:1.4;margin-bottom:3mm;padding:0 1mm}
+    .sheet:first-of-type .status-choice{display:grid;grid-template-columns:minmax(0,1fr) 9.5mm 9.5mm;gap:1mm;align-items:center;width:100%;margin:1.2mm 0;font-size:2.55mm;line-height:1.1}
+    .sheet:first-of-type .status-choice>span:first-child{font-weight:700;white-space:nowrap;text-align:left}
+    .sheet:first-of-type .status-choice .box{width:9.5mm;border:1px solid #8b1820;border-radius:.7mm;padding:.7mm .2mm;text-align:center;font:700 2.15mm Arial;background:#fff;white-space:nowrap}
+    .sheet:first-of-type .tutor-signature{width:28mm;margin:auto auto 0;padding-top:5mm;border-bottom:1px solid #6e311d;text-align:center;font:2.4mm Georgia;line-height:1.2}
+    .sheet:first-of-type .status .brand p{font-size:2.75mm}
     .sheet:first-of-type .legend{margin-top:2.2mm}.sheet:first-of-type .legend-row{grid-template-columns:11mm 1fr;font-size:2.15mm;min-height:11.4mm;background:#fff}.sheet:first-of-type .legend-key{font-size:5.3mm;padding:2.2mm 1mm}.sheet:first-of-type .legend-text{padding:1.15mm 1.5mm;line-height:1.22}.sheet:first-of-type .legend-text b{font-size:2.35mm;letter-spacing:.05mm}
     .sheet:first-of-type .panel:first-child:after{content:'—  ❦  —';display:block;text-align:center;color:#b9822f;font-size:5mm;margin-top:2mm}
     .sheet:first-of-type .spread>.panel.brand{padding:5mm 14mm 5mm 6mm;border:1px solid #a96f21;border-radius:1mm;box-shadow:inset 0 0 0 1.3mm #fff,inset 0 0 0 1.6mm #d7aa5c;justify-content:flex-start}
