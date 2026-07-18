@@ -11,6 +11,7 @@ import familiaLeyendo from '../assets/familia-leyendo.png';
 import { fileUrl } from '../utils/constants';
 
 const NOTAS = ['', 'AD', 'A', 'B', 'C'];
+let periodoSeleccionadoParaImpresion = 1;
 const tabsAdmin = [
   ['registro', 'Registro de notas', HiBookOpen], ['acom', 'Conducta y hábitos', HiClipboardCheck], ['config', 'Cursos y responsables', HiCog],
   ['periodos', 'Bimestres', HiClipboardCheck], ['merito', 'Orden de mérito', HiAcademicCap],
@@ -54,7 +55,7 @@ function imprimirLibretaAnterior(data, ventana) {
   ventana.document.close();
 }
 
-function imprimirLibreta(data, ventana) {
+function imprimirLibreta(data, ventana, periodoImpreso = periodoSeleccionadoParaImpresion) {
   if (!ventana) {
     ventana = window.open('', '_blank', 'width=1200,height=850');
     if (!ventana) return toast.error('Permita las ventanas emergentes para imprimir');
@@ -62,13 +63,12 @@ function imprimirLibreta(data, ventana) {
   }
   const { alumno, notas = [], conducta = [], notasPadre = [], observaciones = [], criterios = [], criteriosPadre = [] } = data;
   const esc = valor => String(valor ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const numeroPeriodoImpreso = Math.min(4, Math.max(1, Number(periodoImpreso) || 1));
+  const nombrePeriodoImpreso = ['I','II','III','IV'][numeroPeriodoImpreso - 1];
   const nota = (lista, nombre, periodo, campo = 'curso') => esc(lista.find(x => x[campo] === nombre && Number(x.numero) === periodo)?.calificacion || '');
   const cursos = [...new Map(notas.map(n => [`${n.area}|${n.curso}`, { area:n.area, curso:n.curso }])).values()];
   const grupos = cursos.reduce((m, c) => (m[c.area] = [...(m[c.area] || []), c], m), {});
-  const comentariosCurso = curso => [1,2,3,4].map(periodo => {
-    const texto = observaciones.find(x => x.tipo === 'COMENTARIO_DOCENTE' && x.curso === curso && Number(x.numero) === periodo)?.texto;
-    return texto ? `<span class="course-comment-item"><b>${['I','II','III','IV'][periodo - 1]}:</b> ${esc(texto)}</span>` : '';
-  }).filter(Boolean).join('');
+  const comentariosCurso = curso => esc(observaciones.find(x => x.tipo === 'COMENTARIO_DOCENTE' && x.curso === curso && Number(x.numero) === numeroPeriodoImpreso)?.texto || '');
   const iconoArea = area => {
     const a = String(area || '').toUpperCase();
     if (a.includes('COMUNIC')) return '▤';
@@ -171,10 +171,10 @@ function imprimirLibreta(data, ventana) {
     .sheet:nth-of-type(2) .grades{font-size:2.65mm}
     .sheet:nth-of-type(2) .grades td{height:5.65mm;padding:1mm 1.2mm}
     .sheet:nth-of-type(2) .course-grades{table-layout:fixed}
-    .sheet:nth-of-type(2) .course-grades th:nth-child(1){width:34mm}
-    .sheet:nth-of-type(2) .course-grades th:nth-child(2){width:48mm}
+    .sheet:nth-of-type(2) .course-grades th:nth-child(1){width:38mm}
+    .sheet:nth-of-type(2) .course-grades th:nth-child(2){width:44mm}
     .sheet:nth-of-type(2) .course-grades th:nth-child(n+3):nth-child(-n+6){width:8mm}
-    .sheet:nth-of-type(2) .course-grades .area{width:34mm!important;white-space:normal}
+    .sheet:nth-of-type(2) .course-grades .area{width:38mm!important;white-space:normal}
     .sheet:nth-of-type(2) .course-grades .course-name{white-space:nowrap;font-size:2.45mm}
     .sheet:nth-of-type(2) .course-grades .course-comment{padding:.55mm 1.2mm;text-align:left;font-size:2.15mm;line-height:1.2;color:#6f1419;vertical-align:middle}
     .sheet:nth-of-type(2) .course-comment-item{display:block;white-space:normal}
@@ -184,6 +184,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:nth-of-type(2) .grades .area{width:42mm;padding:0 1.8mm;vertical-align:middle;white-space:nowrap}
     .sheet:nth-of-type(2) .grades .area,.sheet:nth-of-type(2) .conduct td:first-child{font-weight:700}
     .sheet:nth-of-type(2) .grades .area>span:last-child{display:inline-block;vertical-align:middle;white-space:nowrap;font-size:2.35mm;line-height:1}
+    .sheet:nth-of-type(2) .course-grades .area>span:last-child{width:calc(100% - 9mm);white-space:normal!important;font-size:2.2mm;line-height:1.15}
     .sheet:nth-of-type(2) .row-icon{display:inline-flex;align-items:center;justify-content:center;color:#9b1723;font-family:"Segoe UI Symbol",Georgia,serif;font-weight:400;vertical-align:middle;line-height:1;margin-right:2mm}
     .sheet:nth-of-type(2) .area-icon{width:7mm;font-size:5.4mm;margin-right:1.5mm;text-align:center}
     .sheet:nth-of-type(2) .conduct-icon{width:5.5mm;height:5.5mm;font-size:4.2mm;margin-right:1.5mm}
@@ -224,6 +225,7 @@ function imprimirLibreta(data, ventana) {
     /(<div class="identity"><b>Tutor\(a\):<\/b>.*?<\/div>)(<\/div><\/div><\/section>)/,
     `$1<img class="cover-children" src="${ninosPortada}" alt="Niños estudiando">$2`
   );
+  htmlFinal = htmlFinal.replace('COMENTARIO DEL CURSO</th>', `COMENTARIO DEL CURSO · BIMESTRE ${nombrePeriodoImpreso}</th>`);
   ventana.document.open(); ventana.document.write(htmlFinal); ventana.document.close();
 }
 
@@ -261,6 +263,7 @@ export default function Libretas() {
     }
   }, [docenteFiltro, data]);
   const periodo = data?.periodos.find(p=>String(p.id)===String(periodoId));
+  useEffect(()=>{ periodoSeleccionadoParaImpresion = Number(periodo?.numero) || 1; },[periodo?.numero]);
   const cargar = async()=>{if(!asigId||!periodoId)return;try{const r=await api.cargarNotas({id_asignacion:asigId,id_periodo:periodoId});setGradebook(r.data.data);setNotas(Object.fromEntries(r.data.data.alumnos.map(a=>[a.id,a.calificacion||''])));}catch(e){toast.error(errorText(e));}};
   useEffect(()=>{if(asigId&&periodoId)cargar();},[asigId,periodoId]);
   const saveNotas=async()=>{try{await api.guardarNotas({id_asignacion:Number(asigId),id_periodo:Number(periodoId),motivo,notas:Object.entries(notas).filter(([,v])=>v).map(([id,v])=>({id_alumno:Number(id),calificacion:v}))});toast.success('Notas guardadas');setMotivo('');cargar();}catch(e){toast.error(errorText(e));}};
