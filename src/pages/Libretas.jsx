@@ -105,7 +105,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .status{grid-template-columns:45mm minmax(0,1fr) 27mm;gap:3mm;align-items:start;position:relative}
     .sheet:first-of-type .statusbox{width:45mm;min-height:78mm;padding:4mm 3mm 3mm;text-align:center;font-size:3.05mm;line-height:1.55;border:1px dashed #b9822f;background:#fff;overflow:hidden}
     .sheet:first-of-type .statusbox:before{content:'▤';display:block;margin:0 auto 2mm;width:10mm;height:10mm;border-radius:50%;background:#791018;color:white;text-align:center;line-height:10mm;font-size:5mm}
-    .sheet:first-of-type .status .brand{padding-top:8mm}.sheet:first-of-type .status .brand p{position:absolute;top:1mm;right:1mm;width:88mm;margin:0;font-size:3.05mm;white-space:nowrap;text-align:right;padding:0}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-size:2.8mm;font-weight:bold;margin:1mm 0 0}
+    .sheet:first-of-type .status .brand{padding-top:8mm}.sheet:first-of-type .status .brand p{position:absolute;top:1mm;right:1mm;width:88mm;margin:0;white-space:nowrap;text-align:right;padding:0;color:#7b1119;font:italic 3.15mm Georgia,serif;letter-spacing:.08mm}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-size:2.75mm;font-style:normal;font-weight:bold;margin:1mm 0 0;color:#5f0d14}
     .sheet:first-of-type .brand .small{font-size:5.4mm;margin-top:1mm}.sheet:first-of-type .brand .college{font-size:13.5mm;line-height:.84;letter-spacing:-.5mm}
     .sheet:first-of-type .status .brand .college:after{content:'◆';display:block;font-size:3mm;color:#c08b35;letter-spacing:4mm;border-top:1px solid #c08b35;margin:2mm auto 0;width:80%}
     .sheet:first-of-type .logo.small{width:43mm;height:43mm;border:0;object-fit:contain;margin-top:0}
@@ -120,7 +120,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .status-choice>span:first-child{font-weight:700;white-space:nowrap;text-align:left}
     .sheet:first-of-type .status-choice .box{width:9.5mm;border:1px solid #8b1820;border-radius:.7mm;padding:.7mm .2mm;text-align:center;font:700 2.15mm Arial;background:#fff;white-space:nowrap}
     .sheet:first-of-type .tutor-signature{width:28mm;margin:auto auto 0;padding-top:1mm;border-top:1px solid #6e311d;text-align:center;font:2.4mm Georgia;line-height:1.2}
-    .sheet:first-of-type .status .brand p{font-size:2.75mm;text-align:right}
+    .sheet:first-of-type .status .brand p{font-size:3.15mm;text-align:right}
     .sheet:first-of-type .legend{margin-top:2.2mm}.sheet:first-of-type .legend-row{grid-template-columns:11mm 1fr;font-size:2.15mm;min-height:11.4mm;background:#fff}.sheet:first-of-type .legend-key{font-size:5.3mm;padding:2.2mm 1mm}.sheet:first-of-type .legend-text{padding:1.15mm 1.5mm;line-height:1.22}.sheet:first-of-type .legend-text b{font-size:2.35mm;letter-spacing:.05mm}
     .sheet:first-of-type .panel:first-child:after{content:'—  ❦  —';display:block;text-align:center;color:#b9822f;font-size:5mm;margin-top:2mm}
     .sheet:first-of-type .spread>.panel.brand{padding:5mm 14mm 5mm 6mm;border:1px solid #a96f21;border-radius:1mm;box-shadow:inset 0 0 0 1.3mm #fff,inset 0 0 0 1.6mm #d7aa5c;justify-content:flex-start}
@@ -136,13 +136,14 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child{margin-top:1mm;padding:2.5mm 4mm;border-radius:2mm;font:3.1mm Georgia;text-align:center;border:1px solid #d3a14a}.sheet:first-of-type .spread>.panel.brand>.identity:last-child:before{content:'●';display:inline-block;margin-right:3mm;color:#7b1119;font-size:5mm;vertical-align:middle}
     /* Ajuste fino de la portada: proporciones y jerarquia del diseno original */
     .sheet:first-of-type .spread>.panel.brand{padding:4mm 12mm 4mm 6mm;display:flex;flex-direction:column;justify-content:flex-start}
-    .sheet:first-of-type .spread>.panel.brand:after{width:7.5mm;font-size:2.8mm;letter-spacing:.12mm}
+    .sheet:first-of-type .spread>.panel.brand:after{width:7.5mm;font-size:3mm;letter-spacing:.55mm;word-spacing:1.2mm;line-height:1.2}
     .sheet:first-of-type .spread>.panel.brand>.small:first-of-type{font-size:5.7mm;margin-top:0}
     .sheet:first-of-type .spread>.panel.brand>.college{font-size:14.5mm}
     .sheet:first-of-type .spread>.panel.brand>.college+.small{font-size:3.2mm;width:72%;padding-top:1.1mm;margin-top:1mm}
     .sheet:first-of-type .spread>.panel.brand .cover-grid{grid-template-columns:29mm 1fr;min-height:50mm;margin:1.5mm 0 6mm;padding-right:18mm}
     .sheet:first-of-type .spread>.panel.brand .cover-grid:before{left:0;bottom:-4mm;font-size:3.35mm;line-height:3.5mm}
     .sheet:first-of-type .spread>.panel.brand .cover-grid:after{right:0;top:8mm;font-size:2.75mm;line-height:1.45}
+    .sheet:first-of-type .cover-anniversary{position:absolute;right:0;top:27mm;width:40mm;text-align:right;color:#7b1119;font:italic 2.25mm Georgia,serif;line-height:1.35;letter-spacing:.03mm}
     .sheet:first-of-type .spread>.panel.brand .photo{width:25mm;height:32mm;margin-bottom:7mm}
     .sheet:first-of-type .spread>.panel.brand .logo{width:53mm;height:53mm;margin-left:0}
     .sheet:first-of-type .spread>.panel.brand .titlebar{width:76%;margin:0 auto 2.5mm;padding:2mm 3mm;border:.8mm solid #c99a37;border-radius:7mm;font-size:5.5mm;box-shadow:0 0 0 .45mm #781019}
@@ -151,7 +152,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .student-card .wide{grid-column:2/5}
     .sheet:first-of-type .student-card .label{font-weight:bold;color:#431014}
     .sheet:first-of-type .student-card .level{color:#e958b4;font-weight:bold;text-transform:uppercase;border:1px solid #e99aac;border-radius:1.5mm;text-align:center;padding:.15mm 1mm}
-    .sheet:first-of-type .student-card .school-levels{grid-column:1/5;color:#b4111b;font-size:2.35mm;font-weight:bold;margin-top:.5mm}
+    .sheet:first-of-type .student-card .school-levels{display:none}
     .sheet:first-of-type .spread>.panel.brand>p.serif{margin:2.2mm 2mm 1.5mm;font-size:2.7mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child{margin-top:1mm;padding:2mm 4mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child:after{content:'❦';position:absolute;left:50%;bottom:1mm;transform:translateX(-50%);color:#b9822f;font-size:4.5mm}
@@ -188,12 +189,16 @@ function imprimirLibreta(data, ventana) {
     .replace('</head>', `${mejorasCaraUno}</head>`);
   htmlFinal = htmlFinal.replace(/(<div class="cover-grid">.*?<img class="logo" src=")[^"]+/, `$1${insigniaJesus}`);
   htmlFinal = htmlFinal.replace(
+    /(<div class="cover-grid">.*?<img class="logo"[^>]*>)/,
+    `$1<div class="cover-anniversary">“24 años formando generaciones, más de 2800 estudiantes y miles de historias que nos inspiran a seguir creciendo juntos.”</div>`
+  );
+  htmlFinal = htmlFinal.replace(
     /<div class="statusbox">.*?<\/div>/,
     `<div class="statusbox"><div class="status-heading">SITUACIÓN AL FINALIZAR EL AÑO LECTIVO</div><div class="status-choice"><span>Promovido:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="status-choice"><span>Repite:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="status-choice"><span>Recuperación:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="tutor-signature">Firma del tutor</div></div>`
   );
   htmlFinal = htmlFinal.replace(
     /(<div class="titlebar">LIBRETA DE NOTAS<\/div>)<div class="identity">.*?<\/div>(<p class="serif">)/,
-    `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span><span class="school-levels">Inicial – Primaria – Secundaria</span></div>$2`
+    `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span></div>$2`
   );
   htmlFinal = htmlFinal.replace(
     /<aside class="panel sidebrand">.*?<\/aside>/,
