@@ -65,9 +65,19 @@ function imprimirLibreta(data, ventana) {
   const nota = (lista, nombre, periodo, campo = 'curso') => esc(lista.find(x => x[campo] === nombre && Number(x.numero) === periodo)?.calificacion || '');
   const cursos = [...new Map(notas.map(n => [`${n.area}|${n.curso}`, { area:n.area, curso:n.curso }])).values()];
   const grupos = cursos.reduce((m, c) => (m[c.area] = [...(m[c.area] || []), c], m), {});
-  const filasCursos = Object.entries(grupos).map(([area, lista]) => lista.map((c, i) => `<tr>${i === 0 ? `<td class="area" rowspan="${lista.length}">${esc(area)}</td>` : ''}<td>${esc(c.curso)}</td>${[1,2,3,4].map(p => `<td class="grade">${nota(notas,c.curso,p)}</td>`).join('')}</tr>`).join('')).join('');
+  const iconoArea = area => {
+    const a = String(area || '').toUpperCase();
+    if (a.includes('COMUNIC')) return '▤';
+    if (a.includes('PERSONAL')) return '♣';
+    if (a.includes('PSICOMOT')) return '⚑';
+    if (a.includes('CIENCIA')) return '⚛';
+    if (a.includes('MATEM')) return 'π';
+    return '◆';
+  };
+  const filasCursos = Object.entries(grupos).map(([area, lista]) => lista.map((c, i) => `<tr>${i === 0 ? `<td class="area" rowspan="${lista.length}"><span class="row-icon area-icon">${iconoArea(area)}</span><span>${esc(area)}</span></td>` : ''}<td>${esc(c.curso)}</td>${[1,2,3,4].map(p => `<td class="grade">${nota(notas,c.curso,p)}</td>`).join('')}</tr>`).join('')).join('');
   const nombresConducta = criterios.length ? criterios.map(c => c.nombre) : [...new Set(conducta.map(c => c.nombre))];
-  const filasConducta = nombresConducta.map(n => `<tr><td>${esc(n)}</td>${[1,2,3,4].map(p => `<td class="grade">${nota(conducta,n,p,'nombre')}</td>`).join('')}</tr>`).join('');
+  const iconosConducta = ['☑','◷','▤','☆','♡','⚖','♢','⌂','♧','♡'];
+  const filasConducta = nombresConducta.map((n, i) => `<tr><td><span class="row-icon conduct-icon">${iconosConducta[i] || '◇'}</span><span>${esc(n)}</span></td>${[1,2,3,4].map(p => `<td class="grade">${nota(conducta,n,p,'nombre')}</td>`).join('')}</tr>`).join('');
   const observacion = (tipo, p) => esc(observaciones.find(x => x.tipo === tipo && Number(x.numero) === p)?.texto || '');
   const foto = alumno.foto_url ? fileUrl(alumno.foto_url) : '';
   const partesNombre = String(alumno.nombre_completo || '').trim().split(/\s+/).filter(Boolean);
@@ -146,6 +156,12 @@ function imprimirLibreta(data, ventana) {
     .sheet:nth-of-type(2) .grades td{height:5.65mm;padding:1mm 1.2mm}
     .sheet:nth-of-type(2) .bottom{margin-top:3mm;grid-template-columns:1.58fr .82fr}
     .sheet:nth-of-type(2) .conduct td{height:5.55mm}
+    .sheet:nth-of-type(2) .grades .area{padding-left:2mm;vertical-align:middle}
+    .sheet:nth-of-type(2) .grades .area,.sheet:nth-of-type(2) .conduct td:first-child{font-weight:700}
+    .sheet:nth-of-type(2) .grades .area>span:last-child{display:inline-block;max-width:29mm;vertical-align:middle}
+    .sheet:nth-of-type(2) .row-icon{display:inline-flex;align-items:center;justify-content:center;color:#9b1723;font-family:"Segoe UI Symbol",Georgia,serif;font-weight:400;vertical-align:middle;line-height:1;margin-right:2mm}
+    .sheet:nth-of-type(2) .area-icon{width:8mm;font-size:6mm}
+    .sheet:nth-of-type(2) .conduct-icon{width:5.5mm;height:5.5mm;font-size:4.2mm;margin-right:1.5mm}
     .sheet:nth-of-type(2) .comment{min-height:20.3mm;padding:2.3mm}
     .sheet:nth-of-type(2) .sidebrand{padding:4mm 3mm 2mm;justify-content:flex-start;overflow:hidden;background:#fff!important}
     .sheet:nth-of-type(2) .sidebrand .verse{font-size:3.15mm;margin:2mm 0 1mm;line-height:1.35}
