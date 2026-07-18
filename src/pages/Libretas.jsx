@@ -184,6 +184,10 @@ function imprimirLibreta(
   const esPrimaria = String(alumno.nivel || "")
     .toUpperCase()
     .includes("PRIMARIA");
+  const esSecundaria = String(alumno.nivel || "")
+    .toUpperCase()
+    .includes("SECUNDARIA");
+  const esNivelNumerico = esPrimaria || esSecundaria;
   const numeroPeriodoImpreso = Math.min(
     4,
     Math.max(1, Number(periodoImpreso) || 1),
@@ -234,10 +238,27 @@ function imprimirLibreta(
     "EDUCACIÓN FÍSICA",
     "EDUCACIÓN RELIGIOSA",
   ];
+  const ordenAreasSecundaria = [
+    "MATEMÁTICA",
+    "COMUNICACIÓN",
+    "INGLÉS",
+    "ARTE Y CULTURA",
+    "CIENCIAS SOCIALES",
+    "DESARROLLO PERSONAL, CIUDADANÍA Y CÍVICA",
+    "EDUCACIÓN FÍSICA",
+    "EDUCACIÓN RELIGIOSA",
+    "CIENCIA Y TECNOLOGÍA",
+    "EDUCACIÓN PARA EL TRABAJO",
+  ];
+  const ordenAreasNivel = esPrimaria
+    ? ordenAreasPrimaria
+    : esSecundaria
+      ? ordenAreasSecundaria
+      : null;
   const gruposOrdenados = Object.entries(grupos).sort(([areaA], [areaB]) =>
-    esPrimaria
-      ? ordenAreasPrimaria.indexOf(String(areaA).toUpperCase()) -
-        ordenAreasPrimaria.indexOf(String(areaB).toUpperCase())
+    ordenAreasNivel
+      ? ordenAreasNivel.indexOf(String(areaA).toUpperCase()) -
+        ordenAreasNivel.indexOf(String(areaB).toUpperCase())
       : 0,
   );
   const comentariosCurso = (curso) =>
@@ -291,7 +312,7 @@ function imprimirLibreta(
         .join(""),
     )
     .join("");
-  const filasCursos = esPrimaria ? filasCursosPrimaria : filasCursosInicial;
+  const filasCursos = esNivelNumerico ? filasCursosPrimaria : filasCursosInicial;
   const nombresConducta = criterios.length
     ? criterios.map((c) => c.nombre)
     : [...new Set(conducta.map((c) => c.nombre))];
@@ -427,6 +448,7 @@ function imprimirLibreta(
     .sheet:first-of-type .student-card .label{font-weight:bold;color:#431014}
     .sheet:first-of-type .student-card .level{color:#e958b4;font-weight:bold;text-transform:uppercase;border:1px solid #e99aac;border-radius:1.5mm;text-align:center;padding:.15mm 1mm}
     .sheet:first-of-type .student-card .level.primary{color:#175c3a;border-color:#3c805d;background:#f1faf5!important}
+    .sheet:first-of-type .student-card .level.secondary{color:#173f73;border-color:#376a9f;background:#f1f6fb!important}
     .sheet:first-of-type .student-card .school-levels{display:none}
     .sheet:first-of-type .spread>.panel.brand>p.serif{margin:2.2mm 2mm 1.5mm;font-size:2.7mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child{margin-top:1mm;padding:2mm 4mm}
@@ -513,7 +535,7 @@ function imprimirLibreta(
   );
   htmlFinal = htmlFinal.replace(
     /(<div class="titlebar">LIBRETA DE NOTAS<\/div>)<div class="identity">.*?<\/div>(<p class="serif">)/,
-    `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level${esPrimaria ? ' primary' : ''}">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span></div>$2`,
+    `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level${esPrimaria ? ' primary' : esSecundaria ? ' secondary' : ''}">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span></div>$2`,
   );
   htmlFinal = htmlFinal.replace(
     /<aside class="panel sidebrand">.*?<\/aside>/,
@@ -527,7 +549,7 @@ function imprimirLibreta(
     "COMENTARIO DEL CURSO</th>",
     `COMENTARIO DEL CURSO · BIMESTRE ${nombrePeriodoImpreso}</th>`,
   );
-  if (esPrimaria) {
+  if (esNivelNumerico) {
     htmlFinal = htmlFinal.replace(
       'class="grades course-grades"',
       'class="grades primary-grades"',
@@ -611,9 +633,9 @@ export default function Libretas() {
       ),
     [data, aulaAsignacion],
   );
-  const esPrimariaSeleccionada = String(seleccion?.nivel || "")
-    .toUpperCase()
-    .includes("PRIMARIA");
+  const esNumericaSeleccionada = ["PRIMARIA", "SECUNDARIA"].some((nivel) =>
+    String(seleccion?.nivel || "").toUpperCase().includes(nivel),
+  );
   const responsables = useMemo(() => {
     const unicos = new Map();
     (data?.asignaciones || []).forEach((a) =>
@@ -664,14 +686,15 @@ export default function Libretas() {
         id_periodo: periodoId,
       });
       setGradebook(r.data.data);
-      const primaria = String(r.data.data.asignacion?.nivel || "")
-        .toUpperCase()
-        .includes("PRIMARIA");
+      const nivelAsignacion = String(r.data.data.asignacion?.nivel || "").toUpperCase();
+      const nivelNumerico = ["PRIMARIA", "SECUNDARIA"].some((nivel) =>
+        nivelAsignacion.includes(nivel),
+      );
       setNotas(
         Object.fromEntries(
           r.data.data.alumnos.map((a) => [
             a.id,
-            primaria ? (a.nota_numerica ?? "") : a.calificacion || "",
+            nivelNumerico ? (a.nota_numerica ?? "") : a.calificacion || "",
           ]),
         ),
       );
@@ -691,7 +714,7 @@ export default function Libretas() {
         notas: Object.entries(notas)
           .filter(([, v]) => v !== "" && v !== null)
           .map(([id, v]) =>
-            esPrimariaSeleccionada
+            esNumericaSeleccionada
               ? { id_alumno: Number(id), nota_numerica: Number(v) }
               : { id_alumno: Number(id), calificacion: v },
           ),
@@ -1027,9 +1050,9 @@ export default function Libretas() {
                       <th className="p-3 text-left">Código</th>
                       <th className="p-3 text-left">Alumno</th>
                       <th className="p-3">
-                        {esPrimariaSeleccionada ? "Nota numérica / letra" : "Nota"}
+                        {esNumericaSeleccionada ? "Nota numérica / letra" : "Nota"}
                       </th>
-                      {!esPrimariaSeleccionada && (
+                      {!esNumericaSeleccionada && (
                         <>
                           <th className="p-3 text-left">Comentario propio</th>
                           <th></th>
@@ -1044,7 +1067,7 @@ export default function Libretas() {
                         <td className="p-3">{a.codigo_alumno}</td>
                         <td className="p-3 font-medium">{a.nombre_completo}</td>
                         <td className="p-3">
-                          {esPrimariaSeleccionada ? (
+                          {esNumericaSeleccionada ? (
                             <div className="flex items-center justify-center gap-3">
                               <input
                                 type="number"
@@ -1078,7 +1101,7 @@ export default function Libretas() {
                             </select>
                           )}
                         </td>
-                        {!esPrimariaSeleccionada && (
+                        {!esNumericaSeleccionada && (
                           <>
                             <td className="p-3">
                               <select
