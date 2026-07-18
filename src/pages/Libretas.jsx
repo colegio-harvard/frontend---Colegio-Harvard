@@ -105,7 +105,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .status{grid-template-columns:45mm minmax(0,1fr) 27mm;gap:3mm;align-items:start;position:relative}
     .sheet:first-of-type .statusbox{width:45mm;min-height:78mm;padding:4mm 3mm 3mm;text-align:center;font-size:3.05mm;line-height:1.55;border:1px dashed #b9822f;background:#fff;overflow:hidden}
     .sheet:first-of-type .statusbox:before{content:'▤';display:block;margin:0 auto 2mm;width:10mm;height:10mm;border-radius:50%;background:#791018;color:white;text-align:center;line-height:10mm;font-size:5mm}
-    .sheet:first-of-type .status .brand{padding-top:11mm}.sheet:first-of-type .status .brand p{position:absolute;top:1mm;right:1mm;width:88mm;margin:0;font-size:3.05mm;white-space:nowrap;text-align:right;padding:0}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-size:2.8mm;font-weight:bold;margin:1mm 0 0}
+    .sheet:first-of-type .status .brand{padding-top:8mm}.sheet:first-of-type .status .brand p{position:absolute;top:1mm;right:1mm;width:88mm;margin:0;font-size:3.05mm;white-space:nowrap;text-align:right;padding:0}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-size:2.8mm;font-weight:bold;margin:1mm 0 0}
     .sheet:first-of-type .brand .small{font-size:5.4mm;margin-top:1mm}.sheet:first-of-type .brand .college{font-size:13.5mm;line-height:.84;letter-spacing:-.5mm}
     .sheet:first-of-type .status .brand .college:after{content:'◆';display:block;font-size:3mm;color:#c08b35;letter-spacing:4mm;border-top:1px solid #c08b35;margin:2mm auto 0;width:80%}
     .sheet:first-of-type .logo.small{width:43mm;height:43mm;border:0;object-fit:contain;margin-top:0}
@@ -144,7 +144,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .spread>.panel.brand .cover-grid:before{left:0;bottom:-4mm;font-size:3.35mm;line-height:3.5mm}
     .sheet:first-of-type .spread>.panel.brand .cover-grid:after{right:0;top:8mm;font-size:2.75mm;line-height:1.45}
     .sheet:first-of-type .spread>.panel.brand .photo{width:25mm;height:32mm;margin-bottom:7mm}
-    .sheet:first-of-type .spread>.panel.brand .logo{width:47mm;height:47mm;margin-left:2mm}
+    .sheet:first-of-type .spread>.panel.brand .logo{width:53mm;height:53mm;margin-left:0}
     .sheet:first-of-type .spread>.panel.brand .titlebar{width:76%;margin:0 auto 2.5mm;padding:2mm 3mm;border:.8mm solid #c99a37;border-radius:7mm;font-size:5.5mm;box-shadow:0 0 0 .45mm #781019}
     .sheet:first-of-type .spread>.panel.brand .titlebar:after{display:none}
     .sheet:first-of-type .student-card{display:grid;grid-template-columns:27mm 1fr 22mm 22mm;gap:.4mm 2mm;margin-top:1mm!important;padding:2.6mm 4mm!important;line-height:1.35!important}
