@@ -426,6 +426,7 @@ function imprimirLibreta(
     .sheet:first-of-type .student-card .wide{grid-column:2/5}
     .sheet:first-of-type .student-card .label{font-weight:bold;color:#431014}
     .sheet:first-of-type .student-card .level{color:#e958b4;font-weight:bold;text-transform:uppercase;border:1px solid #e99aac;border-radius:1.5mm;text-align:center;padding:.15mm 1mm}
+    .sheet:first-of-type .student-card .level.primary{color:#175c3a;border-color:#3c805d;background:#f1faf5!important}
     .sheet:first-of-type .student-card .school-levels{display:none}
     .sheet:first-of-type .spread>.panel.brand>p.serif{margin:2.2mm 2mm 1.5mm;font-size:2.7mm}
     .sheet:first-of-type .spread>.panel.brand>.identity:last-child{margin-top:1mm;padding:2mm 4mm}
@@ -512,7 +513,7 @@ function imprimirLibreta(
   );
   htmlFinal = htmlFinal.replace(
     /(<div class="titlebar">LIBRETA DE NOTAS<\/div>)<div class="identity">.*?<\/div>(<p class="serif">)/,
-    `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span></div>$2`,
+    `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level${esPrimaria ? ' primary' : ''}">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span></div>$2`,
   );
   htmlFinal = htmlFinal.replace(
     /<aside class="panel sidebrand">.*?<\/aside>/,
