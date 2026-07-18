@@ -156,11 +156,11 @@ function imprimirLibreta(data, ventana) {
     .sheet:nth-of-type(2) .grades td{height:5.65mm;padding:1mm 1.2mm}
     .sheet:nth-of-type(2) .bottom{margin-top:3mm;grid-template-columns:1.58fr .82fr}
     .sheet:nth-of-type(2) .conduct td{height:5.55mm}
-    .sheet:nth-of-type(2) .grades .area{padding-left:2mm;vertical-align:middle}
+    .sheet:nth-of-type(2) .grades .area{width:42mm;padding:0 1.8mm;vertical-align:middle;white-space:nowrap}
     .sheet:nth-of-type(2) .grades .area,.sheet:nth-of-type(2) .conduct td:first-child{font-weight:700}
-    .sheet:nth-of-type(2) .grades .area>span:last-child{display:inline-block;max-width:29mm;vertical-align:middle}
+    .sheet:nth-of-type(2) .grades .area>span:last-child{display:inline-block;vertical-align:middle;white-space:nowrap;font-size:2.35mm;line-height:1}
     .sheet:nth-of-type(2) .row-icon{display:inline-flex;align-items:center;justify-content:center;color:#9b1723;font-family:"Segoe UI Symbol",Georgia,serif;font-weight:400;vertical-align:middle;line-height:1;margin-right:2mm}
-    .sheet:nth-of-type(2) .area-icon{width:8mm;font-size:6mm}
+    .sheet:nth-of-type(2) .area-icon{width:7mm;font-size:5.4mm;margin-right:1.5mm;text-align:center}
     .sheet:nth-of-type(2) .conduct-icon{width:5.5mm;height:5.5mm;font-size:4.2mm;margin-right:1.5mm}
     .sheet:nth-of-type(2) .comment{min-height:20.3mm;padding:2.3mm}
     .sheet:nth-of-type(2) .sidebrand{padding:4mm 3mm 2mm;justify-content:flex-start;overflow:hidden;background:#fff!important}
