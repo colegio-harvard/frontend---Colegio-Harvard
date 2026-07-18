@@ -99,6 +99,7 @@ const CarnetView = () => {
           quality: 0.95,
           pixelRatio: 3,
           cacheBust: true,
+          includeQueryParams: true,
           backgroundColor: '#ffffff',
           fontEmbedCSS: fontCSS,
         });

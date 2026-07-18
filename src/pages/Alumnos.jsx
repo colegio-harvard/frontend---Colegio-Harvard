@@ -172,6 +172,7 @@ const Alumnos = () => {
           quality: 0.95,
           pixelRatio: 3,
           cacheBust: true,
+          includeQueryParams: true,
           backgroundColor: '#ffffff',
           fontEmbedCSS: fontCSS,
         });
@@ -267,6 +268,7 @@ const Alumnos = () => {
             quality: 0.95,
             pixelRatio: 3,
             cacheBust: true,
+            includeQueryParams: true,
             backgroundColor: '#ffffff',
             fontEmbedCSS: fontCSS,
           });
