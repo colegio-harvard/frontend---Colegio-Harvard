@@ -12,7 +12,7 @@ import { fileUrl } from '../utils/constants';
 
 const NOTAS = ['', 'AD', 'A', 'B', 'C'];
 const tabsAdmin = [
-  ['registro', 'Registro de notas', HiBookOpen], ['config', 'Cursos y responsables', HiCog],
+  ['registro', 'Registro de notas', HiBookOpen], ['acom', 'Conducta y hábitos', HiClipboardCheck], ['config', 'Cursos y responsables', HiCog],
   ['periodos', 'Bimestres', HiClipboardCheck], ['merito', 'Orden de mérito', HiAcademicCap],
   ['auditoria', 'Auditoría', HiShieldCheck],
 ];
@@ -213,6 +213,13 @@ export default function Libretas() {
   const asignacionesVisibles = useMemo(() => docenteFiltro === 'TODOS'
     ? (data?.asignaciones || [])
     : (data?.asignaciones || []).filter(a => String(a.id_docente) === docenteFiltro), [data, docenteFiltro]);
+  const aulasConducta = useMemo(() => {
+    const unicas = new Map();
+    asignacionesVisibles.forEach(a => {
+      if (!unicas.has(String(a.id_aula))) unicas.set(String(a.id_aula), a);
+    });
+    return [...unicas.values()];
+  }, [asignacionesVisibles]);
   useEffect(() => {
     if (!asignacionesVisibles.some(a => String(a.id) === String(asigId))) {
       setAsigId(asignacionesVisibles[0] ? String(asignacionesVisibles[0].id) : '');
@@ -224,6 +231,29 @@ export default function Libretas() {
   useEffect(()=>{if(asigId&&periodoId)cargar();},[asigId,periodoId]);
   const saveNotas=async()=>{try{await api.guardarNotas({id_asignacion:Number(asigId),id_periodo:Number(periodoId),motivo,notas:Object.entries(notas).filter(([,v])=>v).map(([id,v])=>({id_alumno:Number(id),calificacion:v}))});toast.success('Notas guardadas');setMotivo('');cargar();}catch(e){toast.error(errorText(e));}};
   const saveComment=async alumno=>{if(!comentarios[alumno])return;try{await api.guardarComentarioDocente({id_asignacion:Number(asigId),id_periodo:Number(periodoId),id_alumno:alumno,id_catalogo:Number(comentarios[alumno])});toast.success('Comentario guardado');}catch(e){toast.error(errorText(e));}};
+  const seleccionarAlumnoConducta = async id => {
+    setAcom({ alumno:id, conducta:{}, tutor:'', padre:'' });
+    if (!id) return;
+    try {
+      const r = await api.cargarLibreta(Number(id));
+      const libreta = r.data.data;
+      const numeroPeriodo = Number(periodo?.numero);
+      const valores = {};
+      (data?.criterios || []).forEach(c => {
+        const existente = (libreta.conducta || []).find(x => x.nombre === c.nombre && Number(x.numero) === numeroPeriodo);
+        if (existente?.calificacion) valores[c.id] = existente.calificacion;
+      });
+      setAcom({ alumno:id, conducta:valores, tutor:'', padre:'' });
+    } catch(e) { toast.error(errorText(e)); }
+  };
+  const guardarConducta = async () => {
+    if (!acom.alumno) return toast.error('Seleccione un alumno');
+    try {
+      await api.guardarAcompanamiento({id_alumno:Number(acom.alumno),id_periodo:Number(periodoId),conducta:Object.entries(acom.conducta).filter(([,v])=>v).map(([id,v])=>({id_criterio:Number(id),calificacion:v})),observaciones:[acom.tutor&&{tipo:'COMENTARIO_TUTOR',id_catalogo:Number(acom.tutor)},acom.padre&&{tipo:'NOTA_PADRE',id_catalogo:Number(acom.padre)}].filter(Boolean)});
+      toast.success('Conducta y hábitos guardados');
+      seleccionarAlumnoConducta(acom.alumno);
+    } catch(e) { toast.error(errorText(e)); }
+  };
   const tabs = admin ? tabsAdmin : [['registro','Mis cursos y notas',HiBookOpen], ...(usuario?.rol_codigo==='TUTOR'?[['acom','Conducta y tutoría',HiClipboardCheck]]:[])];
   if(busy&&!data)return <div className="p-8">Cargando módulo académico...</div>;
   const commentsDoc=data?.catalogo.filter(x=>x.tipo==='COMENTARIO_DOCENTE')||[], commentsTutor=data?.catalogo.filter(x=>x.tipo==='COMENTARIO_TUTOR')||[], notesParent=data?.catalogo.filter(x=>x.tipo==='NOTA_PADRE')||[];
@@ -239,6 +269,6 @@ export default function Libretas() {
     {tab==='periodos'&&admin&&<section className="grid md:grid-cols-4 gap-4">{data?.periodos.map(p=><div key={p.id} className="bg-white p-5 rounded-2xl border"><h2>{p.nombre}</h2><p className="my-3 text-sm">Estado: <b>{p.estado}</b></p><select className="input-field" value={p.estado} onChange={async e=>{try{await api.cambiarPeriodo(p.id,e.target.value);recargar();toast.success('Bimestre actualizado');}catch(err){toast.error(errorText(err));}}}><option>ABIERTO</option><option>REVISION</option><option>CERRADO</option></select></div>)}</section>}
     {tab==='merito'&&admin&&<section className="bg-white p-5 rounded-2xl border"><div className="flex gap-3 mb-4"><button className="btn-primary" disabled={!seleccion} onClick={async()=>{try{const r=await api.cargarMerito({id_aula:seleccion.id_aula,id_periodo:periodoId||undefined});setMerito(r.data.data);}catch(e){toast.error(errorText(e));}}}>Calcular bimestre</button><button className="btn-gold" disabled={!seleccion} onClick={async()=>{const r=await api.cargarMerito({id_aula:seleccion.id_aula});setMerito(r.data.data);}}>Calcular anual</button></div>{merito.map(x=><div className="grid grid-cols-[70px_1fr_100px] border-b p-3" key={x.id}><b>#{x.posicion}</b><span>{x.codigo_alumno} · {x.nombre_completo}</span><b>{x.puntaje.toFixed(2)}</b></div>)}</section>}
     {tab==='auditoria'&&admin&&<section className="bg-white p-5 rounded-2xl border"><button className="btn-primary mb-4" onClick={async()=>{const r=await api.cargarAuditoriaNotas();setAudit(r.data.data);}}>Cargar historial</button><div className="space-y-2">{audit.map(x=><div key={x.id} className="p-3 border rounded-xl text-sm"><b>{x.alumno}</b> · {x.curso} · {x.periodo}: {x.calificacion_anterior||'Sin nota'} → {x.calificacion_nueva}<br/><span className="text-cream-600">{x.usuario} · {new Date(x.fecha).toLocaleString()} · {x.motivo||'Registro inicial'}</span></div>)}</div></section>}
-    {tab==='acom'&&<section className="bg-white p-5 rounded-2xl border space-y-4"><h2>Conducta, comentario del tutor y nota del padre</h2><select className="input-field" value={acom.alumno} onChange={e=>setAcom({...acom,alumno:e.target.value})}><option value="">Seleccione alumno</option>{gradebook?.alumnos.map(a=><option key={a.id} value={a.id}>{a.nombre_completo}</option>)}</select><div className="grid md:grid-cols-2 gap-3">{data?.criterios.map(c=><label key={c.id} className="flex justify-between items-center border rounded-xl p-3"><span>{c.nombre}</span><select value={acom.conducta[c.id]||''} onChange={e=>setAcom({...acom,conducta:{...acom.conducta,[c.id]:e.target.value}})}>{NOTAS.map(n=><option key={n}>{n||'—'}</option>)}</select></label>)}</div><select className="input-field" value={acom.tutor} onChange={e=>setAcom({...acom,tutor:e.target.value})}><option value="">Comentario del tutor</option>{commentsTutor.map(c=><option key={c.id} value={c.id}>{c.texto}</option>)}</select><select className="input-field" value={acom.padre} onChange={e=>setAcom({...acom,padre:e.target.value})}><option value="">Nota del padre</option>{notesParent.map(c=><option key={c.id} value={c.id}>{c.texto}</option>)}</select><button className="btn-primary" onClick={async()=>{try{await api.guardarAcompanamiento({id_alumno:Number(acom.alumno),id_periodo:Number(periodoId),conducta:Object.entries(acom.conducta).filter(([,v])=>v).map(([id,v])=>({id_criterio:Number(id),calificacion:v})),observaciones:[acom.tutor&&{tipo:'COMENTARIO_TUTOR',id_catalogo:Number(acom.tutor)},acom.padre&&{tipo:'NOTA_PADRE',id_catalogo:Number(acom.padre)}].filter(Boolean)});toast.success('Acompañamiento guardado');}catch(e){toast.error(errorText(e));}}}>Guardar acompañamiento</button></section>}
+    {tab==='acom'&&<section className="bg-white p-5 rounded-2xl border space-y-4"><div><h2 className="text-lg font-semibold text-primary-800">Conducta y hábitos</h2><p className="text-sm text-cream-600">Seleccione el aula, bimestre y alumno. Estas calificaciones no intervienen en el orden de mérito.</p></div><div className={`grid gap-3 ${admin?'md:grid-cols-3':'md:grid-cols-2'}`}>{admin&&<label className="text-sm">Responsable<select className="input-field mt-1" value={docenteFiltro} onChange={e=>setDocenteFiltro(e.target.value)}><option value="TODOS">Todos los responsables</option>{responsables.map(r=><option key={r.id} value={r.id}>{r.nombre}</option>)}</select></label>}<label className="text-sm">Aula<select className="input-field mt-1" value={seleccion?.id_aula||''} onChange={e=>{const aula=aulasConducta.find(a=>String(a.id_aula)===e.target.value);setAsigId(aula?String(aula.id):'');setAcom({alumno:'',conducta:{},tutor:'',padre:''});}}><option value="">Seleccione aula</option>{aulasConducta.map(a=><option key={a.id_aula} value={a.id_aula}>{a.grado} {a.seccion} · {a.nivel}</option>)}</select></label><label className="text-sm">Bimestre<select className="input-field mt-1" value={periodoId} onChange={e=>{setPeriodoId(e.target.value);setAcom({alumno:'',conducta:{},tutor:'',padre:''});}}>{data?.periodos.map(p=><option key={p.id} value={p.id}>{p.nombre} · {p.estado}</option>)}</select></label></div><select className="input-field" value={acom.alumno} onChange={e=>seleccionarAlumnoConducta(e.target.value)}><option value="">Seleccione alumno</option>{gradebook?.alumnos.map(a=><option key={a.id} value={a.id}>{a.codigo_alumno} · {a.nombre_completo}</option>)}</select><div className="grid md:grid-cols-2 gap-3">{data?.criterios.map(c=><label key={c.id} className="flex justify-between items-center gap-3 border border-cream-200 rounded-xl p-3"><span>{c.nombre}</span><select className="input-field !w-24" value={acom.conducta[c.id]||''} onChange={e=>setAcom({...acom,conducta:{...acom.conducta,[c.id]:e.target.value}})}>{NOTAS.map(n=><option key={n} value={n}>{n||'—'}</option>)}</select></label>)}</div><div className="grid md:grid-cols-2 gap-3"><select className="input-field" value={acom.tutor} onChange={e=>setAcom({...acom,tutor:e.target.value})}><option value="">Comentario del tutor (opcional)</option>{commentsTutor.map(c=><option key={c.id} value={c.id}>{c.texto}</option>)}</select><select className="input-field" value={acom.padre} onChange={e=>setAcom({...acom,padre:e.target.value})}><option value="">Nota del padre (opcional)</option>{notesParent.map(c=><option key={c.id} value={c.id}>{c.texto}</option>)}</select></div><div className="flex justify-end"><button className="btn-primary" disabled={!acom.alumno||(!admin&&periodo?.estado!=='ABIERTO')} onClick={guardarConducta}>Guardar conducta y hábitos</button></div></section>}
   </div>;
 }
