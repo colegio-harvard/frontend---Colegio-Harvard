@@ -97,21 +97,26 @@ function imprimirLibreta(data, ventana) {
     'Asiste a los llamados del profesor', 'Cumple el Reglamento del Colegio',
     'Participa en las actividades', 'Asiste a las reuniones', 'Conducta del padre',
   ];
-  const filasPadre = conceptosPadre.map(concepto => `<tr><td>${concepto}</td>${[1,2,3,4].map(p => `<td>${nota(notasPadre,concepto,p,'nombre')}</td>`).join('')}</tr>`).join('')
-    + `<tr class="parent-observation"><td>Observación registrada</td>${[1,2,3,4].map(p => `<td>${observacion('NOTA_PADRE',p)}</td>`).join('')}</tr>`;
+  const filasPadre = conceptosPadre.map(concepto => `<tr><td>${concepto}</td>${[1,2,3,4].map(p => `<td>${nota(notasPadre,concepto,p,'nombre')}</td>`).join('')}</tr>`).join('');
   const mejorasCaraUno = `<style>
     html,body,.sheet,.panel,.brand,.identity,.family,.parent-table,.grades,.comment,.legend-text{background:#fff!important;background-image:none!important}
     .sheet:first-of-type .spread{gap:3mm}.sheet:first-of-type .panel{padding:4mm 5mm;border-radius:1.5mm}
     .sheet:first-of-type .status{grid-template-columns:36mm 1fr 28mm;gap:3mm;align-items:start}
     .sheet:first-of-type .statusbox{min-height:65mm;padding:4mm 3mm 3mm;text-align:center;font-size:3.05mm;line-height:1.55;border:1px dashed #b9822f;background:#fff}
     .sheet:first-of-type .statusbox:before{content:'▤';display:block;margin:0 auto 2mm;width:10mm;height:10mm;border-radius:50%;background:#791018;color:white;text-align:center;line-height:10mm;font-size:5mm}
-    .sheet:first-of-type .status .brand p{margin:0 0 1mm;font-size:3.05mm;white-space:nowrap}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-size:2.8mm;font-weight:bold;margin:1mm 2mm 0 0}
+    .sheet:first-of-type .status .brand p{margin:0 0 1mm;font-size:3.05mm;white-space:nowrap;text-align:right;padding-right:2mm}.sheet:first-of-type .status .brand p:after{content:'Álvaro Siza';display:block;text-align:right;font-size:2.8mm;font-weight:bold;margin:1mm 0 0}
     .sheet:first-of-type .brand .small{font-size:5.4mm;margin-top:1mm}.sheet:first-of-type .brand .college{font-size:14.5mm;line-height:.84;letter-spacing:-.6mm}
     .sheet:first-of-type .status .brand .college:after{content:'◆';display:block;font-size:3mm;color:#c08b35;letter-spacing:4mm;border-top:1px solid #c08b35;margin:2mm auto 0;width:80%}
     .sheet:first-of-type .logo.small{width:43mm;height:43mm;border:0;object-fit:contain;margin-top:0}
     .sheet:first-of-type .scale{margin-top:20mm;padding-left:4mm;border-left:1px solid #b9822f;font:3.05mm Georgia;line-height:1.85}.sheet:first-of-type .scale b{font-size:3.25mm}
     .sheet:first-of-type .parent-title{margin-top:0;padding:1.6mm;font-size:4.4mm;letter-spacing:.1mm;border-radius:3.5mm 3.5mm 0 0}
-    .sheet:first-of-type .parent-table{font-size:2.25mm}.sheet:first-of-type .parent-table th,.sheet:first-of-type .parent-table td{padding:.6mm 1mm;height:4.25mm}.sheet:first-of-type .parent-table th:first-child,.sheet:first-of-type .parent-table td:first-child{width:56%}.sheet:first-of-type .parent-observation{font-size:1.7mm;color:#6f4c30}
+    .sheet:first-of-type .parent-table{font-size:2.25mm;table-layout:fixed}.sheet:first-of-type .parent-table th,.sheet:first-of-type .parent-table td{padding:.6mm 1mm;height:4.25mm}.sheet:first-of-type .parent-table th:first-child,.sheet:first-of-type .parent-table td:first-child{width:56%}.sheet:first-of-type .parent-table th:not(:first-child),.sheet:first-of-type .parent-table td:not(:first-child){width:11%;text-align:center}
+    .sheet:first-of-type .statusbox{display:flex;flex-direction:column;align-items:stretch;text-align:left!important}
+    .sheet:first-of-type .statusbox:before{flex:0 0 auto}
+    .sheet:first-of-type .status-heading{text-align:center;font-weight:700;line-height:1.45;margin-bottom:2mm}
+    .sheet:first-of-type .status-choice{display:grid;grid-template-columns:1fr 12mm 12mm;gap:1mm;align-items:center;margin:.8mm 0;font-size:2.75mm}
+    .sheet:first-of-type .status-choice .box{border:1px solid #8b1820;border-radius:.7mm;padding:.5mm .7mm;text-align:center;font:700 2.4mm Arial;background:#fff}
+    .sheet:first-of-type .tutor-signature{margin-top:auto;padding-top:5mm;border-bottom:1px solid #6e311d;text-align:center;font:2.5mm Georgia;line-height:1.2}
     .sheet:first-of-type .legend{margin-top:2.2mm}.sheet:first-of-type .legend-row{grid-template-columns:11mm 1fr;font-size:2.15mm;min-height:11.4mm;background:#fff}.sheet:first-of-type .legend-key{font-size:5.3mm;padding:2.2mm 1mm}.sheet:first-of-type .legend-text{padding:1.15mm 1.5mm;line-height:1.22}.sheet:first-of-type .legend-text b{font-size:2.35mm;letter-spacing:.05mm}
     .sheet:first-of-type .panel:first-child:after{content:'—  ❦  —';display:block;text-align:center;color:#b9822f;font-size:5mm;margin-top:2mm}
     .sheet:first-of-type .spread>.panel.brand{padding:5mm 14mm 5mm 6mm;border:1px solid #a96f21;border-radius:1mm;box-shadow:inset 0 0 0 1.3mm #fff,inset 0 0 0 1.6mm #d7aa5c;justify-content:flex-start}
@@ -178,6 +183,10 @@ function imprimirLibreta(data, ventana) {
     .replace('Necesita mayor tiempo y apoyo docente.','Cuando el estudiante muestra un progreso mínimo y evidencia dificultades frecuentes, necesita mayor tiempo de acompañamiento e intervención del docente.')
     .replace('</head>', `${mejorasCaraUno}</head>`);
   htmlFinal = htmlFinal.replace(/(<div class="cover-grid">.*?<img class="logo" src=")[^"]+/, `$1${insigniaJesus}`);
+  htmlFinal = htmlFinal.replace(
+    /<div class="statusbox">.*?<\/div>/,
+    `<div class="statusbox"><div class="status-heading">SITUACIÓN AL FINALIZAR EL AÑO LECTIVO</div><div class="status-choice"><span>Promovido:</span><span class="box">□ SÍ</span><span class="box">□ NO</span></div><div class="status-choice"><span>Repite:</span><span class="box">□ SÍ</span><span class="box">□ NO</span></div><div class="status-choice"><span>Recuperación:</span><span class="box">□ SÍ</span><span class="box">□ NO</span></div><div class="tutor-signature">Firma del tutor</div></div>`
+  );
   htmlFinal = htmlFinal.replace(
     /(<div class="titlebar">LIBRETA DE NOTAS<\/div>)<div class="identity">.*?<\/div>(<p class="serif">)/,
     `$1<div class="identity student-card"><span class="label">APELLIDOS:</span><span class="wide">${esc(apellidosAlumno)}</span><span class="label">NOMBRES:</span><span class="wide">${esc(nombresAlumno)}</span><span class="label">GRADO:</span><span>${esc(alumno.grado)}</span><span class="label">SECCIÓN:</span><span>${esc(alumno.seccion)}</span><span class="label">NIVEL:</span><span class="level">${esc(alumno.nivel)}</span><span class="label">TELÉFONO:</span><span>${esc(alumno.celular)}</span><span class="school-levels">Inicial – Primaria – Secundaria</span></div>$2`
