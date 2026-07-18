@@ -467,7 +467,7 @@ function imprimirLibreta(
     .sheet:nth-of-type(2) .conduct-icon{width:5.5mm;height:5.5mm;font-size:4.2mm;margin-right:1.5mm}
     .sheet:nth-of-type(2) .comment{min-height:20.3mm;padding:2.5mm;display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2mm;align-items:start;text-align:left;font-size:2.9mm;line-height:1.4}
     .sheet:nth-of-type(2) .comment .bubble{width:7mm;height:7mm;margin:0;align-self:start}
-    .sheet:nth-of-type(2) .institutional-phrase{flex:1;min-height:22mm;margin:3mm 10mm 1mm;display:flex;align-items:center;justify-content:center;position:relative;text-align:center;color:#7b1119;font:italic 4.2mm Georgia,serif;line-height:1.42;letter-spacing:.08mm;padding:3mm 15mm}
+    .sheet:nth-of-type(2) .institutional-phrase{flex:1;min-height:22mm;margin:8mm 10mm 1mm;display:flex;align-items:center;justify-content:center;position:relative;text-align:center;color:#7b1119;font:italic 4.2mm Georgia,serif;line-height:1.42;letter-spacing:.08mm;padding:3mm 15mm}
     .sheet:nth-of-type(2) .institutional-phrase:before,.sheet:nth-of-type(2) .institutional-phrase:after{content:'❦';position:absolute;top:50%;transform:translateY(-50%);color:#c28a2f;font-size:6mm;font-style:normal}
     .sheet:nth-of-type(2) .institutional-phrase:before{left:2mm}.sheet:nth-of-type(2) .institutional-phrase:after{right:2mm;transform:translateY(-50%) scaleX(-1)}
     .sheet:nth-of-type(2) .sidebrand{padding:4mm 3mm 2mm;justify-content:flex-start;overflow:hidden;background:#fff!important}
