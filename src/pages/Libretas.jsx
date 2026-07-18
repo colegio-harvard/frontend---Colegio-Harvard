@@ -32,6 +32,7 @@ function SelectorCursos({ cursos, seleccionados, onChange }) {
       {cursos.map(c=><label key={c.id} className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-cream-50 cursor-pointer"><input type="checkbox" className="w-4 h-4 accent-red-700" checked={ids.includes(Number(c.id))} onChange={()=>toggle(Number(c.id))}/><span className="text-sm"><b>{c.nombre}</b><small className="block text-cream-600">{c.area}</small></span></label>)}
       <button type="button" className="btn-gold w-full mt-2" onClick={()=>setAbierto(false)}>Listo ({ids.length})</button>
     </div>}
+    {tab==='acom'&&<section className="bg-white p-5 rounded-2xl border border-cream-200 space-y-4"><div><h2 className="text-lg font-semibold text-primary-800">Nota del padre de familia</h2><p className="text-sm text-cream-600">Registre AD, A, B o C para cada concepto del alumno y bimestre seleccionados arriba.</p></div>{!acom.alumno?<p className="p-4 rounded-xl bg-amber-50 text-amber-800">Seleccione primero un alumno en la sección Conducta y hábitos.</p>:<div className="grid md:grid-cols-2 gap-3">{data?.criteriosPadre?.map(c=><label key={c.id} className="flex justify-between items-center gap-3 border border-cream-200 rounded-xl p-3"><span>{c.nombre}</span><select className="input-field !w-24" value={acom.padreNotas?.[c.id]||''} onChange={e=>setAcom({...acom,padreNotas:{...(acom.padreNotas||{}),[c.id]:e.target.value}})}>{NOTAS.map(n=><option key={n} value={n}>{n||'—'}</option>)}</select></label>)}</div>}<div className="flex justify-end"><button className="btn-primary" disabled={!acom.alumno||(!admin&&periodo?.estado!=='ABIERTO')} onClick={guardarConducta}>Guardar nota del padre</button></div></section>}
   </div>;
 }
 
@@ -60,7 +61,7 @@ function imprimirLibreta(data, ventana) {
     if (!ventana) return toast.error('Permita las ventanas emergentes para imprimir');
     ventana.opener = null;
   }
-  const { alumno, notas = [], conducta = [], observaciones = [], criterios = [] } = data;
+  const { alumno, notas = [], conducta = [], notasPadre = [], observaciones = [], criterios = [], criteriosPadre = [] } = data;
   const esc = valor => String(valor ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   const nota = (lista, nombre, periodo, campo = 'curso') => esc(lista.find(x => x[campo] === nombre && Number(x.numero) === periodo)?.calificacion || '');
   const cursos = [...new Map(notas.map(n => [`${n.area}|${n.curso}`, { area:n.area, curso:n.curso }])).values()];
@@ -92,12 +93,12 @@ function imprimirLibreta(data, ventana) {
     <div class="legend">${[['AD','#1499a8','LOGRO DESTACADO','Supera lo esperado respecto a la competencia.'],['A','#4ca564','LOGRO ESPERADO','Alcanza satisfactoriamente lo programado.'],['B','#e29a17','EN PROCESO','Requiere acompañamiento para lograrlo.'],['C','#d9343a','EN INICIO','Necesita mayor tiempo y apoyo docente.']].map(x=>`<div class="legend-row"><div class="legend-key" style="background:${x[1]}">${x[0]}</div><div class="legend-text"><b>${x[2]}</b><br>${x[3]}</div></div>`).join('')}</div>
   </div><div class="panel brand"><div class="small">Colegio</div><div class="college">Harvard</div><div class="small">INICIAL – PRIMARIA – SECUNDARIA</div><div class="orn"></div><div class="cover-grid">${foto?`<img class="photo" src="${foto}">`:'<div class="photo empty">FOTO</div>'}<img class="logo" src="${insigniaHarvard}"></div><div class="titlebar">LIBRETA DE NOTAS</div><div class="identity"><b>ALUMNO:</b>${esc(alumno.nombre_completo)}<br><b>CÓDIGO:</b>${esc(alumno.codigo_alumno)}<br><b>GRADO:</b>${esc(alumno.grado)} &nbsp; <b>SECCIÓN:</b>${esc(alumno.seccion)}<br><b>NIVEL:</b>${esc(alumno.nivel)} &nbsp; <b>AÑO:</b>${esc(alumno.anio)}<br><b>TELÉFONO:</b>${esc(alumno.celular)}</div><p class="serif"><i>“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”</i></p><div class="identity"><b>Tutor(a):</b>${esc(alumno.tutor)}</div></div></div></section>
   <section class="sheet"><div class="back"><div class="leftcol"><div class="back-title">DISTRIBUCIÓN DE HORAS POR ÁREA Y CURSO</div><table class="grades"><thead><tr><th>ÁREAS CURRICULARES</th><th>CURSOS POR ÁREA</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasCursos}</tbody></table><div class="bottom"><div><div class="section-title">CONDUCTA Y HÁBITOS</div><table class="grades conduct"><thead><tr><th>CONCEPTOS</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasConducta}</tbody></table></div><div class="comments"><div class="section-title">COMENTARIO DEL PROFESOR</div>${[1,2,3,4].map(p=>`<div class="comment"><span class="bubble">${p}</span>${observacion('COMENTARIO_TUTOR',p)||observacion('COMENTARIO_DOCENTE',p)}</div>`).join('')}</div></div><div class="footer">Colegio Harvard · UGEL 06 · Año ${esc(alumno.anio)}</div></div><aside class="panel sidebrand"><p class="verse">“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”<br>(Proverbios 22:6)</p><img class="logo" src="${insigniaHarvard}"><div><b class="serif wine">DESDE 1985</b><p class="verse">Cultivamos mentes curiosas<br>y corazones felices</p></div><div class="family">COLEGIO<br>HARVARD</div></aside></div></section><script>window.onload=()=>setTimeout(()=>window.print(),450)</script></body></html>`;
-  const conceptosPadre = [
+  const conceptosPadre = criteriosPadre.length ? criteriosPadre.map(c => c.nombre) : [
     'Ayuda al niño en sus tareas', 'Ayuda a corregir las malas conductas del niño',
     'Asiste a los llamados del profesor', 'Cumple el Reglamento del Colegio',
     'Participa en las actividades', 'Asiste a las reuniones', 'Conducta del padre',
   ];
-  const filasPadre = conceptosPadre.map(concepto => `<tr><td>${concepto}</td>${[1,2,3,4].map(() => '<td></td>').join('')}</tr>`).join('')
+  const filasPadre = conceptosPadre.map(concepto => `<tr><td>${concepto}</td>${[1,2,3,4].map(p => `<td>${nota(notasPadre,concepto,p,'nombre')}</td>`).join('')}</tr>`).join('')
     + `<tr class="parent-observation"><td>Observación registrada</td>${[1,2,3,4].map(p => `<td>${observacion('NOTA_PADRE',p)}</td>`).join('')}</tr>`;
   const mejorasCaraUno = `<style>
     html,body,.sheet,.panel,.brand,.identity,.family,.parent-table,.grades,.comment,.legend-text{background:#fff!important;background-image:none!important}
@@ -201,7 +202,7 @@ export default function Libretas() {
   const [asigId, setAsigId] = useState(''); const [periodoId, setPeriodoId] = useState(''); const [gradebook, setGradebook] = useState(null);
   const [notas, setNotas] = useState({}); const [motivo, setMotivo] = useState(''); const [comentarios, setComentarios] = useState({});
   const [area, setArea] = useState(''); const [curso, setCurso] = useState({ nombre:'', id_area:'' }); const [asignacion, setAsignacion] = useState({ id_aula:'', id_curso:'', id_cursos:[], id_docente:'' });
-  const [merito, setMerito] = useState([]); const [audit, setAudit] = useState([]); const [acom, setAcom] = useState({ alumno:'', conducta:{}, tutor:'', padre:'' });
+  const [merito, setMerito] = useState([]); const [audit, setAudit] = useState([]); const [acom, setAcom] = useState({ alumno:'', conducta:{}, padreNotas:{}, tutor:'', padre:'' });
   const recargar = async () => { setBusy(true); try { const r=await api.cargarLibretas(); setData(r.data.data); if(!asigId&&r.data.data.asignaciones[0]) setAsigId(String(r.data.data.asignaciones[0].id)); if(!periodoId&&r.data.data.periodos[0]) setPeriodoId(String(r.data.data.periodos[0].id)); } catch(e){toast.error(errorText(e));} finally{setBusy(false);} };
   useEffect(()=>{recargar();},[]);
   const seleccion = useMemo(()=>data?.asignaciones.find(a=>String(a.id)===String(asigId)),[data,asigId]);
@@ -232,24 +233,29 @@ export default function Libretas() {
   const saveNotas=async()=>{try{await api.guardarNotas({id_asignacion:Number(asigId),id_periodo:Number(periodoId),motivo,notas:Object.entries(notas).filter(([,v])=>v).map(([id,v])=>({id_alumno:Number(id),calificacion:v}))});toast.success('Notas guardadas');setMotivo('');cargar();}catch(e){toast.error(errorText(e));}};
   const saveComment=async alumno=>{if(!comentarios[alumno])return;try{await api.guardarComentarioDocente({id_asignacion:Number(asigId),id_periodo:Number(periodoId),id_alumno:alumno,id_catalogo:Number(comentarios[alumno])});toast.success('Comentario guardado');}catch(e){toast.error(errorText(e));}};
   const seleccionarAlumnoConducta = async id => {
-    setAcom({ alumno:id, conducta:{}, tutor:'', padre:'' });
+    setAcom({ alumno:id, conducta:{}, padreNotas:{}, tutor:'', padre:'' });
     if (!id) return;
     try {
       const r = await api.cargarLibreta(Number(id));
       const libreta = r.data.data;
       const numeroPeriodo = Number(periodo?.numero);
       const valores = {};
+      const valoresPadre = {};
       (data?.criterios || []).forEach(c => {
         const existente = (libreta.conducta || []).find(x => x.nombre === c.nombre && Number(x.numero) === numeroPeriodo);
         if (existente?.calificacion) valores[c.id] = existente.calificacion;
       });
-      setAcom({ alumno:id, conducta:valores, tutor:'', padre:'' });
+      (data?.criteriosPadre || []).forEach(c => {
+        const existente = (libreta.notasPadre || []).find(x => x.nombre === c.nombre && Number(x.numero) === numeroPeriodo);
+        if (existente?.calificacion) valoresPadre[c.id] = existente.calificacion;
+      });
+      setAcom({ alumno:id, conducta:valores, padreNotas:valoresPadre, tutor:'', padre:'' });
     } catch(e) { toast.error(errorText(e)); }
   };
   const guardarConducta = async () => {
     if (!acom.alumno) return toast.error('Seleccione un alumno');
     try {
-      await api.guardarAcompanamiento({id_alumno:Number(acom.alumno),id_periodo:Number(periodoId),conducta:Object.entries(acom.conducta).filter(([,v])=>v).map(([id,v])=>({id_criterio:Number(id),calificacion:v})),observaciones:[acom.tutor&&{tipo:'COMENTARIO_TUTOR',id_catalogo:Number(acom.tutor)},acom.padre&&{tipo:'NOTA_PADRE',id_catalogo:Number(acom.padre)}].filter(Boolean)});
+      await api.guardarAcompanamiento({id_alumno:Number(acom.alumno),id_periodo:Number(periodoId),conducta:Object.entries(acom.conducta).filter(([,v])=>v).map(([id,v])=>({id_criterio:Number(id),calificacion:v})),nota_padre:Object.entries(acom.padreNotas || {}).filter(([,v])=>v).map(([id,v])=>({id_criterio:Number(id),calificacion:v})),observaciones:[acom.tutor&&{tipo:'COMENTARIO_TUTOR',id_catalogo:Number(acom.tutor)},acom.padre&&{tipo:'NOTA_PADRE',id_catalogo:Number(acom.padre)}].filter(Boolean)});
       toast.success('Conducta y hábitos guardados');
       seleccionarAlumnoConducta(acom.alumno);
     } catch(e) { toast.error(errorText(e)); }
