@@ -492,6 +492,16 @@ function imprimirLibreta(
     .sheet:nth-of-type(2) .institutional-phrase{flex:1;min-height:22mm;margin:8mm 10mm 1mm;display:flex;align-items:center;justify-content:center;position:relative;text-align:center;color:#7b1119;font:italic 4.2mm Georgia,serif;line-height:1.42;letter-spacing:.08mm;padding:3mm 15mm}
     .sheet:nth-of-type(2) .institutional-phrase:before,.sheet:nth-of-type(2) .institutional-phrase:after{content:'❦';position:absolute;top:50%;transform:translateY(-50%);color:#c28a2f;font-size:6mm;font-style:normal}
     .sheet:nth-of-type(2) .institutional-phrase:before{left:2mm}.sheet:nth-of-type(2) .institutional-phrase:after{right:2mm;transform:translateY(-50%) scaleX(-1)}
+    .sheet.secondary-sheet .back-title{font-size:5mm;margin-bottom:1mm}
+    .sheet.secondary-sheet .primary-grades{font-size:1.85mm}
+    .sheet.secondary-sheet .primary-grades th,.sheet.secondary-sheet .primary-grades td{height:4.05mm;padding:.25mm .3mm}
+    .sheet.secondary-sheet .primary-grades .area>span:last-child{font-size:1.75mm;line-height:1.02}
+    .sheet.secondary-sheet .bottom{margin-top:1.5mm}
+    .sheet.secondary-sheet .conduct{font-size:2.25mm}
+    .sheet.secondary-sheet .conduct td{height:4.35mm;padding:.45mm .8mm}
+    .sheet.secondary-sheet .comment{min-height:16.2mm;padding:1.6mm 2mm;font-size:2.45mm;line-height:1.25}
+    .sheet.secondary-sheet .institutional-phrase{flex:none;min-height:12mm;margin:2mm 8mm 0;padding:1mm 13mm;font-size:3.35mm;line-height:1.25}
+    .sheet.secondary-sheet .footer{margin-top:.5mm}
     .sheet:nth-of-type(2) .sidebrand{padding:4mm 3mm 2mm;justify-content:flex-start;overflow:hidden;background:#fff!important}
     .sheet:nth-of-type(2) .sidebrand .verse{font-size:3.15mm;margin:2mm 0 1mm;line-height:1.35}
     .sheet:nth-of-type(2) .side-emblem{display:block;width:64mm;height:64mm;object-fit:contain;margin:0 auto -2mm}
@@ -554,6 +564,10 @@ function imprimirLibreta(
       'class="grades course-grades"',
       'class="grades primary-grades"',
     );
+  htmlFinal = htmlFinal.replace(
+    '<section class="sheet"><div class="back">',
+    `<section class="sheet${esNivelNumerico ? " numeric-sheet" : ""}${esSecundaria ? " secondary-sheet" : ""}"><div class="back">`,
+  );
     htmlFinal = htmlFinal.replace(
       "<th>ÁREAS CURRICULARES</th><th>CURSOS POR ÁREA</th><th>I</th><th>II</th><th>III</th><th>IV</th><th>COMENTARIO DEL CURSO · BIMESTRE " +
         nombrePeriodoImpreso +
