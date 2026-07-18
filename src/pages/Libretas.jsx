@@ -492,7 +492,7 @@ function imprimirLibreta(
     .sheet:nth-of-type(2) .institutional-phrase{flex:1;min-height:22mm;margin:8mm 10mm 1mm;display:flex;align-items:center;justify-content:center;position:relative;text-align:center;color:#7b1119;font:italic 4.2mm Georgia,serif;line-height:1.42;letter-spacing:.08mm;padding:3mm 15mm}
     .sheet:nth-of-type(2) .institutional-phrase:before,.sheet:nth-of-type(2) .institutional-phrase:after{content:'❦';position:absolute;top:50%;transform:translateY(-50%);color:#c28a2f;font-size:6mm;font-style:normal}
     .sheet:nth-of-type(2) .institutional-phrase:before{left:2mm}.sheet:nth-of-type(2) .institutional-phrase:after{right:2mm;transform:translateY(-50%) scaleX(-1)}
-    .sheet.numeric-sheet:not(.secondary-sheet) .institutional-phrase{flex:none;min-height:30mm;margin:3mm 8mm 0;padding:9mm 13mm 2mm;align-items:flex-start}
+    .sheet:nth-of-type(2) .institutional-phrase.primary-institutional{flex:none!important;min-height:30mm!important;margin:9mm 8mm 0!important;padding:5mm 13mm 2mm!important;align-items:flex-start!important}
     .sheet.secondary-sheet .back-title{font-size:5mm;margin-bottom:1mm}
     .sheet.secondary-sheet .primary-grades{font-size:2.25mm}
     .sheet.secondary-sheet .primary-grades th{font-size:2.15mm;line-height:1.05}
@@ -581,7 +581,7 @@ function imprimirLibreta(
   }
   htmlFinal = htmlFinal.replace(
     '<div class="footer">',
-    `<div class="institutional-phrase">“${esc(fraseInstitucional)}”</div><div class="footer">`,
+    `<div class="institutional-phrase${esPrimaria ? " primary-institutional" : ""}">“${esc(fraseInstitucional)}”</div><div class="footer">`,
   );
   ventana.document.open();
   ventana.document.write(htmlFinal);
