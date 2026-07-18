@@ -117,7 +117,7 @@ function imprimirLibreta(data, ventana) {
     .sheet:first-of-type .status-choice{display:grid;grid-template-columns:minmax(0,1fr) 9.5mm 9.5mm;gap:1mm;align-items:center;width:100%;margin:1.2mm 0;font-size:2.55mm;line-height:1.1}
     .sheet:first-of-type .status-choice>span:first-child{font-weight:700;white-space:nowrap;text-align:left}
     .sheet:first-of-type .status-choice .box{width:9.5mm;border:1px solid #8b1820;border-radius:.7mm;padding:.7mm .2mm;text-align:center;font:700 2.15mm Arial;background:#fff;white-space:nowrap}
-    .sheet:first-of-type .tutor-signature{width:28mm;margin:auto auto 0;padding-top:5mm;border-bottom:1px solid #6e311d;text-align:center;font:2.4mm Georgia;line-height:1.2}
+    .sheet:first-of-type .tutor-signature{width:28mm;margin:auto auto 0;padding-top:1mm;border-top:1px solid #6e311d;text-align:center;font:2.4mm Georgia;line-height:1.2}
     .sheet:first-of-type .status .brand p{font-size:2.75mm}
     .sheet:first-of-type .legend{margin-top:2.2mm}.sheet:first-of-type .legend-row{grid-template-columns:11mm 1fr;font-size:2.15mm;min-height:11.4mm;background:#fff}.sheet:first-of-type .legend-key{font-size:5.3mm;padding:2.2mm 1mm}.sheet:first-of-type .legend-text{padding:1.15mm 1.5mm;line-height:1.22}.sheet:first-of-type .legend-text b{font-size:2.35mm;letter-spacing:.05mm}
     .sheet:first-of-type .panel:first-child:after{content:'—  ❦  —';display:block;text-align:center;color:#b9822f;font-size:5mm;margin-top:2mm}
@@ -187,7 +187,7 @@ function imprimirLibreta(data, ventana) {
   htmlFinal = htmlFinal.replace(/(<div class="cover-grid">.*?<img class="logo" src=")[^"]+/, `$1${insigniaJesus}`);
   htmlFinal = htmlFinal.replace(
     /<div class="statusbox">.*?<\/div>/,
-    `<div class="statusbox"><div class="status-heading">SITUACIÓN AL FINALIZAR EL AÑO LECTIVO</div><div class="status-choice"><span>Promovido:</span><span class="box">□ SÍ</span><span class="box">□ NO</span></div><div class="status-choice"><span>Repite:</span><span class="box">□ SÍ</span><span class="box">□ NO</span></div><div class="status-choice"><span>Recuperación:</span><span class="box">□ SÍ</span><span class="box">□ NO</span></div><div class="tutor-signature">Firma del tutor</div></div>`
+    `<div class="statusbox"><div class="status-heading">SITUACIÓN AL FINALIZAR EL AÑO LECTIVO</div><div class="status-choice"><span>Promovido:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="status-choice"><span>Repite:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="status-choice"><span>Recuperación:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="tutor-signature">Firma del tutor</div></div>`
   );
   htmlFinal = htmlFinal.replace(
     /(<div class="titlebar">LIBRETA DE NOTAS<\/div>)<div class="identity">.*?<\/div>(<p class="serif">)/,
