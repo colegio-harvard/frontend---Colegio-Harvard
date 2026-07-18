@@ -43,6 +43,21 @@ export function getEmbeddedFontCSS() {
   return _fontCSSPromise;
 }
 
+export async function waitForCaptureImages(root) {
+  const images = [...root.querySelectorAll('img')];
+  await Promise.all(images.map(async (img) => {
+    if (!img.complete) {
+      await new Promise((resolve, reject) => {
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', () => reject(new Error('No se pudo cargar una imagen del fotocheck')), { once: true });
+      });
+    }
+    if (!img.naturalWidth) throw new Error('No se pudo cargar una imagen del fotocheck');
+    if (typeof img.decode === 'function') await img.decode();
+  }));
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
+
 const CarnetView = () => {
   const { id_alumno } = useParams();
   const navigate = useNavigate();
@@ -79,6 +94,7 @@ const CarnetView = () => {
 
       let dataUrl;
       try {
+        await waitForCaptureImages(wrapper);
         dataUrl = await toJpeg(wrapper, {
           quality: 0.95,
           pixelRatio: 3,
@@ -128,7 +144,7 @@ const CarnetView = () => {
       </div>
 
       <div className="flex justify-center">
-        <CarnetCard alumno={alumno} carnet={carnet} carnetRef={carnetRef} />
+        <CarnetCard key={`${alumno.id}-${alumno.foto_url || 'sin-foto'}`} alumno={alumno} carnet={carnet} carnetRef={carnetRef} />
       </div>
     </div>
   );

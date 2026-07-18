@@ -18,7 +18,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
       <div className="flex justify-center -mt-5 relative z-10">
         <div className="w-[88px] h-[88px] rounded-full bg-gold-gradient p-[3px] shadow-gold-md">
           {alumno.foto_url ? (
-            <img src={fileUrl(alumno.foto_url)} alt={alumno.nombre_completo}
+            <img key={`${alumno.id}-${alumno.foto_url}`} src={fileUrl(alumno.foto_url)} alt={alumno.nombre_completo}
               className="w-full h-full rounded-full object-cover border-2 border-white" />
           ) : (
             <div className="w-full h-full rounded-full bg-cream-100 border-2 border-white flex items-center justify-center">

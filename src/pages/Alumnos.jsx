@@ -12,7 +12,7 @@ import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash } from 'react-icons/hi';
 import { fileUrl } from '../utils/constants';
 import { toJpeg } from 'html-to-image';
-import { getEmbeddedFontCSS } from './CarnetView';
+import { getEmbeddedFontCSS, waitForCaptureImages } from './CarnetView';
 import JSZip from 'jszip';
 import toast from 'react-hot-toast';
 
@@ -167,6 +167,7 @@ const Alumnos = () => {
 
       let dataUrl;
       try {
+        await waitForCaptureImages(wrapper);
         dataUrl = await toJpeg(wrapper, {
           quality: 0.95,
           pixelRatio: 3,
@@ -214,6 +215,7 @@ const Alumnos = () => {
 
         // Formatear datos del alumno para el CarnetCard (misma estructura que obtenerCarnet)
         const alumnoData = {
+          id: a.id,
           nombre_completo: a.nombre_completo,
           codigo_alumno: a.codigo_alumno,
           foto_url: a.foto_url,
@@ -237,7 +239,7 @@ const Alumnos = () => {
 
         const root = createRoot(cardWrapper);
         await new Promise((resolve) => {
-          root.render(<CarnetCard alumno={alumnoData} carnet={carnetData} carnetRef={{ current: null }} />);
+          root.render(<CarnetCard key={`${alumnoData.id}-${alumnoData.foto_url || 'sin-foto'}`} alumno={alumnoData} carnet={carnetData} carnetRef={{ current: null }} />);
           // Esperar al siguiente frame para que el DOM se renderice completamente
           requestAnimationFrame(() => requestAnimationFrame(resolve));
         });
@@ -258,10 +260,7 @@ const Alumnos = () => {
 
         try {
           // Esperar a que las imágenes se carguen
-          const imgs = wrapper.querySelectorAll('img');
-          await Promise.all([...imgs].map(img =>
-            img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
-          ));
+          await waitForCaptureImages(wrapper);
 
           // Generar JPEG con exactamente los mismos parámetros que la descarga individual
           const dataUrl = await toJpeg(wrapper, {
@@ -1017,7 +1016,7 @@ const Alumnos = () => {
         ) : carnetData ? (
           <div>
             <div className="flex justify-center">
-              <CarnetCard alumno={carnetData.alumno} carnet={carnetData.carnet} carnetRef={carnetRef} />
+              <CarnetCard key={`${carnetData.alumno.id}-${carnetData.alumno.foto_url || 'sin-foto'}`} alumno={carnetData.alumno} carnet={carnetData.carnet} carnetRef={carnetRef} />
             </div>
             <div className="flex justify-center gap-3 mt-5">
               <button
