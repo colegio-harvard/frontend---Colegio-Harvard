@@ -729,10 +729,34 @@ export default function Libretas() {
   }, [asigId, periodoId]);
   const saveNotas = async () => {
     try {
+      let motivoGuardar = motivo.trim();
+      const modificaNotaExistente = (gradebook?.alumnos || []).some((alumno) => {
+        const anterior = esNumericaSeleccionada
+          ? alumno.nota_numerica
+          : alumno.calificacion;
+        const actual = notas[alumno.id];
+        if (anterior === null || anterior === undefined || anterior === "") return false;
+        if (actual === null || actual === undefined || actual === "") return false;
+        return esNumericaSeleccionada
+          ? Number(anterior) !== Number(actual)
+          : String(anterior).toUpperCase() !== String(actual).toUpperCase();
+      });
+      if (admin && modificaNotaExistente && !motivoGuardar) {
+        const motivoIngresado = window.prompt(
+          "Indique el motivo de la modificación de la nota",
+          "",
+        );
+        if (motivoIngresado === null) return;
+        motivoGuardar = motivoIngresado.trim();
+        if (!motivoGuardar) {
+          return toast.error("Debe indicar el motivo de la modificación");
+        }
+        setMotivo(motivoGuardar);
+      }
       await api.guardarNotas({
         id_asignacion: Number(asigId),
         id_periodo: Number(periodoId),
-        motivo,
+        motivo: motivoGuardar,
         notas: Object.entries(notas)
           .filter(([, v]) => v !== "" && v !== null)
           .map(([id, v]) =>
