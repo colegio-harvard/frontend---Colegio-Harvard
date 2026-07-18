@@ -190,6 +190,9 @@ function imprimirLibreta(data, ventana, periodoImpreso = periodoSeleccionadoPara
     .sheet:nth-of-type(2) .conduct-icon{width:5.5mm;height:5.5mm;font-size:4.2mm;margin-right:1.5mm}
     .sheet:nth-of-type(2) .comment{min-height:20.3mm;padding:2.5mm;display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2mm;align-items:start;text-align:left;font-size:2.9mm;line-height:1.4}
     .sheet:nth-of-type(2) .comment .bubble{width:7mm;height:7mm;margin:0;align-self:start}
+    .sheet:nth-of-type(2) .institutional-phrase{flex:1;min-height:22mm;margin:3mm 10mm 1mm;display:flex;align-items:center;justify-content:center;position:relative;text-align:center;color:#7b1119;font:italic 4.2mm Georgia,serif;line-height:1.42;letter-spacing:.08mm;padding:3mm 15mm}
+    .sheet:nth-of-type(2) .institutional-phrase:before,.sheet:nth-of-type(2) .institutional-phrase:after{content:'❦';position:absolute;top:50%;transform:translateY(-50%);color:#c28a2f;font-size:6mm;font-style:normal}
+    .sheet:nth-of-type(2) .institutional-phrase:before{left:2mm}.sheet:nth-of-type(2) .institutional-phrase:after{right:2mm;transform:translateY(-50%) scaleX(-1)}
     .sheet:nth-of-type(2) .sidebrand{padding:4mm 3mm 2mm;justify-content:flex-start;overflow:hidden;background:#fff!important}
     .sheet:nth-of-type(2) .sidebrand .verse{font-size:3.15mm;margin:2mm 0 1mm;line-height:1.35}
     .sheet:nth-of-type(2) .side-emblem{display:block;width:64mm;height:64mm;object-fit:contain;margin:0 auto -2mm}
@@ -205,10 +208,6 @@ function imprimirLibreta(data, ventana, periodoImpreso = periodoSeleccionadoPara
     .replace('Necesita mayor tiempo y apoyo docente.','Cuando el estudiante muestra un progreso mínimo y evidencia dificultades frecuentes, necesita mayor tiempo de acompañamiento e intervención del docente.')
     .replace('</head>', `${mejorasCaraUno}</head>`);
   htmlFinal = htmlFinal.replace(/(<div class="cover-grid">.*?<img class="logo" src=")[^"]+/, `$1${insigniaJesus}`);
-  htmlFinal = htmlFinal.replace(
-    /(<div class="cover-grid">.*?<img class="logo"[^>]*>)/,
-    `$1<div class="cover-anniversary">“${esc(fraseInstitucional)}”</div>`
-  );
   htmlFinal = htmlFinal.replace(
     /<div class="statusbox">.*?<\/div>/,
     `<div class="statusbox"><div class="status-heading">SITUACIÓN AL FINALIZAR EL AÑO LECTIVO</div><div class="status-choice"><span>Promovido:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="status-choice"><span>Repite:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="status-choice"><span>Recuperación:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="tutor-signature">Firma del tutor</div></div>`
@@ -226,6 +225,7 @@ function imprimirLibreta(data, ventana, periodoImpreso = periodoSeleccionadoPara
     `$1<img class="cover-children" src="${ninosPortada}" alt="Niños estudiando">$2`
   );
   htmlFinal = htmlFinal.replace('COMENTARIO DEL CURSO</th>', `COMENTARIO DEL CURSO · BIMESTRE ${nombrePeriodoImpreso}</th>`);
+  htmlFinal = htmlFinal.replace('<div class="footer">', `<div class="institutional-phrase">“${esc(fraseInstitucional)}”</div><div class="footer">`);
   ventana.document.open(); ventana.document.write(htmlFinal); ventana.document.close();
 }
 
