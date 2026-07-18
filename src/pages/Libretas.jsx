@@ -65,6 +65,10 @@ function imprimirLibreta(data, ventana) {
   const nota = (lista, nombre, periodo, campo = 'curso') => esc(lista.find(x => x[campo] === nombre && Number(x.numero) === periodo)?.calificacion || '');
   const cursos = [...new Map(notas.map(n => [`${n.area}|${n.curso}`, { area:n.area, curso:n.curso }])).values()];
   const grupos = cursos.reduce((m, c) => (m[c.area] = [...(m[c.area] || []), c], m), {});
+  const comentariosCurso = curso => [1,2,3,4].map(periodo => {
+    const texto = observaciones.find(x => x.tipo === 'COMENTARIO_DOCENTE' && x.curso === curso && Number(x.numero) === periodo)?.texto;
+    return texto ? `<span class="course-comment-item"><b>${['I','II','III','IV'][periodo - 1]}:</b> ${esc(texto)}</span>` : '';
+  }).filter(Boolean).join('');
   const iconoArea = area => {
     const a = String(area || '').toUpperCase();
     if (a.includes('COMUNIC')) return '▤';
@@ -74,7 +78,7 @@ function imprimirLibreta(data, ventana) {
     if (a.includes('MATEM')) return 'π';
     return '◆';
   };
-  const filasCursos = Object.entries(grupos).map(([area, lista]) => lista.map((c, i) => `<tr>${i === 0 ? `<td class="area" rowspan="${lista.length}"><span class="row-icon area-icon">${iconoArea(area)}</span><span>${esc(area)}</span></td>` : ''}<td>${esc(c.curso)}</td>${[1,2,3,4].map(p => `<td class="grade">${nota(notas,c.curso,p)}</td>`).join('')}</tr>`).join('')).join('');
+  const filasCursos = Object.entries(grupos).map(([area, lista]) => lista.map((c, i) => `<tr>${i === 0 ? `<td class="area" rowspan="${lista.length}"><span class="row-icon area-icon">${iconoArea(area)}</span><span>${esc(area)}</span></td>` : ''}<td class="course-name">${esc(c.curso)}</td>${[1,2,3,4].map(p => `<td class="grade">${nota(notas,c.curso,p)}</td>`).join('')}<td class="course-comment">${comentariosCurso(c.curso)}</td></tr>`).join('')).join('');
   const nombresConducta = criterios.length ? criterios.map(c => c.nombre) : [...new Set(conducta.map(c => c.nombre))];
   const iconosConducta = ['☑','◷','▤','☆','♡','⚖','♢','⌂','♧','♡'];
   const filasConducta = nombresConducta.map((n, i) => `<tr><td><span class="row-icon conduct-icon">${iconosConducta[i] || '◇'}</span><span>${esc(n)}</span></td>${[1,2,3,4].map(p => `<td class="grade">${nota(conducta,n,p,'nombre')}</td>`).join('')}</tr>`).join('');
@@ -92,7 +96,7 @@ function imprimirLibreta(data, ventana) {
     <div class="parent-title">NOTA DEL PADRE DE FAMILIA</div><table class="parent-table"><thead><tr><th>CONCEPTO</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody><tr><td>Acompañamiento y apoyo familiar</td>${[1,2,3,4].map(p=>`<td>${observacion('NOTA_PADRE',p)}</td>`).join('')}</tr></tbody></table>
     <div class="legend">${[['AD','#1499a8','LOGRO DESTACADO','Supera lo esperado respecto a la competencia.'],['A','#4ca564','LOGRO ESPERADO','Alcanza satisfactoriamente lo programado.'],['B','#e29a17','EN PROCESO','Requiere acompañamiento para lograrlo.'],['C','#d9343a','EN INICIO','Necesita mayor tiempo y apoyo docente.']].map(x=>`<div class="legend-row"><div class="legend-key" style="background:${x[1]}">${x[0]}</div><div class="legend-text"><b>${x[2]}</b><br>${x[3]}</div></div>`).join('')}</div><div class="school-contact"><b>Horacio Zeballos, grupo D, manzana F, lote 6 – Ate</b><br>Teléfono / WhatsApp: 946-413-462 &nbsp; · &nbsp; E-mail: mbafjpg@gmail.com</div>
   </div><div class="panel brand"><div class="small">Colegio</div><div class="college">Harvard</div><div class="small">INICIAL – PRIMARIA – SECUNDARIA</div><div class="orn"></div><div class="cover-grid">${foto?`<img class="photo" src="${foto}">`:'<div class="photo empty">FOTO</div>'}<img class="logo" src="${insigniaHarvard}"></div><div class="titlebar">LIBRETA DE NOTAS</div><div class="identity"><b>ALUMNO:</b>${esc(alumno.nombre_completo)}<br><b>CÓDIGO:</b>${esc(alumno.codigo_alumno)}<br><b>GRADO:</b>${esc(alumno.grado)} &nbsp; <b>SECCIÓN:</b>${esc(alumno.seccion)}<br><b>NIVEL:</b>${esc(alumno.nivel)} &nbsp; <b>AÑO:</b>${esc(alumno.anio)}<br><b>TELÉFONO:</b>${esc(alumno.celular)}</div><p class="serif"><i>“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”</i></p><div class="identity"><b>Tutor(a):</b>${esc(alumno.tutor)}</div></div></div></section>
-  <section class="sheet"><div class="back"><div class="leftcol"><div class="back-title">DISTRIBUCIÓN DE HORAS POR ÁREA Y CURSO</div><table class="grades"><thead><tr><th>ÁREAS CURRICULARES</th><th>CURSOS POR ÁREA</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasCursos}</tbody></table><div class="bottom"><div><div class="section-title">CONDUCTA Y HÁBITOS</div><table class="grades conduct"><thead><tr><th>CONCEPTOS</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasConducta}</tbody></table></div><div class="comments"><div class="section-title">COMENTARIO DEL PROFESOR</div>${[1,2,3,4].map(p=>`<div class="comment"><span class="bubble">${p}</span>${observacion('COMENTARIO_TUTOR',p)||observacion('COMENTARIO_DOCENTE',p)}</div>`).join('')}</div></div><div class="footer">Colegio Harvard · UGEL 06 · Año ${esc(alumno.anio)}</div></div><aside class="panel sidebrand"><p class="verse">“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”<br>(Proverbios 22:6)</p><img class="logo" src="${insigniaHarvard}"><div><b class="serif wine">DESDE 1985</b><p class="verse">Cultivamos mentes curiosas<br>y corazones felices</p></div><div class="family">COLEGIO<br>HARVARD</div></aside></div></section><script>window.onload=()=>setTimeout(()=>window.print(),450)</script></body></html>`;
+  <section class="sheet"><div class="back"><div class="leftcol"><div class="back-title">DISTRIBUCIÓN DE HORAS POR ÁREA Y CURSO</div><table class="grades course-grades"><thead><tr><th>ÁREAS CURRICULARES</th><th>CURSOS POR ÁREA</th><th>I</th><th>II</th><th>III</th><th>IV</th><th>COMENTARIO DEL CURSO</th></tr></thead><tbody>${filasCursos}</tbody></table><div class="bottom"><div><div class="section-title">CONDUCTA Y HÁBITOS</div><table class="grades conduct"><thead><tr><th>CONCEPTOS</th><th>I</th><th>II</th><th>III</th><th>IV</th></tr></thead><tbody>${filasConducta}</tbody></table></div><div class="comments"><div class="section-title">COMENTARIO DEL PROFESOR</div>${[1,2,3,4].map(p=>`<div class="comment"><span class="bubble">${p}</span>${observacion('COMENTARIO_TUTOR',p)}</div>`).join('')}</div></div><div class="footer">Colegio Harvard · UGEL 06 · Año ${esc(alumno.anio)}</div></div><aside class="panel sidebrand"><p class="verse">“Enseña al niño el camino en que debe andar, y cuando sea viejo no se apartará de él”<br>(Proverbios 22:6)</p><img class="logo" src="${insigniaHarvard}"><div><b class="serif wine">DESDE 1985</b><p class="verse">Cultivamos mentes curiosas<br>y corazones felices</p></div><div class="family">COLEGIO<br>HARVARD</div></aside></div></section><script>window.onload=()=>setTimeout(()=>window.print(),450)</script></body></html>`;
   const conceptosPadre = criteriosPadre.length ? criteriosPadre.map(c => c.nombre) : [
     'Ayuda al niño en sus tareas', 'Ayuda a corregir las malas conductas del niño',
     'Asiste a los llamados del profesor', 'Cumple el Reglamento del Colegio',
@@ -166,6 +170,15 @@ function imprimirLibreta(data, ventana) {
     .sheet:nth-of-type(2) .back-title:after{content:'DE ACUERDO AL NUEVO CURRÍCULO NACIONAL';display:block;color:#c1842d;font:400 3.1mm Georgia;letter-spacing:.45mm;margin-top:1.2mm;border-bottom:1px solid #d6a64a;padding-bottom:1.2mm}
     .sheet:nth-of-type(2) .grades{font-size:2.65mm}
     .sheet:nth-of-type(2) .grades td{height:5.65mm;padding:1mm 1.2mm}
+    .sheet:nth-of-type(2) .course-grades{table-layout:fixed}
+    .sheet:nth-of-type(2) .course-grades th:nth-child(1){width:34mm}
+    .sheet:nth-of-type(2) .course-grades th:nth-child(2){width:48mm}
+    .sheet:nth-of-type(2) .course-grades th:nth-child(n+3):nth-child(-n+6){width:8mm}
+    .sheet:nth-of-type(2) .course-grades .area{width:34mm!important;white-space:normal}
+    .sheet:nth-of-type(2) .course-grades .course-name{white-space:nowrap;font-size:2.45mm}
+    .sheet:nth-of-type(2) .course-grades .course-comment{padding:.55mm 1.2mm;text-align:left;font-size:2.15mm;line-height:1.2;color:#6f1419;vertical-align:middle}
+    .sheet:nth-of-type(2) .course-comment-item{display:block;white-space:normal}
+    .sheet:nth-of-type(2) .course-comment-item+ .course-comment-item{margin-top:.35mm}
     .sheet:nth-of-type(2) .bottom{margin-top:3mm;grid-template-columns:1.58fr .82fr}
     .sheet:nth-of-type(2) .conduct td{height:5.55mm}
     .sheet:nth-of-type(2) .grades .area{width:42mm;padding:0 1.8mm;vertical-align:middle;white-space:nowrap}
