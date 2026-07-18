@@ -174,7 +174,8 @@ function imprimirLibreta(data, ventana) {
     .sheet:nth-of-type(2) .row-icon{display:inline-flex;align-items:center;justify-content:center;color:#9b1723;font-family:"Segoe UI Symbol",Georgia,serif;font-weight:400;vertical-align:middle;line-height:1;margin-right:2mm}
     .sheet:nth-of-type(2) .area-icon{width:7mm;font-size:5.4mm;margin-right:1.5mm;text-align:center}
     .sheet:nth-of-type(2) .conduct-icon{width:5.5mm;height:5.5mm;font-size:4.2mm;margin-right:1.5mm}
-    .sheet:nth-of-type(2) .comment{min-height:20.3mm;padding:2.3mm}
+    .sheet:nth-of-type(2) .comment{min-height:20.3mm;padding:2.5mm;display:grid;grid-template-columns:8mm minmax(0,1fr);gap:2mm;align-items:start;text-align:left;font-size:2.9mm;line-height:1.4}
+    .sheet:nth-of-type(2) .comment .bubble{width:7mm;height:7mm;margin:0;align-self:start}
     .sheet:nth-of-type(2) .sidebrand{padding:4mm 3mm 2mm;justify-content:flex-start;overflow:hidden;background:#fff!important}
     .sheet:nth-of-type(2) .sidebrand .verse{font-size:3.15mm;margin:2mm 0 1mm;line-height:1.35}
     .sheet:nth-of-type(2) .side-emblem{display:block;width:64mm;height:64mm;object-fit:contain;margin:0 auto -2mm}
