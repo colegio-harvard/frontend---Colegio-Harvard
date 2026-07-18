@@ -209,6 +209,10 @@ function imprimirLibreta(data, ventana, periodoImpreso = periodoSeleccionadoPara
     .replace('</head>', `${mejorasCaraUno}</head>`);
   htmlFinal = htmlFinal.replace(/(<div class="cover-grid">.*?<img class="logo" src=")[^"]+/, `$1${insigniaJesus}`);
   htmlFinal = htmlFinal.replace(
+    /(<div class="cover-grid">.*?<img class="logo"[^>]*>)/,
+    `$1<div class="cover-anniversary">“${esc(fraseInstitucional)}”</div>`
+  );
+  htmlFinal = htmlFinal.replace(
     /<div class="statusbox">.*?<\/div>/,
     `<div class="statusbox"><div class="status-heading">SITUACIÓN AL FINALIZAR EL AÑO LECTIVO</div><div class="status-choice"><span>Promovido:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="status-choice"><span>Repite:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="status-choice"><span>Recuperación:</span><span class="box">SÍ</span><span class="box">NO</span></div><div class="tutor-signature">Firma del tutor</div></div>`
   );
