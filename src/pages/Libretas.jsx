@@ -493,7 +493,8 @@ function imprimirLibreta(
     .sheet:nth-of-type(2) .institutional-phrase:before,.sheet:nth-of-type(2) .institutional-phrase:after{content:'❦';position:absolute;top:50%;transform:translateY(-50%);color:#c28a2f;font-size:6mm;font-style:normal}
     .sheet:nth-of-type(2) .institutional-phrase:before{left:2mm}.sheet:nth-of-type(2) .institutional-phrase:after{right:2mm;transform:translateY(-50%) scaleX(-1)}
     .sheet.primary-sheet .bottom{flex:0 0 68mm;min-height:68mm;position:relative;z-index:3}
-    .sheet.primary-sheet .comment{min-height:15mm;padding:2mm;font-size:2.65mm}
+    .sheet.primary-sheet .comments{display:grid;grid-template-rows:auto repeat(4,minmax(0,1fr));height:100%}
+    .sheet.primary-sheet .comment{min-height:0;padding:2mm;font-size:2.65mm}
     .sheet.primary-sheet .institutional-phrase.primary-institutional{position:absolute!important;z-index:1;left:9mm;right:84mm;bottom:5mm;height:14mm;min-height:14mm!important;margin:0!important;padding:1mm 13mm!important;align-items:center!important;background:transparent!important}
     .sheet.primary-sheet .footer{position:absolute;z-index:2;left:9mm;right:84mm;bottom:1.5mm;margin:0!important;background:#fff!important}
     .sheet.secondary-sheet .back-title{font-size:5mm;margin-bottom:1mm}
