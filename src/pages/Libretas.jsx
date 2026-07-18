@@ -494,7 +494,8 @@ function imprimirLibreta(
     .sheet:nth-of-type(2) .institutional-phrase:before{left:2mm}.sheet:nth-of-type(2) .institutional-phrase:after{right:2mm;transform:translateY(-50%) scaleX(-1)}
     .sheet.primary-sheet .bottom{flex:0 0 68mm;min-height:68mm}
     .sheet.primary-sheet .comment{min-height:15mm;padding:2mm;font-size:2.65mm}
-    .sheet.primary-sheet .institutional-phrase.primary-institutional{flex:0 0 20mm!important;min-height:20mm!important;margin:4mm 8mm 0!important;padding:3mm 13mm 1mm!important;align-items:center!important}
+    .sheet.primary-sheet .institutional-phrase.primary-institutional{position:absolute!important;z-index:8;left:9mm;right:84mm;bottom:10mm;height:20mm;min-height:20mm!important;margin:0!important;padding:3mm 13mm!important;align-items:center!important;background:#fff!important}
+    .sheet.primary-sheet .footer{position:absolute;z-index:9;left:9mm;right:84mm;bottom:4mm;margin:0!important;background:#fff!important}
     .sheet.secondary-sheet .back-title{font-size:5mm;margin-bottom:1mm}
     .sheet.secondary-sheet .primary-grades{font-size:2.25mm}
     .sheet.secondary-sheet .primary-grades th{font-size:2.15mm;line-height:1.05}
