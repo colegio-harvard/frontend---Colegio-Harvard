@@ -493,9 +493,12 @@ function imprimirLibreta(
     .sheet:nth-of-type(2) .institutional-phrase:before,.sheet:nth-of-type(2) .institutional-phrase:after{content:'❦';position:absolute;top:50%;transform:translateY(-50%);color:#c28a2f;font-size:6mm;font-style:normal}
     .sheet:nth-of-type(2) .institutional-phrase:before{left:2mm}.sheet:nth-of-type(2) .institutional-phrase:after{right:2mm;transform:translateY(-50%) scaleX(-1)}
     .sheet.secondary-sheet .back-title{font-size:5mm;margin-bottom:1mm}
-    .sheet.secondary-sheet .primary-grades{font-size:1.85mm}
+    .sheet.secondary-sheet .primary-grades{font-size:2.25mm}
+    .sheet.secondary-sheet .primary-grades th{font-size:2.15mm;line-height:1.05}
     .sheet.secondary-sheet .primary-grades th,.sheet.secondary-sheet .primary-grades td{height:4.05mm;padding:.25mm .3mm}
-    .sheet.secondary-sheet .primary-grades .area>span:last-child{font-size:1.75mm;line-height:1.02}
+    .sheet.secondary-sheet .primary-grades .area>span:last-child{font-size:2mm;line-height:1.02}
+    .sheet.secondary-sheet .primary-grades .course-name{font-size:2.25mm}
+    .sheet.secondary-sheet .primary-grades .numeric-grade,.sheet.secondary-sheet .primary-grades .letter-grade{font-size:2.25mm}
     .sheet.secondary-sheet .bottom{margin-top:1.5mm}
     .sheet.secondary-sheet .conduct{font-size:2.25mm}
     .sheet.secondary-sheet .conduct td{height:4.35mm;padding:.45mm .8mm}
