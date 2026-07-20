@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import { registrarAsistencia, historialPorteria } from '../../services/asistenciaService';
+import { registrarAsistencia, obtenerPensionesEscaneo, historialPorteria } from '../../services/asistenciaService';
 import { formatHora, todayLimaISO } from '../../utils/formatters';
 import { HiQrcode, HiKey, HiCheck, HiClock, HiMinus, HiX } from 'react-icons/hi';
 import toast from 'react-hot-toast';
@@ -137,9 +137,25 @@ const DashboardPorteria = () => {
     try {
       const { data } = await registrarAsistencia(payload);
       playSuccessBeep();
-      setUltimoRegistro(data.data);
+      const resultado = data.data;
+      setUltimoRegistro({ ...resultado, pensionesCargando: Boolean(resultado.id_alumno) });
       setCodigoAlumno('');
       cargarHistorial();
+
+      if (resultado.id_alumno) {
+        obtenerPensionesEscaneo(resultado.id_alumno)
+          .then(({ data: pensionesRes }) => {
+            setUltimoRegistro(actual => actual?.id_alumno === resultado.id_alumno
+              ? { ...actual, pensiones: pensionesRes.data, pensionesCargando: false }
+              : actual);
+          })
+          .catch(() => {
+            setUltimoRegistro(actual => actual?.id_alumno === resultado.id_alumno
+              ? { ...actual, pensionesCargando: false, pensionesError: true }
+              : actual);
+            toast.error('La asistencia se registró, pero no se pudo cargar el cuadro de pagos');
+          });
+      }
 
       if (modo === 'CAMARA') {
         // Bloquear escáner y mostrar confirmación visual
@@ -348,7 +364,12 @@ const DashboardPorteria = () => {
               </div>
             </div>
           </div>
-                  <PensionResumen pensiones={ultimoRegistro.pensiones} />
+          {ultimoRegistro.pensionesCargando && (
+            <div className="mt-4 border-t border-cream-200 pt-4 text-center text-sm text-primary-800/60">
+              Cargando cuadro de pagos...
+            </div>
+          )}
+          <PensionResumen pensiones={ultimoRegistro.pensiones} />
 </Card>
       )}
 
