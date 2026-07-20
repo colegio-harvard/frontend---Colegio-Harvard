@@ -677,7 +677,7 @@ const PensionAdmin = () => {
 // ============================================================
 // MODAL DE PAGO - Admin registra pagos
 // ============================================================
-const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
+export const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
   const [detalle, setDetalle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

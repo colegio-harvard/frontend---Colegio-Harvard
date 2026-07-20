@@ -4,6 +4,7 @@ import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { cuadriculaPensiones, obtenerPlantilla, exportarReportePagosExcel } from '../services/pensionesService';
 import { HiCheck, HiClock, HiCurrencyDollar, HiDownload, HiMinus, HiSearch, HiX } from 'react-icons/hi';
+import { ModalPago } from './Pensiones';
 
 const formatMonto = (monto) => {
   if (monto === null || monto === undefined || monto === '') return '-';
@@ -107,7 +108,7 @@ const calcularResumen = (alumnos, plantilla) => {
   return resumen;
 };
 
-const EstadoPunto = ({ estadoMes, alumno }) => {
+const EstadoPunto = ({ estadoMes, alumno, onClick }) => {
   const estado = estadoMes.estado || 'PENDIENTE';
   const config = estadoConfig[estado] || estadoConfig.PENDIENTE;
   const Icon = config.Icon;
@@ -123,9 +124,15 @@ const EstadoPunto = ({ estadoMes, alumno }) => {
   ].filter(Boolean).join(' | ');
 
   return (
-    <span title={title} className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${config.dot}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      title={`${title} | Ver detalle`}
+      aria-label={`Ver detalle de ${config.label}`}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2 ${config.dot}`}
+    >
       <Icon className="h-4 w-4" />
-    </span>
+    </button>
   );
 };
 
@@ -136,25 +143,41 @@ const ReportePagos = () => {
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('');
   const [nivelFiltro, setNivelFiltro] = useState('');
+  const [modalAlumno, setModalAlumno] = useState(null);
+  const [modalMes, setModalMes] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [cuadriculaR, plantillaR] = await Promise.all([
-          cuadriculaPensiones({}),
-          obtenerPlantilla(),
-        ]);
-        setAlumnos(cuadriculaR.data.data || []);
-        setPlantilla(plantillaR.data.data || []);
-      } catch {
-        toast.error('Error al cargar reporte de pagos');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [cuadriculaR, plantillaR] = await Promise.all([
+        cuadriculaPensiones({}),
+        obtenerPlantilla(),
+      ]);
+      setAlumnos(cuadriculaR.data.data || []);
+      setPlantilla(plantillaR.data.data || []);
+    } catch {
+      toast.error('Error al cargar reporte de pagos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const abrirModal = (alumno, mes) => {
+    setModalAlumno(alumno);
+    setModalMes(mes);
+  };
+
+  const cerrarModal = () => {
+    setModalAlumno(null);
+    setModalMes(null);
+  };
+
+  const handlePagoRegistrado = () => {
+    cerrarModal();
     fetchData();
-  }, []);
+  };
 
   const niveles = useMemo(() => {
     const map = new Map();
@@ -345,7 +368,11 @@ const ReportePagos = () => {
                         const estadoMes = getEstado(alumno, mes.clave);
                         return (
                           <td key={mes.clave} className="px-3 py-2 text-center">
-                            <EstadoPunto estadoMes={estadoMes} alumno={alumno} />
+                            <EstadoPunto
+                              estadoMes={estadoMes}
+                              alumno={alumno}
+                              onClick={() => abrirModal(alumno, mes)}
+                            />
                           </td>
                         );
                       })}
@@ -357,6 +384,14 @@ const ReportePagos = () => {
           </Card>
         ))}
       </div>
+      {modalAlumno && modalMes && (
+        <ModalPago
+          alumno={modalAlumno}
+          mes={modalMes}
+          onClose={cerrarModal}
+          onSaved={handlePagoRegistrado}
+        />
+      )}
     </div>
   );
 };
