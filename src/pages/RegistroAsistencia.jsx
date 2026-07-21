@@ -119,10 +119,12 @@ const RegistroAsistencia = () => {
   const codigoRef = useRef(null);
   const cooldownTimerRef = useRef(null);
   const historyTimerRef = useRef(null);
+  const historyRequestRef = useRef(0);
   const secondaryTimerRef = useRef(null);
   const qrRegistradosRef = useRef(new Map());
 
   const cargarHistorial = async (page = paginaHistorial, filtros = {}) => {
+    const requestId = ++historyRequestRef.current;
     try {
       const { data } = await historialPorteria({
         page,
@@ -130,6 +132,7 @@ const RegistroAsistencia = () => {
         fecha: filtros.fecha ?? fechaHistorial,
         q: filtros.q ?? busquedaHistorial,
       });
+      if (requestId !== historyRequestRef.current) return;
       setHistorial(data.data || []);
       setTotalPaginas(data.totalPages || 1);
       setTotalRegistros(data.total || 0);
@@ -139,6 +142,8 @@ const RegistroAsistencia = () => {
   };
 
   const programarHistorial = (page = 1, delay = 300) => {
+    // Invalida inmediatamente cualquier respuesta anterior mientras el usuario escribe.
+    historyRequestRef.current += 1;
     if (historyTimerRef.current) clearTimeout(historyTimerRef.current);
     historyTimerRef.current = setTimeout(() => cargarHistorial(page), delay);
   };
@@ -279,7 +284,7 @@ const RegistroAsistencia = () => {
   }, []);
 
   useEffect(() => {
-    programarHistorial(paginaHistorial, 0);
+    programarHistorial(paginaHistorial, busquedaHistorial.trim() ? 300 : 0);
   }, [paginaHistorial, busquedaHistorial, fechaHistorial]);
 
   useEffect(() => {

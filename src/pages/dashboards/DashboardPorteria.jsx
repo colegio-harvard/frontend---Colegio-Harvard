@@ -113,18 +113,29 @@ const DashboardPorteria = () => {
   const [cooldown, setCooldown] = useState(null);
   const codigoRef = useRef(null);
   const cooldownTimerRef = useRef(null);
+  const historyTimerRef = useRef(null);
+  const historyRequestRef = useRef(0);
 
   const cargarHistorial = async (filtros = {}) => {
+    const requestId = ++historyRequestRef.current;
     try {
       const { data } = await historialPorteria({
         limit: 30,
         fecha: filtros.fecha ?? fechaHistorial,
         q: filtros.q ?? busquedaHistorial,
       });
+      if (requestId !== historyRequestRef.current) return;
       setHistorial(data.data || []);
     } catch {
       // silenciar
     }
+  };
+
+  const programarHistorial = (delay = 300) => {
+    // Invalida inmediatamente cualquier respuesta anterior mientras el usuario escribe.
+    historyRequestRef.current += 1;
+    if (historyTimerRef.current) clearTimeout(historyTimerRef.current);
+    historyTimerRef.current = setTimeout(() => cargarHistorial(), delay);
   };
 
   const COOLDOWN_SECONDS = 1;
@@ -140,7 +151,7 @@ const DashboardPorteria = () => {
       const resultado = data.data;
       setUltimoRegistro({ ...resultado, pensionesCargando: Boolean(resultado.id_alumno) });
       setCodigoAlumno('');
-      cargarHistorial();
+      programarHistorial(0);
 
       if (resultado.id_alumno) {
         obtenerPensionesEscaneo(resultado.id_alumno)
@@ -205,14 +216,14 @@ const DashboardPorteria = () => {
   };
 
   useEffect(() => {
-    cargarHistorial();
     return () => {
       if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+      if (historyTimerRef.current) clearTimeout(historyTimerRef.current);
     };
   }, []);
 
   useEffect(() => {
-    cargarHistorial();
+    programarHistorial(busquedaHistorial.trim() ? 300 : 0);
   }, [busquedaHistorial, fechaHistorial]);
 
   useEffect(() => {
@@ -222,7 +233,7 @@ const DashboardPorteria = () => {
   }, [modo]);
 
   // WebSocket: actualizar historial en tiempo real
-  useSocket('asistencia:evento', () => cargarHistorial());
+  useSocket('asistencia:evento', () => programarHistorial(0));
 
   const btnBase = 'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200 text-sm';
   const btnActive = 'bg-primary-600 text-white shadow-crimson';
