@@ -790,30 +790,28 @@ export default function Libretas() {
     setAcom({ alumno: id, conducta: {}, padreNotas: {}, tutor: "", padre: "" });
     if (!id) return;
     try {
-      const r = await api.cargarLibreta(Number(id));
-      const libreta = r.data.data;
-      const numeroPeriodo = Number(periodo?.numero);
+      const r = await api.cargarAcompanamiento(Number(id), Number(periodoId));
+      const acompanamiento = r.data.data;
       const valores = {};
       const valoresPadre = {};
-      (data?.criterios || []).forEach((c) => {
-        const existente = (libreta.conducta || []).find(
-          (x) => x.nombre === c.nombre && Number(x.numero) === numeroPeriodo,
-        );
-        if (existente?.calificacion) valores[c.id] = existente.calificacion;
+      (acompanamiento.conducta || []).forEach((x) => {
+        if (x.calificacion) valores[x.id_criterio] = x.calificacion;
       });
-      (data?.criteriosPadre || []).forEach((c) => {
-        const existente = (libreta.notasPadre || []).find(
-          (x) => x.nombre === c.nombre && Number(x.numero) === numeroPeriodo,
-        );
-        if (existente?.calificacion)
-          valoresPadre[c.id] = existente.calificacion;
+      (acompanamiento.notasPadre || []).forEach((x) => {
+        if (x.calificacion) valoresPadre[x.id_criterio] = x.calificacion;
       });
+      const comentarioTutor = (acompanamiento.observaciones || []).find(
+        (x) => x.tipo === "COMENTARIO_TUTOR",
+      );
+      const notaPadre = (acompanamiento.observaciones || []).find(
+        (x) => x.tipo === "NOTA_PADRE",
+      );
       setAcom({
         alumno: id,
         conducta: valores,
         padreNotas: valoresPadre,
-        tutor: "",
-        padre: "",
+        tutor: comentarioTutor ? String(comentarioTutor.id_catalogo) : "",
+        padre: notaPadre ? String(notaPadre.id_catalogo) : "",
       });
     } catch (e) {
       toast.error(errorText(e));

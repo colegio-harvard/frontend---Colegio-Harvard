@@ -12,6 +12,7 @@ export const cambiarPeriodo = (id, estado) => apiClient.put(`/libretas/periodos/
 export const cargarNotas = params => apiClient.get('/libretas/notas', { params });
 export const guardarNotas = data => apiClient.post('/libretas/notas', data);
 export const guardarComentarioDocente = data => apiClient.post('/libretas/comentarios-docente', data);
+export const cargarAcompanamiento = (id, id_periodo) => apiClient.get(`/libretas/acompanamiento/${id}`, { params: { id_periodo } });
 export const guardarAcompanamiento = data => apiClient.post('/libretas/acompanamiento', data);
 export const guardarFraseInstitucional = frase => apiClient.put('/libretas/frase-institucional', { frase });
 export const crearOpcionCatalogo = data => apiClient.post('/libretas/catalogo', data);
