@@ -606,6 +606,8 @@ export default function Libretas() {
   const [notas, setNotas] = useState({});
   const [motivo, setMotivo] = useState("");
   const [comentarios, setComentarios] = useState({});
+  const [comentarioCategoria, setComentarioCategoria] = useState("");
+  const [comentarioEnfoque, setComentarioEnfoque] = useState("");
   const [area, setArea] = useState("");
   const [curso, setCurso] = useState({ nombre: "", id_area: "", nivel: "INICIAL" });
   const [asignacion, setAsignacion] = useState({
@@ -813,6 +815,8 @@ export default function Libretas() {
   };
   const seleccionarAlumnoConducta = async (id) => {
     setAcom({ alumno: id, conducta: {}, padreNotas: {}, tutor: "", padre: "" });
+    setComentarioCategoria("");
+    setComentarioEnfoque("");
     if (!id) return;
     try {
       const r = await api.cargarAcompanamiento(Number(id), Number(periodoId));
@@ -838,6 +842,13 @@ export default function Libretas() {
         tutor: comentarioTutor ? String(comentarioTutor.id_catalogo) : "",
         padre: notaPadre ? String(notaPadre.id_catalogo) : "",
       });
+      if (comentarioTutor) {
+        const opcion = commentsTutor.find(
+          (x) => String(x.id) === String(comentarioTutor.id_catalogo),
+        );
+        setComentarioCategoria(opcion?.categoria || "");
+        setComentarioEnfoque(opcion?.subcategoria || "");
+      }
     } catch (e) {
       toast.error(errorText(e));
     }
@@ -883,6 +894,39 @@ export default function Libretas() {
     commentsTutor =
       data?.catalogo.filter((x) => x.tipo === "COMENTARIO_TUTOR") || [],
     notesParent = data?.catalogo.filter((x) => x.tipo === "NOTA_PADRE") || [];
+  const etiquetasCategoriasTutor = {
+    APRENDIZAJE_COMPRENSION: "Aprendizaje y comprensión",
+    ATENCION_ORGANIZACION: "Atención y organización",
+    RESPONSABILIDAD_AUTONOMIA: "Responsabilidad y autonomía",
+    CONVIVENCIA_COMPORTAMIENTO: "Convivencia y comportamiento",
+    PARTICIPACION_RELACIONES: "Participación y relaciones sociales",
+    PROGRESO_ACTITUD: "Progreso y actitud ante el aprendizaje",
+    FORTALEZAS_DESTACADAS: "Fortalezas destacadas",
+    ACOMPANAMIENTO_FAMILIAR: "Acompañamiento familiar",
+  };
+  const etiquetasEnfoquesTutor = {
+    FORTALEZA: "Fortaleza",
+    EN_PROGRESO: "En progreso",
+    REQUIERE_APOYO: "Requiere apoyo",
+    RECOMENDACION: "Recomendación",
+    RENDIMIENTO_ACADEMICO: "Rendimiento académico",
+    CREATIVIDAD_TRABAJO: "Creatividad y trabajo",
+    HABILIDADES_PERSONALES: "Habilidades personales",
+  };
+  const categoriasTutor = [...new Set(commentsTutor.map((x) => x.categoria).filter(Boolean))];
+  const enfoquesTutor = [
+    ...new Set(
+      commentsTutor
+        .filter((x) => x.categoria === comentarioCategoria)
+        .map((x) => x.subcategoria)
+        .filter(Boolean),
+    ),
+  ];
+  const comentariosTutorFiltrados = commentsTutor.filter(
+    (x) =>
+      x.categoria === comentarioCategoria &&
+      x.subcategoria === comentarioEnfoque,
+  );
   const editarArea = async (item) => {
     const nombre = window.prompt("Nuevo nombre del área", item.nombre);
     if (!nombre?.trim() || nombre.trim() === item.nombre) return;
@@ -1692,18 +1736,68 @@ export default function Libretas() {
             <h3 className="font-semibold text-primary-800 mb-3">
               Comentario del tutor
             </h3>
-            <select
-              className="input-field"
-              value={acom.tutor}
-              onChange={(e) => setAcom({ ...acom, tutor: e.target.value })}
-            >
-              <option value="">Seleccione un comentario (opcional)</option>
-              {commentsTutor.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.texto}
-                </option>
-              ))}
-            </select>
+            <div className="grid gap-3 md:grid-cols-3">
+              <label className="text-sm">
+                Categoría
+                <select
+                  className="input-field mt-1"
+                  value={comentarioCategoria}
+                  onChange={(e) => {
+                    setComentarioCategoria(e.target.value);
+                    setComentarioEnfoque("");
+                    setAcom({ ...acom, tutor: "" });
+                  }}
+                >
+                  <option value="">Seleccione categoría</option>
+                  {categoriasTutor.map((categoria) => (
+                    <option key={categoria} value={categoria}>
+                      {etiquetasCategoriasTutor[categoria] || categoria}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm">
+                Enfoque
+                <select
+                  className="input-field mt-1"
+                  value={comentarioEnfoque}
+                  disabled={!comentarioCategoria}
+                  onChange={(e) => {
+                    setComentarioEnfoque(e.target.value);
+                    setAcom({ ...acom, tutor: "" });
+                  }}
+                >
+                  <option value="">Seleccione enfoque</option>
+                  {enfoquesTutor.map((enfoque) => (
+                    <option key={enfoque} value={enfoque}>
+                      {etiquetasEnfoquesTutor[enfoque] || enfoque}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm">
+                Comentario
+                <select
+                  className="input-field mt-1"
+                  value={acom.tutor}
+                  disabled={!comentarioEnfoque}
+                  onChange={(e) => setAcom({ ...acom, tutor: e.target.value })}
+                >
+                  <option value="">Seleccione comentario (opcional)</option>
+                  {comentariosTutorFiltrados.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.texto}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {acom.tutor && (
+              <p className="mt-3 rounded-xl border border-cream-200 bg-cream-50 p-3 text-sm text-primary-800">
+                <span className="font-semibold">Vista previa: </span>
+                {commentsTutor.find((c) => String(c.id) === String(acom.tutor))?.texto}
+              </p>
+            )}
           </div>
           <div className="border-t border-cream-200 pt-4">
             <h3 className="font-semibold text-primary-800">
