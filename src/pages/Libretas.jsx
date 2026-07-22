@@ -599,6 +599,7 @@ export default function Libretas() {
   const [tab, setTab] = useState("registro");
   const [busy, setBusy] = useState(true);
   const [docenteFiltro, setDocenteFiltro] = useState("TODOS");
+  const [aulaNotasId, setAulaNotasId] = useState("");
   const [asigId, setAsigId] = useState("");
   const [periodoId, setPeriodoId] = useState("");
   const [gradebook, setGradebook] = useState(null);
@@ -627,8 +628,10 @@ export default function Libretas() {
     try {
       const r = await api.cargarLibretas();
       setData(r.data.data);
-      if (!asigId && r.data.data.asignaciones[0])
+      if (!asigId && r.data.data.asignaciones[0]) {
         setAsigId(String(r.data.data.asignaciones[0].id));
+        setAulaNotasId(String(r.data.data.asignaciones[0].id_aula));
+      }
       if (!periodoId && r.data.data.periodos[0])
         setPeriodoId(String(r.data.data.periodos[0].id));
     } catch (e) {
@@ -679,6 +682,28 @@ export default function Libretas() {
           ),
     [data, docenteFiltro],
   );
+  const aulasNotas = useMemo(() => {
+    const unicas = new Map();
+    asignacionesVisibles.forEach((a) => {
+      if (!unicas.has(String(a.id_aula))) unicas.set(String(a.id_aula), a);
+    });
+    return [...unicas.values()].sort((a, b) =>
+      `${a.nivel} ${a.grado} ${a.seccion}`.localeCompare(
+        `${b.nivel} ${b.grado} ${b.seccion}`,
+        "es",
+        { numeric: true },
+      ),
+    );
+  }, [asignacionesVisibles]);
+  const cursosDelAula = useMemo(
+    () =>
+      asignacionesVisibles
+        .filter((a) => String(a.id_aula) === String(aulaNotasId))
+        .sort((a, b) =>
+          `${a.area} ${a.curso}`.localeCompare(`${b.area} ${b.curso}`, "es"),
+        ),
+    [asignacionesVisibles, aulaNotasId],
+  );
   const aulasConducta = useMemo(() => {
     const unicas = new Map();
     asignacionesVisibles.forEach((a) => {
@@ -688,9 +713,9 @@ export default function Libretas() {
   }, [asignacionesVisibles]);
   useEffect(() => {
     if (!asignacionesVisibles.some((a) => String(a.id) === String(asigId))) {
-      setAsigId(
-        asignacionesVisibles[0] ? String(asignacionesVisibles[0].id) : "",
-      );
+      const primera = asignacionesVisibles[0];
+      setAsigId(primera ? String(primera.id) : "");
+      setAulaNotasId(primera ? String(primera.id_aula) : "");
       setGradebook(null);
     }
   }, [docenteFiltro, data]);
@@ -1030,7 +1055,7 @@ export default function Libretas() {
       {tab === "registro" && (
         <section className="bg-white rounded-2xl border border-cream-200 p-5 space-y-4">
           <div
-            className={`grid gap-3 ${admin ? "md:grid-cols-3" : "md:grid-cols-2"}`}
+            className={`grid gap-3 ${admin ? "md:grid-cols-4" : "md:grid-cols-3"}`}
           >
             {admin && (
               <label className="text-sm">
@@ -1050,16 +1075,38 @@ export default function Libretas() {
               </label>
             )}
             <label className="text-sm">
-              Curso y aula
+              Grado y aula
+              <select
+                className="input-field mt-1"
+                value={aulaNotasId}
+                onChange={(e) => {
+                  setAulaNotasId(e.target.value);
+                  setAsigId("");
+                  setGradebook(null);
+                  setNotas({});
+                  setComentarios({});
+                }}
+              >
+                <option value="">Seleccione grado y aula</option>
+                {aulasNotas.map((a) => (
+                  <option key={a.id_aula} value={a.id_aula}>
+                    {a.grado} {a.seccion} · {a.nivel}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              Curso
               <select
                 className="input-field mt-1"
                 value={asigId}
+                disabled={!aulaNotasId}
                 onChange={(e) => setAsigId(e.target.value)}
               >
-                {asignacionesVisibles.map((a) => (
+                <option value="">Seleccione curso</option>
+                {cursosDelAula.map((a) => (
                   <option key={a.id} value={a.id}>
-                    {a.curso} · {a.grado} {a.seccion}
-                    {admin ? ` · ${a.docente}` : ""}
+                    {a.curso}{admin ? ` · ${a.docente}` : ""}
                   </option>
                 ))}
               </select>
