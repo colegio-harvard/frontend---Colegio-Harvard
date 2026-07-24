@@ -10,6 +10,8 @@ export const vincularPadre = (data) => apiClient.post('/alumnos/vincular', data)
 export const desvincularPadre = (id_alumno) => apiClient.delete(`/alumnos/desvincular/${id_alumno}`);
 export const reemitirCarnet = (id_alumno) => apiClient.post(`/alumnos/reemitir-carnet/${id_alumno}`);
 export const eliminarAlumno = (id) => apiClient.delete(`/alumnos/${id}`);
+export const obtenerInfoRetiroAlumno = (id) => apiClient.get(`/alumnos/${id}/retiro`);
+export const retirarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/retirar`, data);
 
 export const obtenerSiguienteCodigoAlumno = () => apiClient.get('/alumnos/siguiente-codigo');
 export const exportarAulasExcel = () => apiClient.get('/alumnos/exportar-aulas-excel', { responseType: 'blob' });

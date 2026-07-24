@@ -6,10 +6,11 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import CarnetCard from '../components/CarnetCard';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno, exportarAulasExcel } from '../services/alumnosService';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
-import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove } from 'react-icons/hi';
+import { useAuth } from '../context/AuthContext';
 import { fileUrl } from '../utils/constants';
 import { toJpeg } from 'html-to-image';
 import { getEmbeddedFontCSS, waitForCaptureImages } from './CarnetView';
@@ -17,6 +18,7 @@ import JSZip from 'jszip';
 import toast from 'react-hot-toast';
 
 const Alumnos = () => {
+  const { usuario } = useAuth();
   const [alumnos, setAlumnos] = useState([]);
   const [aulas, setAulas] = useState([]);
   const [niveles, setNiveles] = useState([]);
@@ -55,6 +57,16 @@ const Alumnos = () => {
   // Modal eliminar
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [alumnoAEliminar, setAlumnoAEliminar] = useState(null);
+  const [retiroModalOpen, setRetiroModalOpen] = useState(false);
+  const [retiroInfo, setRetiroInfo] = useState(null);
+  const [retiroLoading, setRetiroLoading] = useState(false);
+  const [retiroGuardando, setRetiroGuardando] = useState(false);
+  const [retiroForm, setRetiroForm] = useState({
+    fecha_retiro: new Date().toISOString().slice(0, 10),
+    ultima_clave_cobro: '',
+    motivo_retiro: 'Razones económicas',
+    observacion_retiro: '',
+  });
 
   // Descarga masiva
   const [descargaMasivaLoading, setDescargaMasivaLoading] = useState(false);
@@ -478,6 +490,51 @@ const Alumnos = () => {
     }
   };
 
+  // ===================== RETIRAR ALUMNO =====================
+  const abrirRetiro = async (alumno) => {
+    setRetiroModalOpen(true);
+    setRetiroLoading(true);
+    setRetiroInfo(null);
+    try {
+      const response = await obtenerInfoRetiroAlumno(alumno.id);
+      const info = response.data.data;
+      setRetiroInfo(info);
+      setRetiroForm({
+        fecha_retiro: new Date().toISOString().slice(0, 10),
+        ultima_clave_cobro: info.conceptos?.[0]?.clave || '',
+        motivo_retiro: 'Razones económicas',
+        observacion_retiro: '',
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo preparar el retiro');
+      setRetiroModalOpen(false);
+    } finally {
+      setRetiroLoading(false);
+    }
+  };
+
+  const confirmarRetiro = async () => {
+    if (!retiroInfo || !retiroForm.ultima_clave_cobro || !retiroForm.motivo_retiro) return;
+    setRetiroGuardando(true);
+    try {
+      const response = await retirarAlumno(retiroInfo.alumno.id, retiroForm);
+      toast.success(response.data.message || 'Alumno retirado');
+      setRetiroModalOpen(false);
+      setRetiroInfo(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo retirar al alumno');
+    } finally {
+      setRetiroGuardando(false);
+    }
+  };
+
+  const indiceUltimoCobro = retiroInfo?.conceptos?.findIndex(c => c.clave === retiroForm.ultima_clave_cobro) ?? -1;
+  const deudaConservada = (retiroInfo?.conceptos || [])
+    .slice(0, indiceUltimoCobro + 1)
+    .reduce((total, concepto) => total + Number(concepto.saldo || 0), 0);
+  const conceptosAnulados = (retiroInfo?.conceptos || []).slice(indiceUltimoCobro + 1);
+
   // ===================== TABLE COLUMNS =====================
   const columns = [
     { header: 'Foto', render: (r) => (
@@ -495,12 +552,15 @@ const Alumnos = () => {
     { header: 'DNI', render: (r) => r.dni || '-' },
     { header: 'Nombre', accessor: 'nombre_completo' },
     { header: 'Aula', render: (r) => r.aula ? `${r.aula.grado?.nombre || ''} ${r.aula.seccion}` : '-' },
-    { header: 'Estado', render: (r) => <Badge variant={r.estado === 'ACTIVO' ? 'success' : 'danger'}>{r.estado}</Badge> },
+    { header: 'Estado', render: (r) => <Badge variant={r.estado === 'ACTIVO' ? 'success' : r.estado === 'RETIRADO' ? 'warning' : 'danger'}>{r.estado}</Badge> },
     { header: 'Padre', render: (r) => r.padre_alumno?.[0]?.padre?.nombre_completo || 'Sin vincular' },
     { header: 'Acciones', render: (row) => (
       <div className="flex gap-1">
         <button onClick={() => openEdit(row)} className="p-1.5 text-gold-600 hover:bg-gold-50 rounded" title="Editar"><HiPencil className="w-4 h-4" /></button>
         <button onClick={() => handleVerCarnet(row.id)} className="p-1.5 text-primary-600 hover:bg-primary-50 rounded" title="Ver carnet"><HiEye className="w-4 h-4" /></button>
+        {usuario?.rol_codigo === 'SUPER_ADMIN' && row.estado === 'ACTIVO' && (
+          <button onClick={() => abrirRetiro(row)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded" title="Retirar alumno"><HiUserRemove className="w-4 h-4" /></button>
+        )}
         <button onClick={() => handleConfirmDelete(row)} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Eliminar"><HiTrash className="w-4 h-4" /></button>
       </div>
     )},
@@ -981,6 +1041,86 @@ const Alumnos = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* ==================== MODAL RETIRAR ALUMNO ==================== */}
+      <Modal isOpen={retiroModalOpen} onClose={() => !retiroGuardando && setRetiroModalOpen(false)} title="Retirar alumno" size="lg">
+        {retiroLoading ? (
+          <div className="py-10"><LoadingSpinner /></div>
+        ) : retiroInfo ? (
+          <div className="space-y-5">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+              <p className="font-semibold text-primary-800">{retiroInfo.alumno.nombre_completo}</p>
+              <p className="text-sm text-primary-700">{retiroInfo.alumno.codigo_alumno} · {retiroInfo.alumno.aula}</p>
+              <p className="mt-2 text-xs text-amber-800">
+                El historial académico, de asistencia, pagos y deuda no se eliminará.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Fecha efectiva de retiro *</label>
+                <input type="date" className={inputClass} value={retiroForm.fecha_retiro}
+                  onChange={e => setRetiroForm({ ...retiroForm, fecha_retiro: e.target.value })} />
+              </div>
+              <div>
+                <label className={labelClass}>Último concepto que sí corresponde cobrar *</label>
+                <select className={inputClass} value={retiroForm.ultima_clave_cobro}
+                  onChange={e => setRetiroForm({ ...retiroForm, ultima_clave_cobro: e.target.value })}>
+                  {(retiroInfo.conceptos || []).map(concepto => (
+                    <option key={concepto.clave} value={concepto.clave}>{concepto.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Motivo *</label>
+                <select className={inputClass} value={retiroForm.motivo_retiro}
+                  onChange={e => setRetiroForm({ ...retiroForm, motivo_retiro: e.target.value })}>
+                  <option>Razones económicas</option>
+                  <option>Traslado a otra institución</option>
+                  <option>Salud</option>
+                  <option>Decisión familiar</option>
+                  <option>Otro</option>
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Observación adicional</label>
+                <input className={inputClass} value={retiroForm.observacion_retiro}
+                  onChange={e => setRetiroForm({ ...retiroForm, observacion_retiro: e.target.value })}
+                  placeholder="Detalle opcional" />
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div className="rounded-lg border border-red-100 bg-red-50 p-3">
+                <p className="text-xs text-red-700">Deuda que se conservará</p>
+                <p className="text-xl font-semibold text-red-700">S/. {deudaConservada.toFixed(2)}</p>
+              </div>
+              <div className="rounded-lg border border-sky-100 bg-sky-50 p-3">
+                <p className="text-xs text-sky-700">Conceptos posteriores anulados</p>
+                <p className="text-xl font-semibold text-sky-700">{conceptosAnulados.length}</p>
+              </div>
+            </div>
+
+            {conceptosAnulados.length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-primary-800 mb-2">Quedarán como “No corresponde”:</p>
+                <div className="flex flex-wrap gap-2">
+                  {conceptosAnulados.map(c => <span key={c.clave} className="px-2.5 py-1 text-xs rounded-full bg-cream-100 text-primary-700">{c.nombre}</span>)}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" disabled={retiroGuardando} onClick={() => setRetiroModalOpen(false)}
+                className="px-4 py-2 text-sm bg-cream-100 text-primary-700 rounded-lg hover:bg-cream-200">Cancelar</button>
+              <button type="button" disabled={retiroGuardando} onClick={confirmarRetiro}
+                className="px-4 py-2 text-sm text-white bg-amber-600 rounded-lg hover:bg-amber-700 disabled:opacity-60">
+                {retiroGuardando ? 'Procesando...' : 'Confirmar retiro'}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </Modal>
 
       {/* ==================== MODAL CONFIRMAR ELIMINACION ==================== */}
