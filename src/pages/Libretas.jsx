@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
   HiAcademicCap,
@@ -608,6 +608,7 @@ export default function Libretas() {
   const [comentarios, setComentarios] = useState({});
   const [comentarioCategoria, setComentarioCategoria] = useState("");
   const [comentarioEnfoque, setComentarioEnfoque] = useState("");
+  const cargaNotasSecuencia = useRef(0);
   const [area, setArea] = useState("");
   const [curso, setCurso] = useState({ nombre: "", id_area: "", nivel: "INICIAL" });
   const [asignacion, setAsignacion] = useState({
@@ -729,11 +730,15 @@ export default function Libretas() {
   }, [periodo?.numero]);
   const cargar = async () => {
     if (!asigId || !periodoId) return;
+    const secuencia = ++cargaNotasSecuencia.current;
+    setGradebook(null);
+    setComentarios({});
     try {
       const r = await api.cargarNotas({
         id_asignacion: asigId,
         id_periodo: periodoId,
       });
+      if (secuencia !== cargaNotasSecuencia.current) return;
       setGradebook(r.data.data);
       const nivelAsignacion = String(r.data.data.asignacion?.nivel || "").toUpperCase();
       const nivelNumerico = ["PRIMARIA", "SECUNDARIA"].some((nivel) =>
@@ -747,7 +752,16 @@ export default function Libretas() {
           ]),
         ),
       );
+      setComentarios(
+        Object.fromEntries(
+          r.data.data.alumnos.map((a) => [
+            a.id,
+            a.id_comentario_curso ? String(a.id_comentario_curso) : "",
+          ]),
+        ),
+      );
     } catch (e) {
+      if (secuencia !== cargaNotasSecuencia.current) return;
       toast.error(errorText(e));
     }
   };
@@ -809,6 +823,7 @@ export default function Libretas() {
         id_catalogo: Number(comentarios[alumno]),
       });
       toast.success("Comentario guardado");
+      await cargar();
     } catch (e) {
       toast.error(errorText(e));
     }
