@@ -873,8 +873,18 @@ export default function Libretas() {
               ? { id_alumno: Number(id), nota_numerica: Number(v) }
               : { id_alumno: Number(id), calificacion: v },
           ),
+        comentarios: esNumericaSeleccionada
+          ? []
+          : Object.entries(comentarios)
+              .filter(([, idCatalogo]) => idCatalogo !== "" && idCatalogo !== null)
+              .map(([idAlumno, idCatalogo]) => ({
+                id_alumno: Number(idAlumno),
+                id_catalogo: Number(idCatalogo),
+              })),
       });
-      toast.success("Notas guardadas");
+      toast.success(
+        esNumericaSeleccionada ? "Notas guardadas" : "Notas y comentarios guardados",
+      );
       setMotivo("");
       cargar();
     } catch (e) {
@@ -1447,7 +1457,7 @@ export default function Libretas() {
                   className="btn-primary"
                   onClick={saveNotas}
                 >
-                  Guardar notas
+                  {esNumericaSeleccionada ? "Guardar notas" : "Guardar notas y comentarios"}
                 </button>
               </div>
             </>
