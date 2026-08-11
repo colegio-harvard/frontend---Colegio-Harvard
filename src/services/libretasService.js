@@ -1,6 +1,7 @@
 import apiClient from './apiClient';
 
 export const cargarLibretas = () => apiClient.get('/libretas/bootstrap');
+export const buscarAlumnos = q => apiClient.get('/libretas/alumnos/buscar', { params: { q } });
 export const crearArea = data => apiClient.post('/libretas/areas', data);
 export const editarArea = (id, data) => apiClient.put(`/libretas/areas/${id}`, data);
 export const eliminarArea = id => apiClient.delete(`/libretas/areas/${id}`);
