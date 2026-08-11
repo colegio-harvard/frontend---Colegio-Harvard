@@ -10,6 +10,7 @@ import {
   HiPencil,
   HiTrash,
   HiChevronDown,
+  HiSearch,
 } from "react-icons/hi";
 import { useAuth } from "../context/AuthContext";
 import * as api from "../services/libretasService";
@@ -608,6 +609,7 @@ export default function Libretas() {
   const [comentarios, setComentarios] = useState({});
   const [comentarioCategoria, setComentarioCategoria] = useState("");
   const [comentarioEnfoque, setComentarioEnfoque] = useState("");
+  const [busquedaAlumno, setBusquedaAlumno] = useState("");
   const cargaNotasSecuencia = useRef(0);
   const [area, setArea] = useState("");
   const [curso, setCurso] = useState({ nombre: "", id_area: "", nivel: "INICIAL" });
@@ -664,6 +666,21 @@ export default function Libretas() {
   const esNumericaSeleccionada = ["PRIMARIA", "SECUNDARIA"].some((nivel) =>
     String(seleccion?.nivel || "").toUpperCase().includes(nivel),
   );
+  const alumnosFiltrados = useMemo(() => {
+    const termino = busquedaAlumno
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase("es");
+    if (!termino) return gradebook?.alumnos || [];
+    return (gradebook?.alumnos || []).filter((alumno) =>
+      `${alumno.codigo_alumno || ""} ${alumno.nombre_completo || ""}`
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLocaleLowerCase("es")
+        .includes(termino),
+    );
+  }, [gradebook, busquedaAlumno]);
   const responsables = useMemo(() => {
     const unicos = new Map();
     (data?.asignaciones || []).forEach((a) =>
@@ -1144,6 +1161,7 @@ export default function Libretas() {
                   setGradebook(null);
                   setNotas({});
                   setComentarios({});
+                  setBusquedaAlumno("");
                 }}
               >
                 <option value="">Seleccione grado y aula</option>
@@ -1193,6 +1211,26 @@ export default function Libretas() {
           )}
           {gradebook && (
             <>
+              <div className="mb-4 rounded-xl border border-cream-200 bg-cream-50 p-4">
+                <label className="text-sm font-medium text-primary-900">
+                  Buscar alumno
+                  <div className="relative mt-1">
+                    <HiSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gold-600" />
+                    <input
+                      type="search"
+                      className="input-field pl-12"
+                      placeholder="Escriba el nombre o código del alumno"
+                      value={busquedaAlumno}
+                      onChange={(e) => setBusquedaAlumno(e.target.value)}
+                    />
+                  </div>
+                </label>
+                {busquedaAlumno.trim() && (
+                  <p className="mt-2 text-xs text-primary-600">
+                    {alumnosFiltrados.length} alumno(s) encontrado(s)
+                  </p>
+                )}
+              </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -1212,7 +1250,7 @@ export default function Libretas() {
                     </tr>
                   </thead>
                   <tbody>
-                    {gradebook.alumnos.map((a) => (
+                    {alumnosFiltrados.map((a) => (
                       <tr key={a.id} className="border-b border-cream-100">
                         <td className="p-3">{a.codigo_alumno}</td>
                         <td className="p-3 font-medium">{a.nombre_completo}</td>
@@ -1301,6 +1339,16 @@ export default function Libretas() {
                         )}
                       </tr>
                     ))}
+                    {!alumnosFiltrados.length && (
+                      <tr>
+                        <td
+                          colSpan={esNumericaSeleccionada ? (admin ? 4 : 3) : admin ? 6 : 5}
+                          className="p-8 text-center text-primary-500"
+                        >
+                          No se encontraron alumnos con ese nombre o código.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
