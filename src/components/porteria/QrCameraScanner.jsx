@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 const QR_REGION_ID = 'qr-camera-region';
@@ -10,14 +10,19 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
   const lastResultRef = useRef(null);
   const onScanRef = useRef(onScan);
   const switchingRef = useRef(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(() => (
+    !navigator.mediaDevices?.getUserMedia
+      ? 'Este navegador no soporta acceso a la cámara. Asegúrese de usar HTTPS.'
+      : null
+  ));
   const [cameraReady, setCameraReady] = useState(false);
   const [facingMode, setFacingMode] = useState(DEFAULT_FACING_MODE);
 
-  // Mantener ref actualizada para evitar closures estancados
-  onScanRef.current = onScan;
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
 
-  const handleDecode = (decodedText) => {
+  const handleDecode = useCallback((decodedText) => {
     // Evitar escaneos duplicados consecutivos
     if (decodedText === lastResultRef.current) return;
     lastResultRef.current = decodedText;
@@ -26,23 +31,19 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
     setTimeout(() => {
       lastResultRef.current = null;
     }, 1000);
-  };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
 
-    // Verificar que el navegador soporte acceso a cámara
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setError('Este navegador no soporta acceso a la cámara. Asegúrese de usar HTTPS.');
-      return;
-    }
+    if (error) return undefined;
 
     let scanner;
     try {
       scanner = new Html5Qrcode(QR_REGION_ID);
     } catch (err) {
-      setError(err?.message || 'No se pudo inicializar el escáner');
-      return;
+      queueMicrotask(() => setError(err?.message || 'No se pudo inicializar el escáner'));
+      return undefined;
     }
     scannerRef.current = scanner;
 
@@ -80,7 +81,7 @@ const QrCameraScanner = ({ onScan, paused = false }) => {
         .then(() => scanner.clear())
         .catch(() => {});
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [error, handleDecode]);
 
   // Pausar/reanudar sin detener la cámara
   useEffect(() => {
