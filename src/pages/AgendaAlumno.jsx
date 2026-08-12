@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -26,16 +27,16 @@ const AgendaAlumno = () => {
   const canPublish = [ROLES.TUTOR, ROLES.SUPER_ADMIN].includes(usuario?.rol_codigo);
   const isPadre = usuario?.rol_codigo === ROLES.PADRE;
 
-  useSocket('agenda:nueva', () => fetchEntradas());
-
-  const fetchEntradas = async () => {
+  const fetchEntradas = useCallback(async () => {
     try {
       const { data } = await listarAgenda({ id_alumno: id });
       setEntradas(data.data || []);
     } catch {
       toast.error('Error al cargar agenda');
     }
-  };
+  }, [id]);
+
+  useSocket('agenda:nueva', fetchEntradas);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,7 +52,7 @@ const AgendaAlumno = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, fetchEntradas]);
 
   const handlePublicar = async (e) => {
     e.preventDefault();

@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, fileUrl } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -26,17 +27,17 @@ const ReportesAlumno = () => {
   const canCreate = [ROLES.TUTOR, ROLES.SUPER_ADMIN].includes(usuario?.rol_codigo);
   const isPadre = usuario?.rol_codigo === ROLES.PADRE;
 
-  useSocket('reporte:nuevo', () => fetchReportes());
-  useSocket('reporte:firmado', () => fetchReportes());
-
-  const fetchReportes = async () => {
+  const fetchReportes = useCallback(async () => {
     try {
       const { data } = await listarReportes({ id_alumno: id });
       setReportes(data.data || []);
     } catch {
       toast.error('Error al cargar reportes');
     }
-  };
+  }, [id]);
+
+  useSocket('reporte:nuevo', fetchReportes);
+  useSocket('reporte:firmado', fetchReportes);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,7 +53,7 @@ const ReportesAlumno = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, fetchReportes]);
 
   const handleCrear = async (e) => {
     e.preventDefault();

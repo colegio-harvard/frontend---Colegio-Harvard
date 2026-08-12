@@ -4,7 +4,10 @@ import { useSocketContext } from '../context/SocketContext';
 export const useSocket = (evento, callback) => {
   const { socket } = useSocketContext();
   const callbackRef = useRef(callback);
-  callbackRef.current = callback;
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
   useEffect(() => {
     if (!socket || !evento) return;
