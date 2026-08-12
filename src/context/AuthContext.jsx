@@ -24,9 +24,9 @@ export const AuthProvider = ({ children }) => {
     connectSocket();
   };
 
-  const logout = () => {
+  const logout = async () => {
     disconnectSocket();
-    cerrarSesion();
+    await cerrarSesion();
     setUsuario(null);
   };
 

@@ -22,7 +22,12 @@ export const guardarSesion = (token, usuario) => {
   localStorage.setItem('usuario', JSON.stringify(usuario));
 };
 
-export const cerrarSesion = () => {
+export const cerrarSesion = async () => {
+  try {
+    await apiClient.post('/auth/logout');
+  } catch {
+    // La limpieza local debe completarse aunque el servidor no responda.
+  }
   localStorage.removeItem('token');
   localStorage.removeItem('usuario');
 };

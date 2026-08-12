@@ -12,6 +12,7 @@ export const connectSocket = () => {
 
   socket = io(SOCKET_URL, {
     auth: (cb) => cb({ token: localStorage.getItem('token') }),
+    withCredentials: true,
     autoConnect: false,
     reconnection: true,
     reconnectionDelay: 1000,
