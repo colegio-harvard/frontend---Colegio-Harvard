@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect } from 'react';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { listarAuditoria, listarAcciones, exportarExcelAuditoria } from '../services/auditoriaService';
+import { listarAuditoria, listarAcciones, exportarExcelAuditoria, cargarCalidadDatos } from '../services/auditoriaService';
 import { formatFechaHora } from '../utils/formatters';
-import { HiDownload, HiEye, HiSearch } from 'react-icons/hi';
+import { HiDownload, HiEye, HiSearch, HiRefresh, HiShieldCheck } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
 const texto = (value) => String(value || '')
@@ -18,6 +18,21 @@ const Auditoria = () => {
   const [filtros, setFiltros] = useState({ accion: '', fecha_inicio: '', fecha_fin: '' });
   const [busqueda, setBusqueda] = useState('');
   const [detalle, setDetalle] = useState(null);
+  const [calidad, setCalidad] = useState(null);
+  const [cargandoCalidad, setCargandoCalidad] = useState(false);
+
+  const revisarCalidad = async () => {
+    setCargandoCalidad(true);
+    try {
+      const response = await cargarCalidadDatos();
+      setCalidad(response.data.data);
+      toast.success('Revisión de calidad completada');
+    } catch {
+      toast.error('No se pudo revisar la calidad de los datos');
+    } finally {
+      setCargandoCalidad(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -84,10 +99,51 @@ const Auditoria = () => {
           <h1 className="page-title">Auditoría</h1>
           <p className="text-sm text-primary-800/60">Registro de acciones sensibles del sistema.</p>
         </div>
-        <button onClick={handleExportar} className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
-          <HiDownload className="w-4 h-4" /> Exportar Excel
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={revisarCalidad} disabled={cargandoCalidad} className="flex items-center justify-center gap-2 px-4 py-2 bg-gold-500 text-white rounded-lg hover:bg-gold-600 disabled:opacity-60 text-sm font-medium">
+            {cargandoCalidad ? <HiRefresh className="w-4 h-4 animate-spin" /> : <HiShieldCheck className="w-4 h-4" />}
+            Revisar calidad de datos
+          </button>
+          <button onClick={handleExportar} className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
+            <HiDownload className="w-4 h-4" /> Exportar Excel
+          </button>
+        </div>
       </div>
+
+      {calidad && (
+        <Card className="mb-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="font-semibold text-primary-800">Calidad de datos: {calidad.estado}</h2>
+              <p className="text-sm text-primary-800/60">{calidad.total_hallazgos} hallazgo(s). Esta revisión no modifica información.</p>
+            </div>
+            <span className={`rounded-full px-3 py-1 text-sm font-semibold ${calidad.estado === 'SALUDABLE' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
+              {calidad.controles.length} controles ejecutados
+            </span>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
+            {calidad.controles.map((control) => (
+              <div key={control.nombre} className="rounded-lg border border-cream-200 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-primary-800">{control.nombre}</p>
+                    {control.error && <p className="mt-1 text-xs text-red-600">Control no disponible: {control.error}</p>}
+                  </div>
+                  <span className={`rounded-full px-2 py-1 text-xs font-bold ${(control.cantidad || 0) === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                    {control.cantidad ?? '—'}
+                  </span>
+                </div>
+                {control.muestras?.length > 0 && (
+                  <details className="mt-2 text-xs text-primary-800/70">
+                    <summary className="cursor-pointer font-medium">Ver ejemplos</summary>
+                    <pre className="mt-2 max-h-40 overflow-auto rounded bg-cream-50 p-2">{JSON.stringify(control.muestras, null, 2)}</pre>
+                  </details>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <Card className="mb-4">
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_190px_190px_160px] lg:items-end">
