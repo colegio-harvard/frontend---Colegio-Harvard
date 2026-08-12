@@ -1,42 +1,44 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Usuarios from './pages/Usuarios';
-import ConfigEscolar from './pages/ConfigEscolar';
-import Padres from './pages/Padres';
-import Alumnos from './pages/Alumnos';
-import Asistencia from './pages/Asistencia';
-import Agenda from './pages/Agenda';
-import AgendaAula from './pages/AgendaAula';
-import AgendaAlumno from './pages/AgendaAlumno';
-import Mensajes from './pages/Mensajes';
-import MensajesAula from './pages/MensajesAula';
-import MensajesAlumno from './pages/MensajesAlumno';
-import Comunicados from './pages/Comunicados';
-import ComunicadosAula from './pages/ComunicadosAula';
-import ComunicadosAlumno from './pages/ComunicadosAlumno';
-import Pensiones from './pages/Pensiones';
-import ReportePagos from './pages/ReportePagos';
-import DashboardPagos from './pages/DashboardPagos';
-import ImprimirRecibos from './pages/ImprimirRecibos';
-import ImportarPagosExcel from './pages/ImportarPagosExcel';
-import Notificaciones from './pages/Notificaciones';
-import ReportesSemanales from './pages/ReportesSemanales';
-import ReportesAula from './pages/ReportesAula';
-import ReportesAlumno from './pages/ReportesAlumno';
-import AnioEscolar from './pages/AnioEscolar';
-import Auditoria from './pages/Auditoria';
-import RegistroAsistencia from './pages/RegistroAsistencia';
-import CarnetView from './pages/CarnetView';
-import AulaDetalle from './pages/AulaDetalle';
-import AlumnoDetalle from './pages/AlumnoDetalle';
-import Libretas from './pages/Libretas';
 import { ROLES } from './utils/constants';
+
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Usuarios = lazy(() => import('./pages/Usuarios'));
+const ConfigEscolar = lazy(() => import('./pages/ConfigEscolar'));
+const Padres = lazy(() => import('./pages/Padres'));
+const Alumnos = lazy(() => import('./pages/Alumnos'));
+const Asistencia = lazy(() => import('./pages/Asistencia'));
+const Agenda = lazy(() => import('./pages/Agenda'));
+const AgendaAula = lazy(() => import('./pages/AgendaAula'));
+const AgendaAlumno = lazy(() => import('./pages/AgendaAlumno'));
+const Mensajes = lazy(() => import('./pages/Mensajes'));
+const MensajesAula = lazy(() => import('./pages/MensajesAula'));
+const MensajesAlumno = lazy(() => import('./pages/MensajesAlumno'));
+const Comunicados = lazy(() => import('./pages/Comunicados'));
+const ComunicadosAula = lazy(() => import('./pages/ComunicadosAula'));
+const ComunicadosAlumno = lazy(() => import('./pages/ComunicadosAlumno'));
+const Pensiones = lazy(() => import('./pages/Pensiones'));
+const ReportePagos = lazy(() => import('./pages/ReportePagos'));
+const DashboardPagos = lazy(() => import('./pages/DashboardPagos'));
+const ImprimirRecibos = lazy(() => import('./pages/ImprimirRecibos'));
+const ImportarPagosExcel = lazy(() => import('./pages/ImportarPagosExcel'));
+const Notificaciones = lazy(() => import('./pages/Notificaciones'));
+const ReportesSemanales = lazy(() => import('./pages/ReportesSemanales'));
+const ReportesAula = lazy(() => import('./pages/ReportesAula'));
+const ReportesAlumno = lazy(() => import('./pages/ReportesAlumno'));
+const AnioEscolar = lazy(() => import('./pages/AnioEscolar'));
+const Auditoria = lazy(() => import('./pages/Auditoria'));
+const RegistroAsistencia = lazy(() => import('./pages/RegistroAsistencia'));
+const CarnetView = lazy(() => import('./pages/CarnetView'));
+const AulaDetalle = lazy(() => import('./pages/AulaDetalle'));
+const AlumnoDetalle = lazy(() => import('./pages/AlumnoDetalle'));
+const Libretas = lazy(() => import('./pages/Libretas'));
 
 const { SUPER_ADMIN, ADMIN, TUTOR, DOCENTE, PADRE, PORTERIA, PSICOLOGIA } = ROLES;
 
@@ -57,6 +59,7 @@ function App() {
           success: { iconTheme: { primary: '#059669', secondary: '#fff' } },
           error: { iconTheme: { primary: '#B71C1C', secondary: '#fff' } },
         }} />
+        <Suspense fallback={<div className="min-h-screen bg-cream-50" aria-label="Cargando módulo" />}>
         <Routes>
           <Route path="/login" element={<Login />} />
 
@@ -171,6 +174,7 @@ function App() {
 
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
       </SocketProvider>
     </AuthProvider>
