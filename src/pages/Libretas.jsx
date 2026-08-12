@@ -16,9 +16,9 @@ import { useAuth } from "../context/AuthContext";
 import * as api from "../services/libretasService";
 import insigniaHarvard from "../assets/logo-oficial-padre.webp";
 import insigniaJesus from "../assets/insignia-jesus.webp";
-import ninosPortada from "../assets/ninos-portada.png";
-import insigniaFamilia from "../assets/insignia-familia.png";
-import familiaLeyendo from "../assets/familia-leyendo.png";
+import ninosPortada from "../assets/ninos-portada.webp";
+import insigniaFamilia from "../assets/insignia-familia.webp";
+import familiaLeyendo from "../assets/familia-leyendo.webp";
 import { fileUrl } from "../utils/constants";
 
 const NOTAS = ["", "AD", "A", "B", "C"];

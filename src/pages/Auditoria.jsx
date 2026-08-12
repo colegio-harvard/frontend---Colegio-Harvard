@@ -1,7 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { listarAuditoria, listarAcciones, exportarExcelAuditoria, cargarCalidadDatos } from '../services/auditoriaService';
+import { listarAuditoria, listarAcciones, exportarExcelAuditoria, cargarCalidadDatos, cargarEstadoSistema } from '../services/auditoriaService';
 import { formatFechaHora } from '../utils/formatters';
 import { HiDownload, HiEye, HiSearch, HiRefresh, HiShieldCheck } from 'react-icons/hi';
 import toast from 'react-hot-toast';
@@ -20,6 +20,22 @@ const Auditoria = () => {
   const [detalle, setDetalle] = useState(null);
   const [calidad, setCalidad] = useState(null);
   const [cargandoCalidad, setCargandoCalidad] = useState(false);
+  const [estadoSistema, setEstadoSistema] = useState(null);
+  const [cargandoEstado, setCargandoEstado] = useState(false);
+
+  const revisarEstadoSistema = async () => {
+    setCargandoEstado(true);
+    try {
+      const response = await cargarEstadoSistema();
+      setEstadoSistema(response.data.data);
+      toast.success('Estado operativo actualizado');
+    } catch (error) {
+      setEstadoSistema(error.response?.data?.data || { estado: 'DEGRADADO' });
+      toast.error('El sistema reportó una incidencia operativa');
+    } finally {
+      setCargandoEstado(false);
+    }
+  };
 
   const revisarCalidad = async () => {
     setCargandoCalidad(true);
@@ -34,7 +50,7 @@ const Auditoria = () => {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -52,9 +68,24 @@ const Auditoria = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filtros]);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    let vigente = true;
+    Promise.all([listarAuditoria({}), listarAcciones()])
+      .then(([registrosR, accionesR]) => {
+        if (!vigente) return;
+        setRegistros(registrosR.data.data || []);
+        setAcciones(accionesR.data.data || []);
+      })
+      .catch(() => {
+        if (vigente) toast.error('Error al cargar auditoría');
+      })
+      .finally(() => {
+        if (vigente) setLoading(false);
+      });
+    return () => { vigente = false; };
+  }, []);
 
   const registrosFiltrados = useMemo(() => {
     const term = texto(busqueda);
@@ -100,6 +131,10 @@ const Auditoria = () => {
           <p className="text-sm text-primary-800/60">Registro de acciones sensibles del sistema.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button onClick={revisarEstadoSistema} disabled={cargandoEstado} className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-60 text-sm font-medium">
+            <HiRefresh className={`w-4 h-4 ${cargandoEstado ? 'animate-spin' : ''}`} />
+            Estado del sistema
+          </button>
           <button onClick={revisarCalidad} disabled={cargandoCalidad} className="flex items-center justify-center gap-2 px-4 py-2 bg-gold-500 text-white rounded-lg hover:bg-gold-600 disabled:opacity-60 text-sm font-medium">
             {cargandoCalidad ? <HiRefresh className="w-4 h-4 animate-spin" /> : <HiShieldCheck className="w-4 h-4" />}
             Revisar calidad de datos
@@ -109,6 +144,26 @@ const Auditoria = () => {
           </button>
         </div>
       </div>
+
+      {estadoSistema && (
+        <Card className="mb-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="font-semibold text-primary-800">Estado operativo: {estadoSistema.estado}</h2>
+              <p className="text-sm text-primary-800/60">Comprobación privada para el superadministrador, sin mostrar datos de alumnos.</p>
+            </div>
+            <span className={`rounded-full px-3 py-1 text-sm font-semibold ${estadoSistema.estado === 'SALUDABLE' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+              Base de datos: {estadoSistema.base_datos?.estado || 'sin respuesta'}
+            </span>
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="rounded-lg border border-cream-200 p-3"><p className="text-xs text-primary-800/60">Respuesta BD</p><p className="text-lg font-semibold text-primary-800">{estadoSistema.base_datos?.respuesta_ms ?? '—'} ms</p></div>
+            <div className="rounded-lg border border-cream-200 p-3"><p className="text-xs text-primary-800/60">Respuesta promedio</p><p className="text-lg font-semibold text-primary-800">{estadoSistema.trafico?.ultimos_15_minutos?.respuesta_promedio_ms ?? '—'} ms</p></div>
+            <div className="rounded-lg border border-cream-200 p-3"><p className="text-xs text-primary-800/60">Errores (15 min)</p><p className="text-lg font-semibold text-primary-800">{estadoSistema.trafico?.ultimos_15_minutos?.errores_servidor ?? '—'}</p></div>
+            <div className="rounded-lg border border-cream-200 p-3"><p className="text-xs text-primary-800/60">Último respaldo</p><p className="text-sm font-semibold text-primary-800">{estadoSistema.respaldo?.ultimo_exitoso ? formatFechaHora(estadoSistema.respaldo.ultimo_exitoso) : 'Aún no registrado'}</p></div>
+          </div>
+        </Card>
+      )}
 
       {calidad && (
         <Card className="mb-4">
