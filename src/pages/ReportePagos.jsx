@@ -70,9 +70,24 @@ const estadoConfig = {
   },
 };
 
-const getEstado = (alumno, claveMes) => {
-  const estado = alumno.pensiones?.find(p => p.clave_mes === claveMes);
-  return estado || { estado: 'PENDIENTE', monto_total: alumno.monto_pension || null, monto_pagado: 0 };
+const montoConceptoAlumno = (alumno, concepto) => {
+  const descriptor = texto(`${concepto?.clave || ''} ${concepto?.nombre || concepto?.label || ''}`);
+  const montoPersonalizado = Number(concepto?.monto);
+  if (concepto?.tipo === 'personalizado' && Number.isFinite(montoPersonalizado) && montoPersonalizado >= 0) {
+    return montoPersonalizado;
+  }
+  if (descriptor.includes('matricula')) return alumno.monto_matricula;
+  if (descriptor.includes('material')) return alumno.monto_materiales;
+  return alumno.monto_pension;
+};
+
+const getEstado = (alumno, concepto) => {
+  const estado = alumno.pensiones?.find(p => p.clave_mes === concepto?.clave);
+  const montoVigente = montoConceptoAlumno(alumno, concepto);
+  const usaMontoVigente = !estado || ['PENDIENTE', 'PAGO_PARCIAL'].includes(estado.estado);
+  return estado
+    ? { ...estado, monto_total: usaMontoVigente ? (montoVigente ?? estado.monto_total) : estado.monto_total }
+    : { estado: 'PENDIENTE', monto_total: montoVigente ?? null, monto_pagado: 0 };
 };
 
 const calcularResumen = (alumnos, plantilla) => {
@@ -88,9 +103,9 @@ const calcularResumen = (alumnos, plantilla) => {
 
   alumnos.forEach(alumno => {
     plantilla.forEach(mes => {
-      const est = getEstado(alumno, mes.clave);
+      const est = getEstado(alumno, mes);
       const estado = est.estado || 'PENDIENTE';
-      const total = Number(est.monto_total ?? alumno.monto_pension ?? 0);
+      const total = Number(est.monto_total ?? 0);
       const pagado = Number(est.monto_pagado || 0);
 
       if (estado === 'PAGADO') resumen.pagado += 1;
@@ -108,11 +123,11 @@ const calcularResumen = (alumnos, plantilla) => {
   return resumen;
 };
 
-const EstadoPunto = ({ estadoMes, alumno, onClick }) => {
+const EstadoPunto = ({ estadoMes, onClick }) => {
   const estado = estadoMes.estado || 'PENDIENTE';
   const config = estadoConfig[estado] || estadoConfig.PENDIENTE;
   const Icon = config.Icon;
-  const total = estadoMes.monto_total ?? alumno.monto_pension;
+  const total = estadoMes.monto_total;
   const pagado = estadoMes.monto_pagado || 0;
   const saldo = Math.max(Number(total || 0) - Number(pagado || 0), 0);
   const title = [
@@ -203,7 +218,7 @@ const ReportePagos = () => {
       ].some(value => texto(value).includes(term));
 
       const coincideNivel = !nivelFiltro || nivel === nivelFiltro;
-      const coincideEstado = !estadoFiltro || plantilla.some(mes => getEstado(alumno, mes.clave).estado === estadoFiltro);
+      const coincideEstado = !estadoFiltro || plantilla.some(mes => getEstado(alumno, mes).estado === estadoFiltro);
 
       return coincideBusqueda && coincideNivel && coincideEstado;
     });
@@ -365,12 +380,11 @@ const ReportePagos = () => {
                       <td className="px-3 py-2 text-sm text-primary-800/70">{alumno.dni || '-'}</td>
                       <td className="px-3 py-2 text-right text-sm text-primary-800/70">{formatMonto(alumno.monto_pension)}</td>
                       {plantilla.map(mes => {
-                        const estadoMes = getEstado(alumno, mes.clave);
+                        const estadoMes = getEstado(alumno, mes);
                         return (
                           <td key={mes.clave} className="px-3 py-2 text-center">
                             <EstadoPunto
                               estadoMes={estadoMes}
-                              alumno={alumno}
                               onClick={() => abrirModal(alumno, mes)}
                             />
                           </td>
