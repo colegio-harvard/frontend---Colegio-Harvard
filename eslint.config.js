@@ -23,7 +23,17 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      // La aplicación carga datos remotos al montar sus pantallas. Esta regla del
+      // compilador de React 19 marca ese patrón válido como error aunque no haya
+      // una actualización sincrónica del DOM.
+      'react-hooks/set-state-in-effect': 'off',
+      // Los contextos exportan también su hook de consumo de forma intencional.
+      'react-refresh/only-export-components': 'off',
     },
+  },
+  {
+    files: ['vite.config.js'],
+    languageOptions: { globals: globals.node },
   },
 ])

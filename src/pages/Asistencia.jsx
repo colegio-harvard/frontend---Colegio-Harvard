@@ -697,7 +697,7 @@ const AsistenciaAdmin = () => {
     </style></head><body><h1>Reporte de asistencia</h1><div class="meta">Periodo: ${formatFecha(fechaInicio)} al ${formatFecha(fechaFin)}</div>
       <div class="resumen"><span>Asistencias: ${resumenPeriodo.asistencias}</span><span>Tardanzas: ${resumenPeriodo.tardanzas}</span><span>Faltas: ${resumenPeriodo.faltas}</span></div>
       <table><thead><tr><th>Fecha</th><th>Alumno</th><th>Codigo</th><th>Aula</th><th>Estado</th><th>Ingreso</th><th>Salida</th></tr></thead><tbody>${filas}</tbody></table>
-      <script>window.onload=()=>window.print();<\/script></body></html>`);
+      <script>window.onload=()=>window.print();</script></body></html>`);
     ventana.document.close();
   };
   const columns = [
