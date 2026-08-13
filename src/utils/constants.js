@@ -5,19 +5,40 @@
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 export const UPLOADS_BASE = API_URL.replace(/\/api\/?$/, '');
 
+const storageKeyFromPath = (value) => {
+  const normalized = String(value || '').trim();
+  if (!normalized) return null;
+
+  let pathname = normalized;
+  try {
+    const parsed = new URL(normalized);
+    if (!parsed.hostname.toLowerCase().endsWith('wasabisys.com')) return null;
+    pathname = parsed.pathname;
+  } catch {
+    // Las claves y rutas relativas no necesitan convertirse en URL.
+  }
+
+  let decoded = pathname;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    // Conserva la ruta original si contiene una codificación antigua inválida.
+  }
+
+  const segments = decoded.split('/').filter(Boolean);
+  const prefixIndex = segments.findIndex(segment => segment === 'fotos' || segment === 'adjuntos');
+  return prefixIndex >= 0 ? segments.slice(prefixIndex).join('/') : null;
+};
+
 // Helper: construye URL de archivo.
 // - URLs de Wasabi se redirigen al proxy del backend (/api/archivos/...).
 // - Rutas relativas legacy (/uploads/...) se prefijan con UPLOADS_BASE.
 export const fileUrl = (path) => {
   if (!path) return null;
   const normalized = String(path).trim();
-  if (normalized.includes('wasabisys.com')) {
-    const match = normalized.match(/wasabisys\.com\/[^/]+\/(.+)/);
-    if (match) return `${API_URL}/archivos?key=${encodeURIComponent(match[1])}`;
-  }
-  const key = normalized.replace(/^\/+/, '');
-  if (key.startsWith('fotos/') || key.startsWith('adjuntos/')) {
-    return `${API_URL}/archivos?key=${encodeURIComponent(key)}`;
+  const storageKey = storageKeyFromPath(normalized);
+  if (storageKey) {
+    return `${API_URL}/archivos?key=${encodeURIComponent(storageKey)}`;
   }
   if (normalized.startsWith('http')) return normalized;
   return `${UPLOADS_BASE}${normalized.startsWith('/') ? normalized : `/${normalized}`}`;
