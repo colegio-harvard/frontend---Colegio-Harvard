@@ -40,8 +40,10 @@ export const fileUrl = (path) => {
   if (storageKey) {
     return `${API_URL}/archivos?key=${encodeURIComponent(storageKey)}`;
   }
-  if (normalized.startsWith('http')) return normalized;
-  return `${UPLOADS_BASE}${normalized.startsWith('/') ? normalized : `/${normalized}`}`;
+  // Las referencias antiguas pueden ser URLs publicas, /uploads/... o nombres
+  // relativos. El backend conoce sus equivalencias historicas y evita que un
+  // redeploy deje las fotos apuntando al disco efimero del servidor.
+  return `${API_URL}/archivos?ref=${encodeURIComponent(normalized)}`;
 };
 
 export const ROLES = {
