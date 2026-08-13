@@ -36,15 +36,6 @@ const storageKeyFromPath = (value) => {
 export const fileUrl = (path) => {
   if (!path) return null;
   const normalized = String(path).trim();
-  try {
-    const parsed = new URL(normalized);
-    // Las fotos de alumnos se suben a Wasabi con acceso público. Servir la URL
-    // original evita que una credencial temporal del backend rompa todas las
-    // imágenes y conserva compatibilidad con los formatos históricos del bucket.
-    if (parsed.hostname.toLowerCase().endsWith('wasabisys.com')) return normalized;
-  } catch {
-    // Las claves y rutas relativas se resuelven mediante el proxy seguro.
-  }
   const storageKey = storageKeyFromPath(normalized);
   if (storageKey) {
     return `${API_URL}/archivos?key=${encodeURIComponent(storageKey)}`;
