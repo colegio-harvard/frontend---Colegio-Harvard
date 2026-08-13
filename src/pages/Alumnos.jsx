@@ -11,7 +11,7 @@ import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
-import { fileUrl } from '../utils/constants';
+import { fileUrl, studentPhotoUrl } from '../utils/constants';
 import { toJpeg } from 'html-to-image';
 import { getEmbeddedFontCSS, waitForCaptureImages } from './CarnetView';
 import JSZip from 'jszip';
@@ -540,7 +540,7 @@ const Alumnos = () => {
     { header: 'Foto', render: (r) => (
       <div className="flex items-center gap-2">
         {r.foto_url ? (
-          <img src={fileUrl(r.foto_url)} alt="" className="w-8 h-8 rounded-full object-cover" />
+          <img src={studentPhotoUrl(r.id, r.foto_url)} alt={r.nombre_completo} className="w-8 h-8 rounded-full object-cover" />
         ) : (
           <div className="w-8 h-8 rounded-full bg-cream-200 flex items-center justify-center text-xs text-gold-600">
             {r.nombre_completo?.charAt(0)}

@@ -46,6 +46,13 @@ export const fileUrl = (path) => {
   return `${API_URL}/archivos?ref=${encodeURIComponent(normalized)}`;
 };
 
+export const studentPhotoUrl = (studentId, path) => {
+  if (!path) return null;
+  return studentId
+    ? `${API_URL}/archivos?alumno=${encodeURIComponent(studentId)}`
+    : fileUrl(path);
+};
+
 export const ROLES = {
   SUPER_ADMIN: 'SUPER_ADMIN',
   ADMIN: 'ADMIN',
