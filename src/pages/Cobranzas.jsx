@@ -10,6 +10,7 @@ import {
 } from '../services/cobranzasService';
 
 const moneda = (value) => `S/ ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+const ordenPeriodo = (clave) => ({ ENE: 1, FEB: 2, MAR: 3, ABR: 4, MAY: 5, JUN: 6, JUL: 7, AGO: 8, SEP: 9, OCT: 10, NOV: 11, DIC: 12 }[String(clave || '').toUpperCase()] || 0);
 const motivo = {
   COMPROMISO_VIGENTE: 'Compromiso vigente',
   SIN_APODERADO: 'Sin apoderado',
@@ -31,7 +32,8 @@ export default function Cobranzas() {
     try {
       const { data } = await listarCandidatosCobranza();
       setCandidatos(data.data || []);
-      setSeleccionados(new Set((data.data || []).filter((x) => x.elegible).map((x) => x.id_estado_pension)));
+      setSeleccionados(new Set());
+      setCola([]);
     } catch (error) {
       toast.error(error.response?.data?.error || 'No se pudo cargar la lista de cobranza');
     } finally {
@@ -42,6 +44,15 @@ export default function Cobranzas() {
   useEffect(() => { cargar(); }, []);
 
   const elegibles = useMemo(() => candidatos.filter((x) => x.elegible), [candidatos]);
+  const alumnos = useMemo(() => {
+    const grupos = new Map();
+    candidatos.forEach((item) => {
+      const grupo = grupos.get(item.id_alumno) || { id_alumno: item.id_alumno, alumno: item.alumno, apoderado: item.apoderado, telefono: item.telefono, conceptos: [] };
+      grupo.conceptos.push(item);
+      grupos.set(item.id_alumno, grupo);
+    });
+    return [...grupos.values()].map((grupo) => ({ ...grupo, conceptos: grupo.conceptos.sort((a, b) => ordenPeriodo(a.clave_mes) - ordenPeriodo(b.clave_mes)) })).sort((a, b) => a.alumno.localeCompare(b.alumno, 'es'));
+  }, [candidatos]);
   const total = useMemo(() => candidatos.filter((x) => seleccionados.has(x.id_estado_pension)).reduce((s, x) => s + Number(x.saldo), 0), [candidatos, seleccionados]);
 
   const alternar = (id) => setSeleccionados((actual) => {
@@ -49,6 +60,11 @@ export default function Cobranzas() {
     if (siguiente.has(id)) siguiente.delete(id); else siguiente.add(id);
     return siguiente;
   });
+
+  const seleccionarUltimo = () => {
+    const ids = alumnos.map((grupo) => grupo.conceptos.filter((x) => x.elegible).reduce((ultimo, actual) => !ultimo || ordenPeriodo(actual.clave_mes) > ordenPeriodo(ultimo.clave_mes) ? actual : ultimo, null)?.id_estado_pension).filter(Boolean);
+    setSeleccionados(new Set(ids));
+  };
 
   const preparar = async () => {
     if (!seleccionados.size) return toast.error('Selecciona al menos una deuda');
@@ -109,28 +125,21 @@ export default function Cobranzas() {
 
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div><h2 className="font-display text-lg font-bold text-primary-800">Pagos pendientes</h2><p className="text-sm text-primary-800/60">{seleccionados.size} seleccionados · {moneda(total)}</p></div>
-          <div className="flex gap-2">
+          <div><h2 className="font-display text-lg font-bold text-primary-800">Conceptos pendientes por alumno</h2><p className="text-sm text-primary-800/60">{seleccionados.size} conceptos seleccionados · {moneda(total)}</p></div>
+          <div className="flex flex-wrap gap-2">
             <button className="btn-secondary" onClick={() => setSeleccionados(new Set())}>Ninguno</button>
-            <button className="btn-secondary" onClick={() => setSeleccionados(new Set(elegibles.map((x) => x.id_estado_pension)))}>Todos elegibles</button>
+            <button className="btn-secondary" onClick={seleccionarUltimo}>Último por alumno</button>
+            <button className="btn-secondary" onClick={() => setSeleccionados(new Set(elegibles.map((x) => x.id_estado_pension)))}>Toda la deuda</button>
             <button className="btn-primary" disabled={procesando || !seleccionados.size} onClick={preparar}>{procesando ? 'Preparando…' : 'Preparar mensajes'}</button>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-primary-50 text-left text-xs uppercase text-primary-800/70"><tr><th className="px-3 py-3">Enviar</th><th className="px-3 py-3">Alumno</th><th className="px-3 py-3">Apoderado</th><th className="px-3 py-3">Periodo</th><th className="px-3 py-3 text-right">Saldo</th><th className="px-3 py-3">Estado</th><th className="px-3 py-3">Acción</th></tr></thead>
-            <tbody className="divide-y divide-gray-100">
-              {cargando && <tr><td colSpan="7" className="px-3 py-10 text-center">Cargando…</td></tr>}
-              {!cargando && !candidatos.length && <tr><td colSpan="7" className="px-3 py-10 text-center text-gray-500">No hay deudas pendientes.</td></tr>}
-              {candidatos.map((item) => <tr key={item.id_estado_pension} className={!item.elegible ? 'bg-gray-50 text-gray-500' : ''}>
-                <td className="px-3 py-3"><input type="checkbox" checked={seleccionados.has(item.id_estado_pension)} disabled={!item.elegible} onChange={() => alternar(item.id_estado_pension)} className="h-4 w-4" /></td>
-                <td className="px-3 py-3 font-semibold">{item.alumno}</td><td className="px-3 py-3">{item.apoderado || '—'}<div className="text-xs text-gray-500">{item.telefono || ''}</div></td>
-                <td className="px-3 py-3">{item.clave_mes}</td><td className="px-3 py-3 text-right font-semibold">{moneda(item.saldo)}</td>
-                <td className="px-3 py-3">{item.compromiso ? <span className="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-800">Compromiso {item.compromiso.fecha}</span> : item.elegible ? <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-800">Listo</span> : <span>{motivo[item.motivo_exclusion] || item.motivo_exclusion}</span>}</td>
-                <td className="px-3 py-3"><button className="text-xs font-semibold text-primary-700 hover:underline" onClick={() => setCompromiso({ ...item, fecha: '', monto: item.saldo, observacion: '' })}><HiCalendar className="mr-1 inline" />Compromiso</button></td>
-              </tr>)}
-            </tbody>
-          </table>
+        {cargando && <div className="py-10 text-center">Cargando…</div>}
+        {!cargando && !alumnos.length && <div className="py-10 text-center text-gray-500">No hay deudas pendientes.</div>}
+        <div className="space-y-4">
+          {alumnos.map((grupo) => <div key={grupo.id_alumno} className="overflow-hidden rounded-xl border border-gray-200">
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-primary-50 px-4 py-3"><div><p className="font-bold text-primary-900">{grupo.alumno}</p><p className="text-xs text-gray-600">{grupo.apoderado || 'Sin apoderado'} · {grupo.telefono || 'Sin teléfono válido'}</p></div><p className="text-sm font-semibold">Seleccionado: {moneda(grupo.conceptos.filter((x) => seleccionados.has(x.id_estado_pension)).reduce((s, x) => s + Number(x.saldo), 0))}</p></div>
+            <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="text-left text-xs uppercase text-gray-500"><tr><th className="px-4 py-2">Cobrar</th><th className="px-4 py-2">Concepto / periodo</th><th className="px-4 py-2 text-right">Saldo</th><th className="px-4 py-2">Estado</th><th className="px-4 py-2">Acción</th></tr></thead><tbody className="divide-y divide-gray-100">{grupo.conceptos.map((item) => <tr key={item.id_estado_pension} className={!item.elegible ? 'bg-gray-50 text-gray-500' : ''}><td className="px-4 py-3"><input aria-label={`Cobrar ${item.clave_mes} de ${item.alumno}`} type="checkbox" checked={seleccionados.has(item.id_estado_pension)} disabled={!item.elegible} onChange={() => alternar(item.id_estado_pension)} className="h-4 w-4" /></td><td className="px-4 py-3 font-semibold">Pensión · {item.clave_mes}</td><td className="px-4 py-3 text-right font-semibold">{moneda(item.saldo)}</td><td className="px-4 py-3">{item.compromiso ? <span className="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-800">Compromiso {item.compromiso.fecha}</span> : item.elegible ? <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-800">Disponible</span> : <span>{motivo[item.motivo_exclusion] || item.motivo_exclusion}</span>}</td><td className="px-4 py-3"><button className="text-xs font-semibold text-primary-700 hover:underline" onClick={() => setCompromiso({ ...item, fecha: '', monto: item.saldo, observacion: '' })}><HiCalendar className="mr-1 inline" />Compromiso</button></td></tr>)}</tbody></table></div>
+          </div>)}
         </div>
       </Card>
 
@@ -140,6 +149,4 @@ export default function Cobranzas() {
     </div>
   );
 }
-
-
 
