@@ -26,6 +26,7 @@ const ComunicadosAlumno = lazy(() => import('./pages/ComunicadosAlumno'));
 const Pensiones = lazy(() => import('./pages/Pensiones'));
 const ReportePagos = lazy(() => import('./pages/ReportePagos'));
 const DashboardPagos = lazy(() => import('./pages/DashboardPagos'));
+const Cobranzas = lazy(() => import('./pages/Cobranzas'));
 const ImprimirRecibos = lazy(() => import('./pages/ImprimirRecibos'));
 const ImportarPagosExcel = lazy(() => import('./pages/ImportarPagosExcel'));
 const Notificaciones = lazy(() => import('./pages/Notificaciones'));
@@ -134,6 +135,10 @@ function App() {
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><DashboardPagos /></ProtectedRoute>
             } />
 
+            <Route path="/cobranzas" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Cobranzas /></ProtectedRoute>
+            } />
+
             <Route path="/reporte-pagos" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><ReportePagos /></ProtectedRoute>
             } />
@@ -182,3 +187,4 @@ function App() {
 }
 
 export default App;
+

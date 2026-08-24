@@ -1,0 +1,145 @@
+import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { HiChatAlt2, HiDeviceMobile, HiRefresh, HiCalendar, HiExternalLink } from 'react-icons/hi';
+import Card from '../components/ui/Card';
+import {
+  actualizarEstadoMensaje,
+  listarCandidatosCobranza,
+  prepararMensajesCobranza,
+  registrarCompromisoPago,
+} from '../services/cobranzasService';
+
+const moneda = (value) => `S/ ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+const motivo = {
+  COMPROMISO_VIGENTE: 'Compromiso vigente',
+  SIN_APODERADO: 'Sin apoderado',
+  TELEFONO_INVALIDO: 'Teléfono inválido',
+  SIN_DEUDA: 'Sin deuda',
+};
+
+export default function Cobranzas() {
+  const [candidatos, setCandidatos] = useState([]);
+  const [seleccionados, setSeleccionados] = useState(new Set());
+  const [canal, setCanal] = useState('WHATSAPP');
+  const [cargando, setCargando] = useState(true);
+  const [procesando, setProcesando] = useState(false);
+  const [cola, setCola] = useState([]);
+  const [compromiso, setCompromiso] = useState(null);
+
+  const cargar = async () => {
+    setCargando(true);
+    try {
+      const { data } = await listarCandidatosCobranza();
+      setCandidatos(data.data || []);
+      setSeleccionados(new Set((data.data || []).filter((x) => x.elegible).map((x) => x.id_estado_pension)));
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'No se pudo cargar la lista de cobranza');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  useEffect(() => { cargar(); }, []);
+
+  const elegibles = useMemo(() => candidatos.filter((x) => x.elegible), [candidatos]);
+  const total = useMemo(() => candidatos.filter((x) => seleccionados.has(x.id_estado_pension)).reduce((s, x) => s + Number(x.saldo), 0), [candidatos, seleccionados]);
+
+  const alternar = (id) => setSeleccionados((actual) => {
+    const siguiente = new Set(actual);
+    if (siguiente.has(id)) siguiente.delete(id); else siguiente.add(id);
+    return siguiente;
+  });
+
+  const preparar = async () => {
+    if (!seleccionados.size) return toast.error('Selecciona al menos una deuda');
+    setProcesando(true);
+    try {
+      const { data } = await prepararMensajesCobranza(canal, [...seleccionados]);
+      setCola(data.data?.preparados || []);
+      toast.success(`${data.data?.preparados?.length || 0} mensaje(s) preparados. Revísalos antes de abrirlos.`);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'No se pudieron preparar los mensajes');
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  const abrir = async (envio) => {
+    window.open(envio.enlace_apertura, '_blank', 'noopener,noreferrer');
+    try { await actualizarEstadoMensaje(envio.id, 'ABIERTO'); } catch { /* el enlace ya fue abierto */ }
+  };
+
+  const guardarCompromiso = async (event) => {
+    event.preventDefault();
+    try {
+      await registrarCompromisoPago({
+        id_estado_pension: compromiso.id_estado_pension,
+        fecha_compromiso: compromiso.fecha,
+        monto: compromiso.monto || null,
+        observacion: compromiso.observacion || null,
+      });
+      toast.success('Compromiso registrado; el apoderado quedó excluido de los envíos');
+      setCompromiso(null);
+      await cargar();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'No se pudo registrar el compromiso');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="page-title">Cobranzas</h1>
+          <p className="text-sm text-primary-800/60">Selecciona familias y abre cada mensaje para enviarlo desde WhatsApp o la aplicación SMS de tu teléfono.</p>
+        </div>
+        <button onClick={cargar} className="btn-secondary flex items-center gap-2"><HiRefresh /> Actualizar</button>
+      </div>
+
+      <Card>
+        <div className="grid gap-4 md:grid-cols-2">
+          <button onClick={() => setCanal('WHATSAPP')} className={`rounded-xl border-2 p-4 text-left transition ${canal === 'WHATSAPP' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'}`}>
+            <div className="flex items-center gap-3"><HiChatAlt2 className="h-7 w-7 text-emerald-600" /><div><p className="font-bold">WhatsApp semiautomático</p><p className="text-xs text-gray-600">Abre el chat con el texto listo. Tú confirmas el envío.</p></div></div>
+          </button>
+          <button onClick={() => setCanal('SMS')} className={`rounded-xl border-2 p-4 text-left transition ${canal === 'SMS' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}>
+            <div className="flex items-center gap-3"><HiDeviceMobile className="h-7 w-7 text-blue-600" /><div><p className="font-bold">SMS desde el celular</p><p className="text-xs text-gray-600">Abre la aplicación SMS y utiliza los mensajes incluidos en tu plan.</p></div></div>
+          </button>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div><h2 className="font-display text-lg font-bold text-primary-800">Pagos pendientes</h2><p className="text-sm text-primary-800/60">{seleccionados.size} seleccionados · {moneda(total)}</p></div>
+          <div className="flex gap-2">
+            <button className="btn-secondary" onClick={() => setSeleccionados(new Set())}>Ninguno</button>
+            <button className="btn-secondary" onClick={() => setSeleccionados(new Set(elegibles.map((x) => x.id_estado_pension)))}>Todos elegibles</button>
+            <button className="btn-primary" disabled={procesando || !seleccionados.size} onClick={preparar}>{procesando ? 'Preparando…' : 'Preparar mensajes'}</button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 text-sm">
+            <thead className="bg-primary-50 text-left text-xs uppercase text-primary-800/70"><tr><th className="px-3 py-3">Enviar</th><th className="px-3 py-3">Alumno</th><th className="px-3 py-3">Apoderado</th><th className="px-3 py-3">Periodo</th><th className="px-3 py-3 text-right">Saldo</th><th className="px-3 py-3">Estado</th><th className="px-3 py-3">Acción</th></tr></thead>
+            <tbody className="divide-y divide-gray-100">
+              {cargando && <tr><td colSpan="7" className="px-3 py-10 text-center">Cargando…</td></tr>}
+              {!cargando && !candidatos.length && <tr><td colSpan="7" className="px-3 py-10 text-center text-gray-500">No hay deudas pendientes.</td></tr>}
+              {candidatos.map((item) => <tr key={item.id_estado_pension} className={!item.elegible ? 'bg-gray-50 text-gray-500' : ''}>
+                <td className="px-3 py-3"><input type="checkbox" checked={seleccionados.has(item.id_estado_pension)} disabled={!item.elegible} onChange={() => alternar(item.id_estado_pension)} className="h-4 w-4" /></td>
+                <td className="px-3 py-3 font-semibold">{item.alumno}</td><td className="px-3 py-3">{item.apoderado || '—'}<div className="text-xs text-gray-500">{item.telefono || ''}</div></td>
+                <td className="px-3 py-3">{item.clave_mes}</td><td className="px-3 py-3 text-right font-semibold">{moneda(item.saldo)}</td>
+                <td className="px-3 py-3">{item.compromiso ? <span className="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-800">Compromiso {item.compromiso.fecha}</span> : item.elegible ? <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-800">Listo</span> : <span>{motivo[item.motivo_exclusion] || item.motivo_exclusion}</span>}</td>
+                <td className="px-3 py-3"><button className="text-xs font-semibold text-primary-700 hover:underline" onClick={() => setCompromiso({ ...item, fecha: '', monto: item.saldo, observacion: '' })}><HiCalendar className="mr-1 inline" />Compromiso</button></td>
+              </tr>)}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {cola.length > 0 && <Card><h2 className="mb-3 font-display text-lg font-bold text-primary-800">Mensajes preparados</h2><p className="mb-4 text-sm text-amber-700">Abrir no envía automáticamente: revisa el texto y pulsa Enviar en WhatsApp o SMS.</p><div className="space-y-3">{cola.map((envio) => <div key={envio.id} className="flex flex-col gap-3 rounded-xl border border-gray-200 p-4 md:flex-row md:items-center md:justify-between"><div><p className="font-semibold">{envio.alumno} · {envio.apoderado}</p><p className="mt-1 max-w-3xl text-sm text-gray-600">{envio.mensaje}</p></div><button onClick={() => abrir(envio)} className="btn-primary flex shrink-0 items-center justify-center gap-2"><HiExternalLink /> Abrir {canal === 'SMS' ? 'SMS' : 'WhatsApp'}</button></div>)}</div></Card>}
+
+      {compromiso && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4"><form onSubmit={guardarCompromiso} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"><h2 className="text-xl font-bold text-primary-800">Registrar compromiso</h2><p className="mb-4 text-sm text-gray-600">{compromiso.alumno} · {compromiso.clave_mes}</p><label className="mb-3 block text-sm font-semibold">Fecha comprometida<input required type="date" value={compromiso.fecha} onChange={(e) => setCompromiso({ ...compromiso, fecha: e.target.value })} className="input-field mt-1 w-full" /></label><label className="mb-3 block text-sm font-semibold">Monto<input type="number" min="0.01" step="0.01" value={compromiso.monto} onChange={(e) => setCompromiso({ ...compromiso, monto: e.target.value })} className="input-field mt-1 w-full" /></label><label className="block text-sm font-semibold">Observación<textarea value={compromiso.observacion} onChange={(e) => setCompromiso({ ...compromiso, observacion: e.target.value })} className="input-field mt-1 w-full" rows="3" /></label><div className="mt-5 flex justify-end gap-2"><button type="button" className="btn-secondary" onClick={() => setCompromiso(null)}>Cancelar</button><button className="btn-primary">Guardar compromiso</button></div></form></div>}
+    </div>
+  );
+}
+
+
+
