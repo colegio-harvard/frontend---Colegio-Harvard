@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { HiChatAlt2, HiDeviceMobile, HiRefresh, HiCalendar, HiExternalLink, HiSearch, HiX } from 'react-icons/hi';
+import { HiChatAlt2, HiDeviceMobile, HiRefresh, HiCalendar, HiExternalLink, HiSearch, HiX, HiCheckCircle } from 'react-icons/hi';
 import Card from '../components/ui/Card';
 import {
   actualizarEstadoMensaje,
@@ -160,10 +160,16 @@ export default function Cobranzas() {
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div><h2 className="font-display text-lg font-bold text-primary-800">Conceptos pendientes por alumno</h2><p className="text-sm text-primary-800/60">{alumnos.length} alumnos deudores · {candidatos.length} conceptos pendientes</p><p className="text-sm font-semibold text-primary-700">{seleccionados.size} seleccionados · {moneda(total)}</p></div>
-          <div className="flex flex-wrap gap-2">
-            <button className="btn-secondary" onClick={() => setSeleccionados(new Set())}>Ninguno</button>
-            <button className="btn-secondary" onClick={seleccionarUltimo}>Último por alumno</button>
-            <button aria-pressed={todasLasDeudasSeleccionadas} className={todasLasDeudasSeleccionadas ? 'btn-primary' : 'btn-secondary'} onClick={alternarTodasLasDeudas}>{todasLasDeudasSeleccionadas ? 'Deseleccionar todas las deudas' : 'Seleccionar todas las deudas'}</button>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Selección rápida de deudas">
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 text-sm font-semibold text-primary-800 shadow-sm transition hover:border-primary-500 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-300" onClick={() => setSeleccionados(new Set())}>
+              <HiX className="text-lg" /> Ninguno
+            </button>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 text-sm font-semibold text-primary-800 shadow-sm transition hover:border-primary-500 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-300" onClick={seleccionarUltimo}>
+              <HiCalendar className="text-lg" /> Último por alumno
+            </button>
+            <button type="button" aria-pressed={todasLasDeudasSeleccionadas} className={`inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 ${todasLasDeudasSeleccionadas ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-200 hover:bg-emerald-100' : 'border-primary-300 bg-white text-primary-800 hover:border-primary-500 hover:bg-primary-50 focus:ring-primary-300'}`} onClick={alternarTodasLasDeudas}>
+              <HiCheckCircle className="text-lg" /> {todasLasDeudasSeleccionadas ? 'Deseleccionar todas las deudas' : 'Seleccionar todas las deudas'}
+            </button>
             <button className="btn-primary" disabled={procesando || !seleccionados.size} onClick={preparar}>{procesando ? 'Preparando…' : 'Preparar mensajes'}</button>
           </div>
         </div>
