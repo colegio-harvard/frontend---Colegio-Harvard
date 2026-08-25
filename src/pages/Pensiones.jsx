@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, API_URL } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { obtenerPlantilla, obtenerEstadoPension, cuadriculaPensiones, registrarPago, obtenerDetalleMes, obtenerTicketPension, exportarDeudoresPensionesExcel } from '../services/pensionesService';
 import { listarNiveles, listarGrados, listarAulas } from '../services/configEscolarService';
-import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter, HiDownload } from 'react-icons/hi';
+import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter, HiDownload, HiChatAlt2, HiDeviceMobile, HiExternalLink } from 'react-icons/hi';
 import { formatFecha } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
@@ -89,6 +89,47 @@ const imprimirTicket = (ticket) => {
   win.document.open();
   win.document.write(ticketHtml(ticket));
   win.document.close();
+};
+
+const urlRecibo = (ticket) => `${window.location.origin}/recibo/${encodeURIComponent(ticket?.codigo || '')}`;
+
+const mensajeReciboWhatsApp = (ticket) => {
+  const alumno = ticket?.alumno || {};
+  const pension = ticket?.pension || {};
+  return `*COLEGIO HARVARD – RECIBO DE PAGO*\n\nEstimado(a) apoderado(a), confirmamos el pago registrado a nombre de *${alumno.nombre_completo || 'su menor hijo(a)'}*.\n\n*Recibo:* ${ticket?.codigo || '-'}\n*Concepto:* ${pension.concepto || '-'}\n*Fecha:* ${ticket?.fecha_pago || '-'}\n*Monto recibido:* ${formatMonto(pension.monto_pagado_en_ticket)}\n*Total del concepto:* ${formatMonto(pension.monto_total)}\n*Acumulado pagado:* ${formatMonto(pension.monto_pagado_acumulado)}\n*Saldo pendiente:* ${formatMonto(pension.saldo_pendiente)}\n\nPuede consultar o imprimir el recibo completo aquí:\n${urlRecibo(ticket)}\n\nGracias por su pago.\n*COLEGIO HARVARD*`;
+};
+
+const mensajeReciboSms = (ticket) => {
+  const alumno = ticket?.alumno || {};
+  const pension = ticket?.pension || {};
+  return `COLEGIO HARVARD: Pago registrado de ${formatMonto(pension.monto_pagado_en_ticket)} por ${pension.concepto || 'pensión'} de ${alumno.nombre_completo || 'alumno(a)'}. Recibo ${ticket?.codigo || '-'}. Acumulado ${formatMonto(pension.monto_pagado_acumulado)}. Saldo ${formatMonto(pension.saldo_pendiente)}. Gracias.`;
+};
+
+const telefonoRecibo = (ticket) => String(ticket?.apoderado?.celular || '').replace(/\D/g, '');
+
+const ConfirmacionRecibo = ({ ticket, onClose }) => {
+  if (!ticket) return null;
+  const pension = ticket.pension || {};
+  const telefono = telefonoRecibo(ticket);
+  const abrirWhatsApp = () => {
+    if (!telefono) return toast.error('El apoderado no tiene un celular registrado');
+    window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(mensajeReciboWhatsApp(ticket))}`;
+  };
+  const abrirSms = () => {
+    if (!telefono) return toast.error('El apoderado no tiene un celular registrado');
+    window.location.href = `sms:${telefono}?body=${encodeURIComponent(mensajeReciboSms(ticket))}`;
+  };
+  return <Modal isOpen={true} onClose={onClose} title="Pago registrado correctamente" size="lg">
+    <div className="space-y-5">
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <div className="flex items-center gap-2 text-emerald-800"><HiCheck className="h-6 w-6" /><p className="text-lg font-bold">Recibo {ticket.codigo}</p></div>
+        <div className="mt-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-4"><div><p className="text-gray-500">Alumno</p><p className="font-semibold">{ticket.alumno?.nombre_completo}</p></div><div><p className="text-gray-500">Monto recibido</p><p className="font-semibold">{formatMonto(pension.monto_pagado_en_ticket)}</p></div><div><p className="text-gray-500">Acumulado</p><p className="font-semibold">{formatMonto(pension.monto_pagado_acumulado)}</p></div><div><p className="text-gray-500">Saldo</p><p className="font-semibold">{formatMonto(pension.saldo_pendiente)}</p></div></div>
+      </div>
+      <div className="rounded-xl border border-cream-200 bg-cream-50 p-4"><p className="mb-2 text-xs font-semibold uppercase text-gold-700">Mensaje preparado</p><pre className="whitespace-pre-wrap font-sans text-sm text-gray-700">{mensajeReciboWhatsApp(ticket)}</pre></div>
+      <div className="grid gap-2 sm:grid-cols-2"><button type="button" onClick={abrirWhatsApp} className="btn-primary flex items-center justify-center gap-2"><HiChatAlt2 /> Enviar por WhatsApp</button><button type="button" onClick={abrirSms} className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2.5 font-semibold text-blue-800 hover:bg-blue-100"><HiDeviceMobile /> Enviar por SMS</button><button type="button" onClick={() => imprimirTicket(ticket)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 font-semibold text-primary-800 hover:bg-primary-50"><HiPrinter /> Imprimir / guardar PDF</button><button type="button" onClick={() => window.open(urlRecibo(ticket), '_blank', 'noopener,noreferrer')} className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 font-semibold text-primary-800 hover:bg-primary-50"><HiExternalLink /> Ver recibo digital</button></div>
+      <div className="flex justify-end"><button type="button" onClick={onClose} className="btn-secondary">Cerrar</button></div>
+    </div>
+  </Modal>;
 };
 
 // ============================
@@ -272,6 +313,7 @@ const PensionAdmin = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAlumno, setModalAlumno] = useState(null);
   const [modalMes, setModalMes] = useState(null);
+  const [ticketConfirmacion, setTicketConfirmacion] = useState(null);
 
   useEffect(() => {
     const fetchFiltros = async () => {
@@ -370,8 +412,9 @@ const PensionAdmin = () => {
       setDescargandoDeudores(false);
     }
   };
-  const handlePagoRegistrado = () => {
+  const handlePagoRegistrado = (ticket) => {
     cerrarModal();
+    if (ticket?.codigo) setTicketConfirmacion(ticket);
     fetchData();
   };
 
@@ -670,6 +713,7 @@ const PensionAdmin = () => {
           onSaved={handlePagoRegistrado}
         />
       )}
+      <ConfirmacionRecibo ticket={ticketConfirmacion} onClose={() => setTicketConfirmacion(null)} />
     </div>
   );
 };
@@ -821,7 +865,7 @@ export const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 
       const ticket = res?.data?.data?.ticket;
       toast.success(ticket?.codigo ? `Pension actualizada - Ticket ${ticket.codigo}` : 'Pension actualizada');
-      onSaved();
+      onSaved(ticket || null);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al registrar pago');
     } finally {
@@ -1090,6 +1134,7 @@ export const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 };
 
 export default Pensiones;
+
 
 
 

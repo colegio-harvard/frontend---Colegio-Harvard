@@ -40,6 +40,7 @@ const CarnetView = lazy(() => import('./pages/CarnetView'));
 const AulaDetalle = lazy(() => import('./pages/AulaDetalle'));
 const AlumnoDetalle = lazy(() => import('./pages/AlumnoDetalle'));
 const Libretas = lazy(() => import('./pages/Libretas'));
+const ReciboPublico = lazy(() => import('./pages/ReciboPublico'));
 
 const { SUPER_ADMIN, ADMIN, TUTOR, DOCENTE, PADRE, PORTERIA, PSICOLOGIA } = ROLES;
 
@@ -63,6 +64,7 @@ function App() {
         <Suspense fallback={<div className="min-h-screen bg-cream-50" aria-label="Cargando módulo" />}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/recibo/:codigo" element={<ReciboPublico />} />
 
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
