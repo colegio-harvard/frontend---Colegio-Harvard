@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import { HiChatAlt2, HiDeviceMobile, HiRefresh, HiCalendar, HiExternalLink } from 'react-icons/hi';
+import { HiChatAlt2, HiDeviceMobile, HiRefresh, HiCalendar, HiExternalLink, HiSearch, HiX } from 'react-icons/hi';
 import Card from '../components/ui/Card';
 import {
   actualizarEstadoMensaje,
@@ -26,6 +26,7 @@ export default function Cobranzas() {
   const [procesando, setProcesando] = useState(false);
   const [cola, setCola] = useState([]);
   const [compromiso, setCompromiso] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
 
   const cargar = async () => {
     setCargando(true);
@@ -47,12 +48,17 @@ export default function Cobranzas() {
   const alumnos = useMemo(() => {
     const grupos = new Map();
     candidatos.forEach((item) => {
-      const grupo = grupos.get(item.id_alumno) || { id_alumno: item.id_alumno, alumno: item.alumno, apoderado: item.apoderado, telefono: item.telefono, conceptos: [] };
+      const grupo = grupos.get(item.id_alumno) || { id_alumno: item.id_alumno, codigo_alumno: item.codigo_alumno, alumno: item.alumno, apoderado: item.apoderado, telefono: item.telefono, conceptos: [] };
       grupo.conceptos.push(item);
       grupos.set(item.id_alumno, grupo);
     });
     return [...grupos.values()].map((grupo) => ({ ...grupo, conceptos: grupo.conceptos.sort((a, b) => (a.fecha_vencimiento || '').localeCompare(b.fecha_vencimiento || '')) })).sort((a, b) => a.alumno.localeCompare(b.alumno, 'es'));
   }, [candidatos]);
+  const alumnosFiltrados = useMemo(() => {
+    const texto = busqueda.trim().toLocaleLowerCase('es');
+    if (!texto) return alumnos;
+    return alumnos.filter((grupo) => [grupo.codigo_alumno, grupo.alumno, grupo.apoderado, grupo.telefono].some((valor) => String(valor || '').toLocaleLowerCase('es').includes(texto)));
+  }, [alumnos, busqueda]);
   const total = useMemo(() => candidatos.filter((x) => seleccionados.has(x.id_estado_pension)).reduce((s, x) => s + Number(x.saldo), 0), [candidatos, seleccionados]);
 
   const alternar = (id) => setSeleccionados((actual) => {
@@ -125,19 +131,21 @@ export default function Cobranzas() {
 
       <Card>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div><h2 className="font-display text-lg font-bold text-primary-800">Conceptos pendientes por alumno</h2><p className="text-sm text-primary-800/60">{seleccionados.size} conceptos seleccionados · {moneda(total)}</p></div>
+          <div><h2 className="font-display text-lg font-bold text-primary-800">Conceptos pendientes por alumno</h2><p className="text-sm text-primary-800/60">{alumnos.length} alumnos deudores · {candidatos.length} conceptos pendientes</p><p className="text-sm font-semibold text-primary-700">{seleccionados.size} seleccionados · {moneda(total)}</p></div>
           <div className="flex flex-wrap gap-2">
             <button className="btn-secondary" onClick={() => setSeleccionados(new Set())}>Ninguno</button>
             <button className="btn-secondary" onClick={seleccionarUltimo}>Último por alumno</button>
-            <button className="btn-secondary" onClick={() => setSeleccionados(new Set(elegibles.map((x) => x.id_estado_pension)))}>Toda la deuda</button>
+            <button className="btn-secondary" onClick={() => setSeleccionados(new Set(elegibles.map((x) => x.id_estado_pension)))}>Seleccionar todos los conceptos</button>
             <button className="btn-primary" disabled={procesando || !seleccionados.size} onClick={preparar}>{procesando ? 'Preparando…' : 'Preparar mensajes'}</button>
           </div>
         </div>
+        <div className="mb-4 flex flex-wrap items-center gap-3"><div className="relative min-w-[280px] max-w-xl flex-1"><HiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar por código, alumno, apoderado o teléfono" className="input-field w-full pl-10 pr-10" />{busqueda && <button type="button" aria-label="Limpiar búsqueda" onClick={() => setBusqueda('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary-700"><HiX /></button>}</div>{busqueda && <span className="text-sm text-primary-800/60">{alumnosFiltrados.length} de {alumnos.length} alumnos</span>}</div>
         {cargando && <div className="py-10 text-center">Cargando…</div>}
         {!cargando && !alumnos.length && <div className="py-10 text-center text-gray-500">No hay deudas pendientes.</div>}
+        {!cargando && alumnos.length > 0 && !alumnosFiltrados.length && <div className="py-10 text-center text-gray-500">No se encontraron alumnos con ese criterio.</div>}
         <div className="space-y-4">
-          {alumnos.map((grupo) => <div key={grupo.id_alumno} className="overflow-hidden rounded-xl border border-gray-200">
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-primary-50 px-4 py-3"><div><p className="font-bold text-primary-900">{grupo.alumno}</p><p className="text-xs text-gray-600">{grupo.apoderado || 'Sin apoderado'} · {grupo.telefono || 'Sin teléfono válido'}</p></div><p className="text-sm font-semibold">Seleccionado: {moneda(grupo.conceptos.filter((x) => seleccionados.has(x.id_estado_pension)).reduce((s, x) => s + Number(x.saldo), 0))}</p></div>
+          {alumnosFiltrados.map((grupo) => <div key={grupo.id_alumno} className="overflow-hidden rounded-xl border border-gray-200">
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-primary-50 px-4 py-3"><div><p className="font-bold text-primary-900">{grupo.alumno} <span className="ml-2 rounded-md bg-white px-2 py-0.5 font-mono text-xs font-semibold text-primary-700">{grupo.codigo_alumno || 'Sin código'}</span></p><p className="text-xs text-gray-600">{grupo.apoderado || 'Sin apoderado'} · {grupo.telefono || 'Sin teléfono válido'}</p></div><p className="text-sm font-semibold">Seleccionado: {moneda(grupo.conceptos.filter((x) => seleccionados.has(x.id_estado_pension)).reduce((s, x) => s + Number(x.saldo), 0))}</p></div>
             <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="text-left text-xs uppercase text-gray-500"><tr><th className="px-4 py-2">Cobrar</th><th className="px-4 py-2">Concepto / periodo</th><th className="px-4 py-2">Vencimiento</th><th className="px-4 py-2 text-right">Saldo</th><th className="px-4 py-2">Estado</th><th className="px-4 py-2">Acción</th></tr></thead><tbody className="divide-y divide-gray-100">{grupo.conceptos.map((item) => <tr key={item.id_estado_pension} className={!item.elegible ? 'bg-gray-50 text-gray-500' : ''}><td className="px-4 py-3"><input aria-label={`Cobrar ${item.concepto} de ${item.alumno}`} type="checkbox" checked={seleccionados.has(item.id_estado_pension)} disabled={!item.elegible} onChange={() => alternar(item.id_estado_pension)} className="h-4 w-4" /></td><td className="px-4 py-3 font-semibold">{item.concepto}</td><td className="px-4 py-3">{item.fecha_vencimiento || '—'}</td><td className="px-4 py-3 text-right font-semibold">{moneda(item.saldo)}</td><td className="px-4 py-3">{item.compromiso ? <span className="rounded-full bg-amber-100 px-2 py-1 text-xs text-amber-800">Compromiso {item.compromiso.fecha}</span> : item.elegible ? <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-800">Disponible</span> : <span>{motivo[item.motivo_exclusion] || item.motivo_exclusion}</span>}</td><td className="px-4 py-3"><button className="text-xs font-semibold text-primary-700 hover:underline" onClick={() => setCompromiso({ ...item, fecha: '', monto: item.saldo, observacion: '' })}><HiCalendar className="mr-1 inline" />Compromiso</button></td></tr>)}</tbody></table></div>
           </div>)}
         </div>
