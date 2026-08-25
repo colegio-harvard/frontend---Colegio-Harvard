@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { HiChatAlt2, HiDeviceMobile, HiRefresh, HiCalendar, HiExternalLink, HiSearch, HiX, HiCheckCircle } from 'react-icons/hi';
 import Card from '../components/ui/Card';
@@ -28,7 +28,6 @@ export default function Cobranzas() {
   const [compromiso, setCompromiso] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [envioAbiertoId, setEnvioAbiertoId] = useState(null);
-  const ventanaWhatsApp = useRef(null);
 
   const cargar = async () => {
     setCargando(true);
@@ -93,30 +92,45 @@ export default function Cobranzas() {
     }
   };
 
+  const obtenerDatosWhatsApp = (envio) => {
+    const enlace = new URL(envio.enlace_apertura);
+    const partes = enlace.pathname.split('/').filter(Boolean);
+    const telefono = enlace.searchParams.get('phone') || partes[partes.length - 1] || '';
+    const texto = enlace.searchParams.get('text') || envio.mensaje || '';
+    return { telefono: telefono.replace(/\D/g, ''), texto };
+  };
+
+  const marcarAbierto = async (envio) => {
+    setEnvioAbiertoId(envio.id);
+    try { await actualizarEstadoMensaje(envio.id, 'ABIERTO'); } catch { /* el enlace ya fue abierto */ }
+  };
+
   const abrir = async (envio) => {
     const esWhatsApp = envio.canal === 'WHATSAPP' || canal === 'WHATSAPP';
     if (!esWhatsApp) {
       window.open(envio.enlace_apertura, '_blank');
-      setEnvioAbiertoId(envio.id);
-      try { await actualizarEstadoMensaje(envio.id, 'ABIERTO'); } catch { /* el enlace ya fue abierto */ }
+      await marcarAbierto(envio);
       return;
     }
-    let enlaceDirecto = envio.enlace_apertura;
     try {
-      const enlace = new URL(envio.enlace_apertura);
-      const telefono = enlace.pathname.split('/').filter(Boolean).pop();
-      const texto = enlace.searchParams.get('text') || '';
-      enlaceDirecto = `https://web.whatsapp.com/send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(texto)}`;
-    } catch { /* conserva el enlace preparado si no se puede convertir */ }
-    if (ventanaWhatsApp.current && !ventanaWhatsApp.current.closed) {
-      ventanaWhatsApp.current.location.href = enlaceDirecto;
-      ventanaWhatsApp.current.focus();
-    } else {
-      ventanaWhatsApp.current = window.open(enlaceDirecto, 'whatsapp_cobranzas');
+      const { telefono, texto } = obtenerDatosWhatsApp(envio);
+      if (!telefono) throw new Error('Teléfono inválido');
+      window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(texto)}`;
+      await marcarAbierto(envio);
+    } catch {
+      toast.error('No se pudo abrir la aplicación de WhatsApp. Usa la alternativa Web.');
     }
-    if (!ventanaWhatsApp.current) return toast.error('El navegador bloqueó la pestaña de WhatsApp. Permite las ventanas emergentes para este sitio.');
-    setEnvioAbiertoId(envio.id);
-    try { await actualizarEstadoMensaje(envio.id, 'ABIERTO'); } catch { /* el enlace ya fue abierto */ }
+  };
+
+  const abrirWhatsAppWeb = async (envio) => {
+    try {
+      const { telefono, texto } = obtenerDatosWhatsApp(envio);
+      if (!telefono) throw new Error('Teléfono inválido');
+      window.open(`https://web.whatsapp.com/send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(texto)}`, '_blank', 'noopener,noreferrer');
+      await marcarAbierto(envio);
+    } catch {
+      toast.error('No se pudo abrir WhatsApp Web.');
+    }
   };
 
   const guardarCompromiso = async (event) => {
@@ -185,7 +199,7 @@ export default function Cobranzas() {
         </div>
       </Card>
 
-      {cola.length > 0 && <Card><h2 className="mb-3 font-display text-lg font-bold text-primary-800">Mensajes preparados</h2><p className="mb-1 text-sm text-amber-700">Abrir no envía automáticamente: revisa el texto y pulsa Enviar en WhatsApp o SMS.</p><p className="mb-4 text-xs text-gray-500">WhatsApp reutilizará una sola pestaña. Envía o descarta el mensaje actual antes de abrir el siguiente.</p><div className="space-y-3">{cola.map((envio) => <div key={envio.id} className={`flex flex-col gap-3 rounded-xl border p-4 md:flex-row md:items-center md:justify-between ${envioAbiertoId === envio.id ? 'border-emerald-400 bg-emerald-50' : 'border-gray-200'}`}><div><p className="font-semibold">{envio.alumno} · {envio.apoderado} {envioAbiertoId === envio.id && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-800">Abierto en WhatsApp</span>}</p><p className="mt-1 max-w-3xl text-sm text-gray-600">{envio.mensaje}</p></div><button onClick={() => abrir(envio)} className="btn-primary flex shrink-0 items-center justify-center gap-2"><HiExternalLink /> {envioAbiertoId === envio.id ? 'Volver a WhatsApp' : `Abrir ${canal === 'SMS' ? 'SMS' : 'WhatsApp'}`}</button></div>)}</div></Card>}
+      {cola.length > 0 && <Card><h2 className="mb-3 font-display text-lg font-bold text-primary-800">Mensajes preparados</h2><p className="mb-1 text-sm text-amber-700">Abrir no envía automáticamente: revisa el texto y pulsa Enviar en WhatsApp o SMS.</p><p className="mb-4 text-xs text-gray-500">La aplicación de WhatsApp es la opción recomendada: reutiliza la misma ventana y evita pestañas duplicadas. WhatsApp Web queda disponible como alternativa.</p><div className="space-y-3">{cola.map((envio) => <div key={envio.id} className={`flex flex-col gap-3 rounded-xl border p-4 md:flex-row md:items-center md:justify-between ${envioAbiertoId === envio.id ? 'border-emerald-400 bg-emerald-50' : 'border-gray-200'}`}><div><p className="font-semibold">{envio.alumno} · {envio.apoderado} {envioAbiertoId === envio.id && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-800">Abierto en WhatsApp</span>}</p><p className="mt-1 max-w-3xl text-sm text-gray-600">{envio.mensaje}</p></div><div className="flex shrink-0 flex-wrap gap-2"><button onClick={() => abrir(envio)} className="btn-primary flex items-center justify-center gap-2"><HiDeviceMobile /> {canal === 'SMS' ? 'Abrir SMS' : 'Abrir en la aplicación'}</button>{canal === 'WHATSAPP' && <button type="button" onClick={() => abrirWhatsAppWeb(envio)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-3 py-2 text-sm font-semibold text-primary-800 hover:bg-primary-50"><HiExternalLink /> Usar Web</button>}</div></div>)}</div></Card>}
 
       {compromiso && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4"><form onSubmit={guardarCompromiso} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"><h2 className="text-xl font-bold text-primary-800">Registrar compromiso</h2><p className="mb-4 text-sm text-gray-600">{compromiso.alumno} · {compromiso.clave_mes}</p><label className="mb-3 block text-sm font-semibold">Fecha comprometida<input required type="date" value={compromiso.fecha} onChange={(e) => setCompromiso({ ...compromiso, fecha: e.target.value })} className="input-field mt-1 w-full" /></label><label className="mb-3 block text-sm font-semibold">Monto<input type="number" min="0.01" step="0.01" value={compromiso.monto} onChange={(e) => setCompromiso({ ...compromiso, monto: e.target.value })} className="input-field mt-1 w-full" /></label><label className="block text-sm font-semibold">Observación<textarea value={compromiso.observacion} onChange={(e) => setCompromiso({ ...compromiso, observacion: e.target.value })} className="input-field mt-1 w-full" rows="3" /></label><div className="mt-5 flex justify-end gap-2"><button type="button" className="btn-secondary" onClick={() => setCompromiso(null)}>Cancelar</button><button className="btn-primary">Guardar compromiso</button></div></form></div>}
     </div>
