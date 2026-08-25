@@ -60,6 +60,7 @@ export default function Cobranzas() {
     return alumnos.filter((grupo) => [grupo.codigo_alumno, grupo.alumno, grupo.apoderado, grupo.telefono].some((valor) => String(valor || '').toLocaleLowerCase('es').includes(texto)));
   }, [alumnos, busqueda]);
   const total = useMemo(() => candidatos.filter((x) => seleccionados.has(x.id_estado_pension)).reduce((s, x) => s + Number(x.saldo), 0), [candidatos, seleccionados]);
+  const todasLasDeudasSeleccionadas = elegibles.length > 0 && elegibles.every((x) => seleccionados.has(x.id_estado_pension));
 
   const alternar = (id) => setSeleccionados((actual) => {
     const siguiente = new Set(actual);
@@ -71,6 +72,10 @@ export default function Cobranzas() {
     const ids = alumnos.map((grupo) => grupo.conceptos.filter((x) => x.elegible).reduce((ultimo, actual) => !ultimo || (actual.fecha_vencimiento || '') > (ultimo.fecha_vencimiento || '') ? actual : ultimo, null)?.id_estado_pension).filter(Boolean);
     setSeleccionados(new Set(ids));
   };
+
+  const alternarTodasLasDeudas = () => setSeleccionados(todasLasDeudasSeleccionadas
+    ? new Set()
+    : new Set(elegibles.map((x) => x.id_estado_pension)));
 
   const preparar = async () => {
     if (!seleccionados.size) return toast.error('Selecciona al menos una deuda');
@@ -135,7 +140,7 @@ export default function Cobranzas() {
           <div className="flex flex-wrap gap-2">
             <button className="btn-secondary" onClick={() => setSeleccionados(new Set())}>Ninguno</button>
             <button className="btn-secondary" onClick={seleccionarUltimo}>Último por alumno</button>
-            <button className="btn-secondary" onClick={() => setSeleccionados(new Set(elegibles.map((x) => x.id_estado_pension)))}>Seleccionar todos los conceptos</button>
+            <button aria-pressed={todasLasDeudasSeleccionadas} className={todasLasDeudasSeleccionadas ? 'btn-primary' : 'btn-secondary'} onClick={alternarTodasLasDeudas}>{todasLasDeudasSeleccionadas ? 'Deseleccionar todas las deudas' : 'Seleccionar todas las deudas'}</button>
             <button className="btn-primary" disabled={procesando || !seleccionados.size} onClick={preparar}>{procesando ? 'Preparando…' : 'Preparar mensajes'}</button>
           </div>
         </div>
