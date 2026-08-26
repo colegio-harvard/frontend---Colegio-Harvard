@@ -12,6 +12,8 @@ export const reemitirCarnet = (id_alumno) => apiClient.post(`/alumnos/reemitir-c
 export const eliminarAlumno = (id) => apiClient.delete(`/alumnos/${id}`);
 export const obtenerInfoRetiroAlumno = (id) => apiClient.get(`/alumnos/${id}/retiro`);
 export const retirarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/retirar`, data);
+export const reactivarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/reactivar`, data);
 
 export const obtenerSiguienteCodigoAlumno = () => apiClient.get('/alumnos/siguiente-codigo');
 export const exportarAulasExcel = () => apiClient.get('/alumnos/exportar-aulas-excel', { responseType: 'blob' });
+

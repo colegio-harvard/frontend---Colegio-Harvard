@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import CarnetCard from '../components/CarnetCard';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno } from '../services/alumnosService';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove } from 'react-icons/hi';
@@ -67,6 +67,11 @@ const Alumnos = () => {
     motivo_retiro: 'Razones económicas',
     observacion_retiro: '',
   });
+  const [reactivacionOpen, setReactivacionOpen] = useState(false);
+  const [reactivacionInfo, setReactivacionInfo] = useState(null);
+  const [reactivacionLoading, setReactivacionLoading] = useState(false);
+  const [reactivacionGuardando, setReactivacionGuardando] = useState(false);
+  const [reactivacionForm, setReactivacionForm] = useState({ fecha_reingreso: new Date().toISOString().slice(0, 10), primera_clave_cobro: '', observacion_reingreso: '' });
 
   // Descarga masiva
   const [descargaMasivaLoading, setDescargaMasivaLoading] = useState(false);
@@ -535,6 +540,34 @@ const Alumnos = () => {
     .reduce((total, concepto) => total + Number(concepto.saldo || 0), 0);
   const conceptosAnulados = (retiroInfo?.conceptos || []).slice(indiceUltimoCobro + 1);
 
+  const abrirReactivacion = async (alumno) => {
+    setReactivacionOpen(true); setReactivacionLoading(true); setReactivacionInfo(null);
+    try {
+      const { data } = await obtenerInfoRetiroAlumno(alumno.id);
+      const info = data.data;
+      const primeraDisponible = info.conceptos?.find(c => c.estado === 'NO_CORRESPONDE')?.clave || info.conceptos?.[0]?.clave || '';
+      setReactivacionInfo(info);
+      setReactivacionForm({ fecha_reingreso: new Date().toISOString().slice(0, 10), primera_clave_cobro: primeraDisponible, observacion_reingreso: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo preparar la reactivación'); setReactivacionOpen(false);
+    } finally { setReactivacionLoading(false); }
+  };
+
+  const confirmarReactivacion = async () => {
+    if (!reactivacionInfo || !reactivacionForm.primera_clave_cobro) return;
+    setReactivacionGuardando(true);
+    try {
+      const { data } = await reactivarAlumno(reactivacionInfo.alumno.id, reactivacionForm);
+      toast.success(data.message || 'Alumno reactivado'); setReactivacionOpen(false); setReactivacionInfo(null); fetchData();
+    } catch (err) { toast.error(err.response?.data?.error || 'No se pudo reactivar al alumno'); }
+    finally { setReactivacionGuardando(false); }
+  };
+
+  const deudaHistoricaReactivacion = (reactivacionInfo?.conceptos || []).filter(c => c.estado !== 'NO_CORRESPONDE').reduce((s, c) => s + Number(c.saldo || 0), 0);
+  const indicePrimerCobro = reactivacionInfo?.conceptos?.findIndex(c => c.clave === reactivacionForm.primera_clave_cobro) ?? -1;
+  const conceptoReingreso = indicePrimerCobro >= 0 ? reactivacionInfo.conceptos[indicePrimerCobro] : null;
+  const cobroReingreso = conceptoReingreso?.estado === 'NO_CORRESPONDE' ? Math.max(Number(conceptoReingreso.monto_total || 0) - Number(conceptoReingreso.monto_pagado || 0), 0) : 0;
+
   // ===================== TABLE COLUMNS =====================
   const columns = [
     { header: 'Foto', render: (r) => (
@@ -560,6 +593,9 @@ const Alumnos = () => {
         <button onClick={() => handleVerCarnet(row.id)} className="p-1.5 text-primary-600 hover:bg-primary-50 rounded" title="Ver carnet"><HiEye className="w-4 h-4" /></button>
         {usuario?.rol_codigo === 'SUPER_ADMIN' && row.estado === 'ACTIVO' && (
           <button onClick={() => abrirRetiro(row)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded" title="Retirar alumno"><HiUserRemove className="w-4 h-4" /></button>
+        )}
+        {usuario?.rol_codigo === 'SUPER_ADMIN' && row.estado === 'RETIRADO' && (
+          <button onClick={() => abrirReactivacion(row)} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded" title="Reactivar alumno"><HiUserAdd className="w-4 h-4" /></button>
         )}
         <button onClick={() => handleConfirmDelete(row)} className="p-1.5 text-red-500 hover:bg-red-50 rounded" title="Eliminar"><HiTrash className="w-4 h-4" /></button>
       </div>
@@ -1123,6 +1159,17 @@ const Alumnos = () => {
         ) : null}
       </Modal>
 
+      <Modal isOpen={reactivacionOpen} onClose={() => !reactivacionGuardando && setReactivacionOpen(false)} title="Reactivar y liquidar reincorporación" size="lg">
+        {reactivacionLoading ? <div className="py-10"><LoadingSpinner /></div> : reactivacionInfo ? <div className="space-y-5">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="font-semibold text-primary-800">{reactivacionInfo.alumno.nombre_completo}</p><p className="text-sm text-primary-700">{reactivacionInfo.alumno.codigo_alumno} · {reactivacionInfo.alumno.aula}</p><p className="mt-2 text-xs text-emerald-800">Retirada desde {String(reactivacionInfo.alumno.fecha_retiro || '').slice(0, 10)}. Su historial y deuda anterior se conservarán.</p></div>
+          <div className="grid gap-4 md:grid-cols-2"><div><label className={labelClass}>Fecha efectiva de retorno *</label><input type="date" className={inputClass} value={reactivacionForm.fecha_reingreso} onChange={e => setReactivacionForm({ ...reactivacionForm, fecha_reingreso: e.target.value })} /></div><div><label className={labelClass}>Primer concepto que vuelve a cobrarse *</label><select className={inputClass} value={reactivacionForm.primera_clave_cobro} onChange={e => setReactivacionForm({ ...reactivacionForm, primera_clave_cobro: e.target.value })}>{(reactivacionInfo.conceptos || []).map(c => <option key={c.clave} value={c.clave}>{c.nombre} · S/. {Number(c.monto_total || 0).toFixed(2)}</option>)}</select></div></div>
+          <div><label className={labelClass}>Observación de reincorporación</label><input className={inputClass} value={reactivacionForm.observacion_reingreso} onChange={e => setReactivacionForm({ ...reactivacionForm, observacion_reingreso: e.target.value })} placeholder="Ej.: Retorna por decisión familiar" /></div>
+          <div className="grid gap-3 sm:grid-cols-3"><div className="rounded-lg border border-red-100 bg-red-50 p-3"><p className="text-xs text-red-700">Deuda anterior pendiente</p><p className="text-xl font-bold text-red-700">S/. {deudaHistoricaReactivacion.toFixed(2)}</p></div><div className="rounded-lg border border-amber-100 bg-amber-50 p-3"><p className="text-xs text-amber-700">Primer cobro de retorno</p><p className="text-xl font-bold text-amber-700">S/. {cobroReingreso.toFixed(2)}</p><p className="text-xs text-amber-700">{conceptoReingreso?.nombre || '-'}</p></div><div className="rounded-lg border border-emerald-100 bg-emerald-50 p-3"><p className="text-xs text-emerald-700">Total informado hoy</p><p className="text-xl font-bold text-emerald-700">S/. {(deudaHistoricaReactivacion + cobroReingreso).toFixed(2)}</p></div></div>
+          <p className="rounded-lg bg-sky-50 p-3 text-xs text-sky-800">Los conceptos anteriores al periodo seleccionado permanecerán como “No corresponde”. Los conceptos desde ese periodo volverán a quedar habilitados; solo aparecerán en Cobranzas cuando estén vencidos.</p>
+          <div className="flex justify-end gap-3"><button type="button" disabled={reactivacionGuardando} onClick={() => setReactivacionOpen(false)} className="px-4 py-2 text-sm bg-cream-100 text-primary-700 rounded-lg">Cancelar</button><button type="button" disabled={reactivacionGuardando} onClick={confirmarReactivacion} className="px-4 py-2 text-sm text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-60">{reactivacionGuardando ? 'Procesando...' : 'Confirmar reactivación'}</button></div>
+        </div> : null}
+      </Modal>
+
       {/* ==================== MODAL CONFIRMAR ELIMINACION ==================== */}
       <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Eliminar Alumno" size="sm">
         <div className="space-y-4">
@@ -1178,4 +1225,5 @@ const Alumnos = () => {
 };
 
 export default Alumnos;
+
 
