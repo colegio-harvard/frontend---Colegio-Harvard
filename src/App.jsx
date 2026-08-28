@@ -41,6 +41,8 @@ const AulaDetalle = lazy(() => import('./pages/AulaDetalle'));
 const AlumnoDetalle = lazy(() => import('./pages/AlumnoDetalle'));
 const Libretas = lazy(() => import('./pages/Libretas'));
 const ReciboPublico = lazy(() => import('./pages/ReciboPublico'));
+const Matriculas = lazy(() => import('./pages/Matriculas'));
+const MatriculaPublica = lazy(() => import('./pages/MatriculaPublica'));
 
 const { SUPER_ADMIN, ADMIN, TUTOR, DOCENTE, PADRE, PORTERIA, PSICOLOGIA } = ROLES;
 
@@ -65,6 +67,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/recibo/:codigo" element={<ReciboPublico />} />
+          <Route path="/matricula/:token" element={<MatriculaPublica />} />
 
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
@@ -83,6 +86,10 @@ function App() {
 
             <Route path="/alumnos" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Alumnos /></ProtectedRoute>
+            } />
+
+            <Route path="/matriculas" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Matriculas /></ProtectedRoute>
             } />
 
             <Route path="/asistencia" element={
