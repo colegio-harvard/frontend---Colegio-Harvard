@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import { HiCheckCircle, HiClipboardList, HiCog, HiExternalLink, HiEye, HiMail, HiPrinter, HiRefresh, HiSearch, HiX } from 'react-icons/hi';
+import { HiCheckCircle, HiCog, HiEye, HiMail, HiPlus, HiPrinter, HiRefresh, HiSearch, HiUserAdd, HiX } from 'react-icons/hi';
 import Card from '../components/ui/Card';
+import Modal from '../components/ui/Modal';
 import { cargarMatriculas, generarInvitacionMatricula, guardarConfiguracionMatricula, obtenerExpedienteMatricula, revisarMatricula } from '../services/matriculasService';
+import { crearAlumno, obtenerSiguienteCodigoAlumno } from '../services/alumnosService';
+import { listarAulas, listarNiveles } from '../services/configEscolarService';
+import { buscarPadres } from '../services/padresService';
 
 const money = (value) => `S/ ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
 const labels = { BORRADOR: 'Borrador', ENVIADA: 'Invitación enviada', ABIERTA: 'Abierta por el padre', ACEPTADA: 'Aceptada', OBSERVADA: 'Observada', COMPLETADA: 'Completada' };
@@ -20,6 +24,16 @@ export default function Matriculas() {
   const [invite, setInvite] = useState(null);
   const [detail, setDetail] = useState(null);
   const [observation, setObservation] = useState('');
+  const [newStudentOpen, setNewStudentOpen] = useState(false);
+  const [studentSaving, setStudentSaving] = useState(false);
+  const [aulas, setAulas] = useState([]);
+  const [niveles, setNiveles] = useState([]);
+  const [studentForm, setStudentForm] = useState({ codigo_alumno: '', dni: '', nombre_completo: '', monto_matricula: '', monto_materiales: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
+  const [parentMode, setParentMode] = useState('existing');
+  const [parentQuery, setParentQuery] = useState('');
+  const [parentResults, setParentResults] = useState([]);
+  const [selectedParent, setSelectedParent] = useState(null);
+  const [parentForm, setParentForm] = useState({ dni: '', nombre_completo: '', celular: '', username: '', contrasena: '' });
 
   const load = async () => {
     setLoading(true);
@@ -36,6 +50,42 @@ export default function Matriculas() {
     return rows.filter((x) => [x.codigo_alumno, x.nombre_completo, x.apoderado, x.dni, x.dni_apoderado].some((v) => String(v || '').toLocaleLowerCase('es').includes(text)));
   }, [data, query]);
   const stats = useMemo(() => (data?.alumnos || []).reduce((acc, x) => { const key = x.estado_matricula || 'SIN_INICIAR'; acc[key] = (acc[key] || 0) + 1; return acc; }, {}), [data]);
+  const grades = useMemo(() => niveles.find((n) => n.id === Number(studentForm.id_nivel))?.grados?.filter((g) => aulas.some((a) => a.id_grado === g.id)) || [], [niveles, aulas, studentForm.id_nivel]);
+  const classrooms = useMemo(() => aulas.filter((a) => a.id_grado === Number(studentForm.id_grado)), [aulas, studentForm.id_grado]);
+
+  const openNewStudent = async () => {
+    try {
+      const [codeResponse, aulasResponse, nivelesResponse] = await Promise.all([obtenerSiguienteCodigoAlumno(), listarAulas(), listarNiveles()]);
+      const codigo = codeResponse.data?.data?.codigo_alumno || codeResponse.data?.codigo_alumno || '';
+      setAulas(aulasResponse.data.data || []); setNiveles(nivelesResponse.data.data || []);
+      setStudentForm({ codigo_alumno: codigo, dni: '', nombre_completo: '', monto_matricula: '', monto_materiales: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
+      setParentMode('existing'); setParentQuery(''); setParentResults([]); setSelectedParent(null);
+      setParentForm({ dni: '', nombre_completo: '', celular: '', username: '', contrasena: '' });
+      setNewStudentOpen(true);
+    } catch (error) { toast.error(error.response?.data?.error || 'No se pudo preparar el registro del alumno'); }
+  };
+  const searchParent = async () => {
+    if (parentQuery.trim().length < 2) return toast.error('Escriba por lo menos 2 caracteres');
+    try { const response = await buscarPadres(parentQuery.trim()); setParentResults(response.data.data || []); }
+    catch { toast.error('No se pudo buscar al apoderado'); }
+  };
+  const saveNewStudent = async (event) => {
+    event.preventDefault();
+    if (parentMode === 'existing' && !selectedParent) return toast.error('Seleccione un apoderado existente');
+    setStudentSaving(true);
+    try {
+      const fd = new FormData();
+      ['codigo_alumno','dni','nombre_completo','monto_matricula','monto_materiales','monto_pension','id_aula'].forEach((key) => { if (studentForm[key] !== '') fd.append(key, studentForm[key]); });
+      if (parentMode === 'existing') fd.append('padre_dni', selectedParent.dni);
+      else {
+        fd.append('padre_dni', parentForm.dni); fd.append('padre_nombre', parentForm.nombre_completo); fd.append('padre_celular', parentForm.celular);
+        fd.append('padre_username', parentForm.username); fd.append('padre_contrasena', parentForm.contrasena);
+      }
+      await crearAlumno(fd); toast.success('Alumno creado y listo para matrícula digital'); setNewStudentOpen(false); await load();
+      setQuery(studentForm.codigo_alumno);
+    } catch (error) { toast.error(error.response?.data?.error || 'No se pudo crear el alumno'); }
+    finally { setStudentSaving(false); }
+  };
 
   const saveConfig = async (event) => {
     event.preventDefault(); setSaving(true);
@@ -74,7 +124,7 @@ export default function Matriculas() {
   return <div className="space-y-6 pb-10">
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div><h1 className="font-display text-3xl text-primary-800">Matrícula Digital</h1><p className="mt-1 text-primary-500">Campaña {data.anio.anio}: invitaciones, aceptaciones y evidencia en un solo lugar.</p></div>
-      <div className="flex gap-2"><button onClick={load} className={`${btn} border border-cream-300 bg-white text-primary-700`}><HiRefresh />Actualizar</button><button onClick={() => setShowConfig(!showConfig)} className={`${btn} bg-gold-500 text-white`}><HiCog />Configurar campaña</button></div>
+      <div className="flex flex-wrap gap-2"><button onClick={openNewStudent} className={`${btn} bg-primary-700 text-white`}><HiPlus />Nuevo alumno</button><button onClick={load} className={`${btn} border border-cream-300 bg-white text-primary-700`}><HiRefresh />Actualizar</button><button onClick={() => setShowConfig(!showConfig)} className={`${btn} bg-gold-500 text-white`}><HiCog />Configurar campaña</button></div>
     </div>
 
     {showConfig && <Card title={`Configuración ${data.anio.anio}`}>
@@ -103,6 +153,30 @@ export default function Matriculas() {
     </Card>
 
     {invite && <div className="fixed inset-0 z-[70] grid place-items-center bg-primary-950/50 p-4"><div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl"><div className="flex justify-between"><div><h2 className="font-display text-2xl text-primary-800">Invitación preparada</h2><p className="text-sm text-primary-500">{invite.student} · {invite.codigo}</p></div><button onClick={() => setInvite(null)}><HiX className="h-6 w-6"/></button></div><div className="mt-5 whitespace-pre-wrap rounded-xl bg-cream-50 p-4 text-sm text-primary-800">{invite.mensaje}</div><p className="mt-3 text-xs text-primary-500">El código solo se muestra aquí y vence en 24 horas. El enlace vence en 7 días.</p><div className="mt-5 flex flex-wrap justify-end gap-2"><button onClick={() => navigator.clipboard.writeText(invite.mensaje)} className={`${btn} border border-cream-300`}>Copiar mensaje</button><button onClick={openWhatsApp} className={`${btn} bg-emerald-600 text-white`}>Abrir WhatsApp</button></div></div></div>}
+
+    <Modal isOpen={newStudentOpen} onClose={() => setNewStudentOpen(false)} title="Nuevo alumno para matrícula digital" size="lg">
+      <form onSubmit={saveNewStudent} className="space-y-5">
+        <div><h3 className="mb-3 font-semibold text-primary-800">Datos del estudiante</h3><div className="grid gap-3 md:grid-cols-2">
+          <label className="text-sm">Código *<input required value={studentForm.codigo_alumno} onChange={(e) => setStudentForm({...studentForm,codigo_alumno:e.target.value})} className={`${field} mt-1`}/></label>
+          <label className="text-sm">DNI<input maxLength="8" value={studentForm.dni} onChange={(e) => setStudentForm({...studentForm,dni:e.target.value})} className={`${field} mt-1`}/></label>
+          <label className="text-sm md:col-span-2">Nombre completo *<input required value={studentForm.nombre_completo} onChange={(e) => setStudentForm({...studentForm,nombre_completo:e.target.value})} className={`${field} mt-1`}/></label>
+          <label className="text-sm">Matrícula (S/)<input type="number" min="0" step="0.01" value={studentForm.monto_matricula} onChange={(e) => setStudentForm({...studentForm,monto_matricula:e.target.value})} className={`${field} mt-1`}/></label>
+          <label className="text-sm">Materiales (S/)<input type="number" min="0" step="0.01" value={studentForm.monto_materiales} onChange={(e) => setStudentForm({...studentForm,monto_materiales:e.target.value})} className={`${field} mt-1`}/></label>
+          <label className="text-sm">Pensión (S/)<input type="number" min="0" step="0.01" value={studentForm.monto_pension} onChange={(e) => setStudentForm({...studentForm,monto_pension:e.target.value})} className={`${field} mt-1`}/></label>
+        </div></div>
+        <div><h3 className="mb-3 font-semibold text-primary-800">Asignación de aula</h3><div className="grid gap-3 md:grid-cols-3">
+          <label className="text-sm">Nivel *<select required value={studentForm.id_nivel} onChange={(e) => setStudentForm({...studentForm,id_nivel:e.target.value,id_grado:'',id_aula:''})} className={`${field} mt-1`}><option value="">Seleccione...</option>{niveles.map((n)=><option key={n.id} value={n.id}>{n.nombre}</option>)}</select></label>
+          <label className="text-sm">Grado *<select required disabled={!studentForm.id_nivel} value={studentForm.id_grado} onChange={(e) => setStudentForm({...studentForm,id_grado:e.target.value,id_aula:''})} className={`${field} mt-1`}><option value="">Seleccione...</option>{grades.map((g)=><option key={g.id} value={g.id}>{g.nombre}</option>)}</select></label>
+          <label className="text-sm">Sección *<select required disabled={!studentForm.id_grado} value={studentForm.id_aula} onChange={(e) => setStudentForm({...studentForm,id_aula:e.target.value})} className={`${field} mt-1`}><option value="">Seleccione...</option>{classrooms.map((a)=><option key={a.id} value={a.id}>Sección {a.seccion}</option>)}</select></label>
+        </div></div>
+        <div><div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold text-primary-800">Padre / apoderado</h3><div className="flex rounded-lg border p-1"><button type="button" onClick={()=>{setParentMode('existing');setSelectedParent(null);}} className={`rounded-md px-3 py-1.5 text-sm ${parentMode==='existing'?'bg-primary-700 text-white':''}`}>Existente</button><button type="button" onClick={()=>setParentMode('new')} className={`rounded-md px-3 py-1.5 text-sm ${parentMode==='new'?'bg-primary-700 text-white':''}`}><HiUserAdd className="inline"/> Nuevo</button></div></div>
+          {parentMode === 'existing' ? <div>{selectedParent ? <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-3"><div><b>{selectedParent.nombre_completo}</b><p className="text-sm">DNI {selectedParent.dni} · {selectedParent.celular}</p></div><button type="button" onClick={()=>setSelectedParent(null)} className="text-sm text-primary-700">Cambiar</button></div> : <><div className="flex gap-2"><input value={parentQuery} onChange={(e)=>setParentQuery(e.target.value)} placeholder="DNI o nombre del apoderado" className={field}/><button type="button" onClick={searchParent} className={`${btn} border`}><HiSearch/>Buscar</button></div>{parentResults.length > 0 && <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border">{parentResults.map((p)=><button type="button" key={p.id} onClick={()=>setSelectedParent(p)} className="block w-full border-b p-3 text-left hover:bg-cream-50"><b>{p.nombre_completo}</b> · DNI {p.dni} · {p.celular}</button>)}</div>}</>}</div> : <div className="grid gap-3 md:grid-cols-2">
+            <label className="text-sm">DNI *<input required maxLength="8" value={parentForm.dni} onChange={(e)=>setParentForm({...parentForm,dni:e.target.value})} className={`${field} mt-1`}/></label><label className="text-sm">Nombre completo *<input required value={parentForm.nombre_completo} onChange={(e)=>setParentForm({...parentForm,nombre_completo:e.target.value})} className={`${field} mt-1`}/></label><label className="text-sm">Celular *<input required maxLength="9" value={parentForm.celular} onChange={(e)=>setParentForm({...parentForm,celular:e.target.value})} className={`${field} mt-1`}/></label><label className="text-sm">Usuario de acceso *<input required value={parentForm.username} onChange={(e)=>setParentForm({...parentForm,username:e.target.value})} className={`${field} mt-1`}/></label><label className="text-sm md:col-span-2">Contraseña inicial *<input required type="password" value={parentForm.contrasena} onChange={(e)=>setParentForm({...parentForm,contrasena:e.target.value})} className={`${field} mt-1`}/></label>
+          </div>}
+        </div>
+        <div className="flex justify-end gap-2"><button type="button" onClick={()=>setNewStudentOpen(false)} className={`${btn} border`}>Cancelar</button><button disabled={studentSaving} className={`${btn} bg-primary-700 text-white`}>{studentSaving?'Guardando...':'Crear alumno'}</button></div>
+      </form>
+    </Modal>
 
     {detail && <div className="fixed inset-0 z-[70] overflow-y-auto bg-primary-950/50 p-4"><div className="mx-auto my-6 max-w-4xl rounded-2xl bg-white p-6 shadow-2xl print:my-0 print:shadow-none"><div className="flex justify-between"><div><h2 className="font-display text-2xl text-primary-800">Expediente {detail.codigo}</h2><p className="text-sm text-primary-500">{detail.datos_snapshot?.alumno?.nombre} · {detail.estado}</p></div><button className="print:hidden" onClick={() => setDetail(null)}><HiX className="h-6 w-6"/></button></div><div className="mt-5 grid gap-4 md:grid-cols-3">{[['Apoderado', detail.datos_snapshot?.apoderado?.nombre], ['Aceptado', detail.aceptado_en ? new Date(detail.aceptado_en).toLocaleString('es-PE') : 'Pendiente'], ['Resumen financiero', `${money(detail.deuda_snapshot)} + matrícula ${money(detail.costo_matricula_snapshot)}`]].map(([a,b]) => <div key={a} className="rounded-xl bg-cream-50 p-4"><p className="text-xs uppercase text-primary-500">{a}</p><p className="mt-1 font-semibold">{b}</p></div>)}</div><h3 className="mt-6 font-semibold text-primary-800">Personas autorizadas en una emergencia</h3><div className="mt-2 grid gap-2 md:grid-cols-2">{[detail.datos_formulario?.persona_autorizada_1, detail.datos_formulario?.persona_autorizada_2].filter((p) => p?.nombre).map((p, i) => <div key={i} className="rounded-lg border p-3 text-sm"><b>{p.nombre}</b><p>DNI: {p.dni} · {p.parentesco}</p><p>Celular: {p.celular}</p></div>)}</div><h3 className="mt-6 font-semibold text-primary-800">Aceptaciones</h3><div className="mt-2 grid gap-2 md:grid-cols-2">{detail.documentos_snapshot.map((d) => <div key={d.clave} className="flex items-center gap-2 rounded-lg border p-3"><HiCheckCircle className={detail.aceptaciones_json?.[d.clave] ? 'text-emerald-600' : 'text-gray-300'} />{d.nombre} · versión {d.version}</div>)}</div><h3 className="mt-6 font-semibold text-primary-800">Trazabilidad</h3><div className="mt-2 space-y-2">{detail.eventos.map((e) => <div key={e.id} className="flex justify-between rounded-lg bg-cream-50 p-3 text-sm"><span>{String(e.evento).replaceAll('_',' ')}</span><span className="text-primary-500">{new Date(e.creado_en).toLocaleString('es-PE')}</span></div>)}</div>{detail.hash_evidencia && <p className="mt-5 break-all rounded-lg border border-dashed border-gold-400 p-3 font-mono text-xs">Huella de evidencia SHA-256: {detail.hash_evidencia}</p>}<div className="mt-6 print:hidden"><textarea value={observation} onChange={(e) => setObservation(e.target.value)} placeholder="Observación de revisión" className={field}/><div className="mt-3 flex flex-wrap justify-end gap-2"><button onClick={() => window.print()} className={`${btn} border`}><HiPrinter/>Imprimir evidencia</button><button onClick={() => review('OBSERVADA')} disabled={!detail.aceptado_en || !observation.trim()} className={`${btn} bg-amber-500 text-white`}>Observar</button><button onClick={() => review('COMPLETADA')} disabled={!detail.aceptado_en} className={`${btn} bg-emerald-600 text-white`}>Completar matrícula</button></div></div></div></div>}
   </div>;
