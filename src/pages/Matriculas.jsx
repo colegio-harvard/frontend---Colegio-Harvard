@@ -20,10 +20,12 @@ const statusFilters = [
 ];
 const badge = { ENVIADA: 'bg-blue-100 text-blue-700', ABIERTA: 'bg-amber-100 text-amber-700', ACEPTADA: 'bg-emerald-100 text-emerald-700', OBSERVADA: 'bg-rose-100 text-rose-700', COMPLETADA: 'bg-primary-100 text-primary-800' };
 const expedienteAction = (status) => {
+  if (!status || ['SIN_INICIAR', 'BORRADOR', 'ENVIADA'].includes(status)) return { label: 'Cargar datos', classes: 'border-cream-300 bg-white text-primary-700' };
+  if (status === 'ABIERTA') return { label: 'Continuar / ver datos', classes: 'border-amber-300 bg-amber-50 text-amber-800' };
   if (status === 'ACEPTADA') return { label: 'Revisar y completar', classes: 'border-emerald-600 bg-emerald-600 text-white' };
-  if (status === 'OBSERVADA') return { label: 'Revisar observación', classes: 'border-rose-300 bg-rose-50 text-rose-700' };
+  if (status === 'OBSERVADA') return { label: 'Corregir matrícula', classes: 'border-rose-300 bg-rose-50 text-rose-700' };
   if (status === 'COMPLETADA') return { label: 'Ver expediente', classes: 'border-cream-300 bg-white text-primary-700' };
-  return { label: 'Ver seguimiento', classes: 'border-cream-300 bg-white text-primary-700' };
+  return { label: 'Ver datos', classes: 'border-cream-300 bg-white text-primary-700' };
 };
 
 const field = 'w-full rounded-lg border border-cream-300 px-3 py-2.5 outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-100';
