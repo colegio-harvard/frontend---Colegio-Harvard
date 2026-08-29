@@ -10,6 +10,14 @@ import { buscarPadres } from '../services/padresService';
 
 const money = (value) => `S/ ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
 const labels = { BORRADOR: 'Borrador', ENVIADA: 'Invitación enviada', ABIERTA: 'Abierta por el padre', ACEPTADA: 'Aceptada', OBSERVADA: 'Observada', COMPLETADA: 'Completada' };
+const statusFilters = [
+  { key: 'TODOS', label: 'Todos', matches: () => true },
+  { key: 'SIN_INICIAR', label: 'Por invitar / Sin iniciar', matches: (status) => !status || status === 'SIN_INICIAR' || status === 'BORRADOR' },
+  { key: 'INVITACION', label: 'Invitación enviada o abierta', matches: (status) => ['ENVIADA', 'ABIERTA'].includes(status) },
+  { key: 'ACEPTADA', label: 'Aceptada', matches: (status) => status === 'ACEPTADA' },
+  { key: 'COMPLETADA', label: 'Completada', matches: (status) => status === 'COMPLETADA' },
+  { key: 'OBSERVADA', label: 'Observada', matches: (status) => status === 'OBSERVADA' },
+];
 const badge = { ENVIADA: 'bg-blue-100 text-blue-700', ABIERTA: 'bg-amber-100 text-amber-700', ACEPTADA: 'bg-emerald-100 text-emerald-700', OBSERVADA: 'bg-rose-100 text-rose-700', COMPLETADA: 'bg-primary-100 text-primary-800' };
 const expedienteAction = (status) => {
   if (status === 'ACEPTADA') return { label: 'Revisar y completar', classes: 'border-emerald-600 bg-emerald-600 text-white' };
@@ -25,6 +33,7 @@ export default function Matriculas() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('TODOS');
   const [showConfig, setShowConfig] = useState(false);
   const [saving, setSaving] = useState(false);
   const [invite, setInvite] = useState(null);
@@ -52,9 +61,9 @@ export default function Matriculas() {
   const students = useMemo(() => {
     const text = query.trim().toLocaleLowerCase('es');
     const rows = data?.alumnos || [];
-    if (!text) return rows;
-    return rows.filter((x) => [x.codigo_alumno, x.nombre_completo, x.apoderado, x.dni, x.dni_apoderado].some((v) => String(v || '').toLocaleLowerCase('es').includes(text)));
-  }, [data, query]);
+    const selectedFilter = statusFilters.find((filter) => filter.key === statusFilter) || statusFilters[0];
+    return rows.filter((x) => selectedFilter.matches(x.estado_matricula) && (!text || [x.codigo_alumno, x.nombre_completo, x.apoderado, x.dni, x.dni_apoderado].some((v) => String(v || '').toLocaleLowerCase('es').includes(text))));
+  }, [data, query, statusFilter]);
   const stats = useMemo(() => (data?.alumnos || []).reduce((acc, x) => { const key = x.estado_matricula || 'SIN_INICIAR'; acc[key] = (acc[key] || 0) + 1; return acc; }, {}), [data]);
   const grades = useMemo(() => niveles.find((n) => n.id === Number(studentForm.id_nivel))?.grados?.filter((g) => aulas.some((a) => a.id_grado === g.id)) || [], [niveles, aulas, studentForm.id_nivel]);
   const classrooms = useMemo(() => aulas.filter((a) => a.id_grado === Number(studentForm.id_grado)), [aulas, studentForm.id_grado]);
@@ -147,10 +156,15 @@ export default function Matriculas() {
     </Card>}
 
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-      {[['Alumnos activos', data.alumnos.length], ['Sin iniciar', stats.SIN_INICIAR || 0], ['Invitaciones abiertas', (stats.ENVIADA || 0) + (stats.ABIERTA || 0)], ['Aceptadas', stats.ACEPTADA || 0], ['Completadas', stats.COMPLETADA || 0]].map(([name, value]) => <Card key={name} className="!shadow-sm"><p className="text-sm text-primary-500">{name}</p><p className="mt-1 text-2xl font-bold text-primary-800">{value}</p></Card>)}
+      {[['Alumnos activos', data.alumnos.length, 'TODOS'], ['Sin iniciar', (stats.SIN_INICIAR || 0) + (stats.BORRADOR || 0), 'SIN_INICIAR'], ['Invitaciones abiertas', (stats.ENVIADA || 0) + (stats.ABIERTA || 0), 'INVITACION'], ['Aceptadas', stats.ACEPTADA || 0, 'ACEPTADA'], ['Completadas', stats.COMPLETADA || 0, 'COMPLETADA']].map(([name, value, filter]) => <Card key={name} role="button" tabIndex={0} onClick={() => setStatusFilter(filter)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') setStatusFilter(filter); }} className={`cursor-pointer !shadow-sm ${statusFilter === filter ? '!border-gold-500 ring-2 ring-gold-200' : ''}`}><p className="text-sm text-primary-500">{name}</p><p className="mt-1 text-2xl font-bold text-primary-800">{value}</p></Card>)}
     </div>
 
     <Card title="Estudiantes y expedientes" actions={<span className="text-sm text-primary-500">{students.length} de {data.alumnos.length}</span>}>
+      <div className="mb-4" aria-label="Filtrar matrículas por estado">
+        <p className="mb-2 text-sm font-semibold text-primary-700">Filtrar por estado</p>
+        <div className="flex flex-wrap gap-2">{statusFilters.map((filter) => <button key={filter.key} type="button" aria-pressed={statusFilter === filter.key} onClick={() => setStatusFilter(filter.key)} className={`${btn} border px-3 py-2 text-sm ${statusFilter === filter.key ? 'border-primary-700 bg-primary-700 text-white shadow-sm' : 'border-cream-300 bg-white text-primary-700 hover:border-gold-500'}`}>{filter.label}{filter.key === 'OBSERVADA' && stats.OBSERVADA ? ` (${stats.OBSERVADA})` : ''}</button>)}</div>
+        <p className="mt-2 text-xs text-primary-500">Filtro activo: <b>{statusFilters.find((filter) => filter.key === statusFilter)?.label}</b></p>
+      </div>
       <div className="relative mb-5"><HiSearch className="absolute left-3 top-3.5 text-gold-600"/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por código, alumno, DNI o apoderado" className={`${field} pl-10`} /></div>
       <div className="overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><thead className="bg-primary-800 text-white"><tr><th className="p-3">Alumno</th><th className="p-3">Apoderado</th><th className="p-3">Aula</th><th className="p-3">Deuda actual</th><th className="p-3">Estado</th><th className="p-3 text-right">Acción</th></tr></thead><tbody>
         {students.map((x) => { const cerrada = ['ACEPTADA', 'COMPLETADA'].includes(x.estado_matricula); const action = expedienteAction(x.estado_matricula); return <tr key={x.id} className="border-b border-cream-200 hover:bg-cream-50"><td className="p-3"><b>{x.nombre_completo}</b><div className="text-xs text-primary-500">{x.codigo_alumno} · DNI {x.dni || 'no registrado'}</div></td><td className="p-3">{x.apoderado || <span className="text-rose-600">Sin apoderado</span>}<div className="text-xs text-primary-500">{x.celular || ''}</div></td><td className="p-3">{x.grado} {x.seccion}<div className="text-xs text-primary-500">{x.nivel}</div></td><td className="p-3 font-semibold">{money(x.deuda_actual)}</td><td className="p-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${badge[x.estado_matricula] || 'bg-gray-100 text-gray-600'}`}>{labels[x.estado_matricula] || 'Sin iniciar'}</span></td><td className="p-3 text-right">{x.id_matricula && <button onClick={() => openDetail(x.id_matricula)} className={`${btn} mr-2 border py-2 ${action.classes}`}><HiEye />{action.label}</button>}{!cerrada && <button onClick={() => createInvite(x)} disabled={!x.id_padre || !config.id} className={`${btn} bg-primary-700 py-2 text-white`}><HiMail />{x.id_matricula ? 'Reenviar' : 'Invitar'}</button>}</td></tr>; })}
