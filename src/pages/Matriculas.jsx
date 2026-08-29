@@ -45,6 +45,11 @@ const documentosControl = [
   ['foto_apoderado', 'Foto tamaño carné del apoderado'],
 ];
 const emptyAssistedDraft = { alumno_apellido_paterno: '', alumno_apellido_materno: '', alumno_nombres: '', alumno_dni: '', alumno_fecha_nacimiento: '', alumno_sexo: '', alumno_pais_origen: 'Perú', alumno_ubicacion_origen: '', alumno_requiere_cuidado_especial: 'NO', alumno_detalle_cuidado_especial: '', representante_apellido_paterno: '', representante_apellido_materno: '', representante_nombres: '', representante_dni: '', vinculo_representante: '', celular: '', email: '', direccion: '', contacto_emergencia: '', telefono_emergencia: '', centro_salud_emergencia: '', observaciones_salud: '', tipo_ingreso: '', condicion_promocion: '', anio_escolar_anterior: '', nivel_anterior: '', grado_anterior: '', institucion_procedencia: '', codigo_modular_procedencia: '', ubicacion_procedencia: '', persona_autorizada_1: { nombre: '', dni: '', parentesco: '', celular: '' }, persona_autorizada_2: { nombre: '', dni: '', parentesco: '', celular: '' } };
+const separarNombreRegistrado = (nombreCompleto) => {
+  const partes = String(nombreCompleto || '').trim().split(/\s+/).filter(Boolean);
+  if (partes.length < 3) return { nombres: partes[0] || '', apellido_paterno: partes[1] || '', apellido_materno: '' };
+  return { nombres: partes.slice(0, -2).join(' '), apellido_paterno: partes.at(-2), apellido_materno: partes.at(-1) };
+};
 
 export default function Matriculas() {
   const [data, setData] = useState(null);
@@ -117,6 +122,9 @@ export default function Matriculas() {
       const nombreCompleto = [studentForm.nombres, studentForm.apellido_paterno, studentForm.apellido_materno].filter(Boolean).join(' ').trim();
       ['codigo_alumno','dni','monto_matricula','monto_materiales','monto_pension','id_aula'].forEach((key) => { if (studentForm[key] !== '') fd.append(key, studentForm[key]); });
       fd.append('nombre_completo', nombreCompleto);
+      fd.append('apellido_paterno', studentForm.apellido_paterno.trim());
+      fd.append('apellido_materno', studentForm.apellido_materno.trim());
+      fd.append('nombres', studentForm.nombres.trim());
       if (parentMode === 'existing') fd.append('padre_dni', selectedParent.dni);
       else {
         fd.append('padre_dni', parentForm.dni); fd.append('padre_nombre', parentForm.nombre_completo); fd.append('padre_celular', parentForm.celular);
@@ -159,7 +167,7 @@ export default function Matriculas() {
     window.location.href = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(invite.mensaje)}`;
   };
   const openDetail = async (id) => {
-    try { const response = await obtenerExpedienteMatricula(id); const expediente = response.data.data; const formularioBase = Object.keys(expediente.borrador_asistido || {}).length ? expediente.borrador_asistido : expediente.datos_formulario; const traslado = formularioBase?.tipo_ingreso === 'TRASLADO'; const defaults = Object.fromEntries(documentosControl.map(([key]) => [key, { estado: ['certificado_estudios', 'libreta_anterior'].includes(key) && !traslado ? 'NO_APLICA' : 'PENDIENTE', observacion: '' }])); setDetail(expediente); setAssistedDraft({ ...emptyAssistedDraft, ...(formularioBase || {}), alumno_dni: formularioBase?.alumno_dni || expediente.datos_snapshot?.alumno?.dni || '', representante_dni: formularioBase?.representante_dni || expediente.datos_snapshot?.apoderado?.dni || '', persona_autorizada_1: { ...emptyAssistedDraft.persona_autorizada_1, ...(formularioBase?.persona_autorizada_1 || {}) }, persona_autorizada_2: { ...emptyAssistedDraft.persona_autorizada_2, ...(formularioBase?.persona_autorizada_2 || {}) } }); setAssistedEditing(false); setRepresentanteRetiraAsistido(false); setDocumentCheck({ ...defaults, ...(expediente.control_documental || {}) }); setObservation(expediente.observacion_revision || ''); }
+    try { const response = await obtenerExpedienteMatricula(id); const expediente = response.data.data; const formularioBase = Object.keys(expediente.borrador_asistido || {}).length ? expediente.borrador_asistido : expediente.datos_formulario; const traslado = formularioBase?.tipo_ingreso === 'TRASLADO'; const defaults = Object.fromEntries(documentosControl.map(([key]) => [key, { estado: ['certificado_estudios', 'libreta_anterior'].includes(key) && !traslado ? 'NO_APLICA' : 'PENDIENTE', observacion: '' }])); const nombreGuardado = expediente.datos_snapshot?.alumno || {}; const nombreInferido = separarNombreRegistrado(nombreGuardado.nombre); setDetail(expediente); setAssistedDraft({ ...emptyAssistedDraft, ...(formularioBase || {}), alumno_apellido_paterno: formularioBase?.alumno_apellido_paterno || nombreGuardado.apellido_paterno || nombreInferido.apellido_paterno, alumno_apellido_materno: formularioBase?.alumno_apellido_materno || nombreGuardado.apellido_materno || nombreInferido.apellido_materno, alumno_nombres: formularioBase?.alumno_nombres || nombreGuardado.nombres || nombreInferido.nombres, alumno_dni: formularioBase?.alumno_dni || nombreGuardado.dni || '', representante_dni: formularioBase?.representante_dni || expediente.datos_snapshot?.apoderado?.dni || '', persona_autorizada_1: { ...emptyAssistedDraft.persona_autorizada_1, ...(formularioBase?.persona_autorizada_1 || {}) }, persona_autorizada_2: { ...emptyAssistedDraft.persona_autorizada_2, ...(formularioBase?.persona_autorizada_2 || {}) } }); setAssistedEditing(false); setRepresentanteRetiraAsistido(false); setDocumentCheck({ ...defaults, ...(expediente.control_documental || {}) }); setObservation(expediente.observacion_revision || ''); }
     catch (error) { toast.error(error.response?.data?.error || 'No se pudo abrir el expediente'); }
   };
   const saveAssistedDraft = async () => {
@@ -180,7 +188,7 @@ export default function Matriculas() {
     if (!detail?.aceptado_en || !detail?.id_alumno || !nombreCompleto || !/^\d{8}$/.test(form.alumno_dni || '')) return toast.error('La matrícula debe estar aceptada y contener nombre y DNI válidos');
     if (!window.confirm(`Se actualizarán el nombre y DNI de la ficha principal del alumno con los datos aceptados en ${detail.codigo}. La evidencia histórica de la matrícula no cambiará. ¿Desea continuar?`)) return;
     setStudentSyncing(true);
-    try { const payload = new FormData(); payload.append('nombre_completo', nombreCompleto); payload.append('dni', form.alumno_dni); await actualizarAlumno(detail.id_alumno, payload); toast.success('Ficha principal del alumno actualizada'); await load(); }
+    try { const payload = new FormData(); payload.append('nombre_completo', nombreCompleto); payload.append('apellido_paterno', form.alumno_apellido_paterno || ''); payload.append('apellido_materno', form.alumno_apellido_materno || ''); payload.append('nombres', form.alumno_nombres || ''); payload.append('dni', form.alumno_dni); await actualizarAlumno(detail.id_alumno, payload); toast.success('Ficha principal del alumno actualizada'); await load(); }
     catch (error) { toast.error(error.response?.data?.error || 'No se pudo actualizar la ficha principal'); }
     finally { setStudentSyncing(false); }
   };
