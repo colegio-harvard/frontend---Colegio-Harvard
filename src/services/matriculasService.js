@@ -8,6 +8,7 @@ export const cargarMatriculas = () => apiClient.get('/matriculas/bootstrap');
 export const guardarConfiguracionMatricula = (data) => apiClient.put('/matriculas/configuracion', data);
 export const generarInvitacionMatricula = (id_alumno) => apiClient.post('/matriculas/invitar', { id_alumno });
 export const obtenerExpedienteMatricula = (id) => apiClient.get(`/matriculas/${id}`);
+export const guardarControlDocumentalMatricula = (id, control_documental) => apiClient.put(`/matriculas/${id}/control-documental`, { control_documental });
 export const revisarMatricula = (id, data) => apiClient.put(`/matriculas/${id}/revisar`, data);
 export const obtenerMatriculaPublica = (token) => publicClient.get(`/matriculas/publica/${token}`);
 export const aceptarMatriculaPublica = (token, data) => publicClient.post(`/matriculas/publica/${token}/aceptar`, data);
