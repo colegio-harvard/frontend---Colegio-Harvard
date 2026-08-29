@@ -10,6 +10,8 @@ export const vincularPadre = (data) => apiClient.post('/alumnos/vincular', data)
 export const desvincularPadre = (id_alumno) => apiClient.delete(`/alumnos/desvincular/${id_alumno}`);
 export const reemitirCarnet = (id_alumno) => apiClient.post(`/alumnos/reemitir-carnet/${id_alumno}`);
 export const eliminarAlumno = (id) => apiClient.delete(`/alumnos/${id}`);
+export const obtenerInventarioEliminacionAlumno = (id) => apiClient.get(`/alumnos/${id}/eliminacion-permanente`);
+export const eliminarAlumnoPermanentemente = (id, data) => apiClient.post(`/alumnos/${id}/eliminacion-permanente`, data);
 export const obtenerInfoRetiroAlumno = (id) => apiClient.get(`/alumnos/${id}/retiro`);
 export const retirarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/retirar`, data);
 export const reactivarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/reactivar`, data);

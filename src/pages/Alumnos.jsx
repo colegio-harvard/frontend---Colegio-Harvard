@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import CarnetCard from '../components/CarnetCard';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno } from '../services/alumnosService';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove } from 'react-icons/hi';
@@ -57,6 +57,10 @@ const Alumnos = () => {
   // Modal eliminar
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [alumnoAEliminar, setAlumnoAEliminar] = useState(null);
+  const [inventarioEliminacion, setInventarioEliminacion] = useState(null);
+  const [cargandoEliminacion, setCargandoEliminacion] = useState(false);
+  const [eliminandoPermanentemente, setEliminandoPermanentemente] = useState(false);
+  const [confirmacionEliminacion, setConfirmacionEliminacion] = useState({ codigo: '', motivo: '', contrasena: '' });
   const [retiroModalOpen, setRetiroModalOpen] = useState(false);
   const [retiroInfo, setRetiroInfo] = useState(null);
   const [retiroLoading, setRetiroLoading] = useState(false);
@@ -477,9 +481,22 @@ const Alumnos = () => {
   };
 
   // ===================== ELIMINAR ALUMNO =====================
-  const handleConfirmDelete = (alumno) => {
+  const handleConfirmDelete = async (alumno) => {
     setAlumnoAEliminar(alumno);
     setDeleteModalOpen(true);
+    setInventarioEliminacion(null);
+    setConfirmacionEliminacion({ codigo: '', motivo: '', contrasena: '' });
+    if (usuario?.rol_codigo !== 'SUPER_ADMIN') return;
+    setCargandoEliminacion(true);
+    try {
+      const { data } = await obtenerInventarioEliminacionAlumno(alumno.id);
+      setInventarioEliminacion(data.data);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo preparar la eliminación');
+      setDeleteModalOpen(false);
+    } finally {
+      setCargandoEliminacion(false);
+    }
   };
 
   const handleEliminar = async () => {
@@ -551,6 +568,27 @@ const Alumnos = () => {
     } catch (err) {
       toast.error(err.response?.data?.error || 'No se pudo preparar la reactivación'); setReactivacionOpen(false);
     } finally { setReactivacionLoading(false); }
+  };
+
+  const handleEliminarPermanentemente = async () => {
+    if (!alumnoAEliminar || !inventarioEliminacion) return;
+    setEliminandoPermanentemente(true);
+    try {
+      const { data } = await eliminarAlumnoPermanentemente(alumnoAEliminar.id, {
+        codigo_confirmacion: confirmacionEliminacion.codigo,
+        motivo: confirmacionEliminacion.motivo,
+        contrasena: confirmacionEliminacion.contrasena,
+      });
+      toast.success(data.data?.mensaje || 'Alumno eliminado permanentemente');
+      setDeleteModalOpen(false);
+      setAlumnoAEliminar(null);
+      setInventarioEliminacion(null);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo eliminar al alumno');
+    } finally {
+      setEliminandoPermanentemente(false);
+    }
   };
 
   const confirmarReactivacion = async () => {
@@ -1171,7 +1209,31 @@ const Alumnos = () => {
       </Modal>
 
       {/* ==================== MODAL CONFIRMAR ELIMINACION ==================== */}
-      <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Eliminar Alumno" size="sm">
+      <Modal isOpen={deleteModalOpen} onClose={() => !eliminandoPermanentemente && setDeleteModalOpen(false)} title={usuario?.rol_codigo === 'SUPER_ADMIN' ? 'Eliminar alumno permanentemente' : 'Eliminar alumno'} size="lg">
+        {usuario?.rol_codigo === 'SUPER_ADMIN' ? (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+              <p className="font-bold">Esta acción es irreversible.</p>
+              <p>Se eliminará únicamente a <strong>{alumnoAEliminar?.nombre_completo}</strong> ({alumnoAEliminar?.codigo_alumno}) y sus registros exclusivos. El apoderado, sus credenciales y otros alumnos se conservarán.</p>
+            </div>
+            {cargandoEliminacion ? <div className="py-8"><LoadingSpinner /></div> : inventarioEliminacion ? <>
+              <div className="rounded-lg border border-cream-200 p-4">
+                <p className="mb-2 text-sm font-semibold text-primary-800">Inventario previo</p>
+                {inventarioEliminacion.registros.length ? <ul className="space-y-1 text-sm text-primary-800/75">
+                  {inventarioEliminacion.registros.map((item) => <li key={item.nombre} className="flex justify-between gap-4"><span>{item.nombre}</span><strong>{item.cantidad}</strong></li>)}
+                </ul> : <p className="text-sm text-primary-800/60">No se encontraron registros dependientes.</p>}
+                <div className="mt-3 border-t border-cream-200 pt-3 text-xs text-emerald-800">
+                  Se conservarán: {inventarioEliminacion.conserva.apoderado ? 'apoderado y credenciales' : 'no existe apoderado vinculado'}; otros alumnos del apoderado: {inventarioEliminacion.conserva.otros_alumnos_apoderado}.
+                </div>
+              </div>
+              {inventarioEliminacion.relaciones_no_contempladas?.length > 0 && <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Operación bloqueada por relaciones no contempladas: {inventarioEliminacion.relaciones_no_contempladas.join(', ')}.</p>}
+              <div><label className={labelClass}>Motivo de la eliminación *</label><textarea className={inputClass} rows="2" maxLength="500" value={confirmacionEliminacion.motivo} onChange={(e) => setConfirmacionEliminacion({ ...confirmacionEliminacion, motivo: e.target.value })} placeholder="Ej.: registro de prueba creado por error" /></div>
+              <div><label className={labelClass}>Escriba el código exacto: {alumnoAEliminar?.codigo_alumno}</label><input className={inputClass} value={confirmacionEliminacion.codigo} onChange={(e) => setConfirmacionEliminacion({ ...confirmacionEliminacion, codigo: e.target.value })} autoComplete="off" /></div>
+              <div><label className={labelClass}>Confirme su contraseña de Super Admin</label><input type="password" className={inputClass} value={confirmacionEliminacion.contrasena} onChange={(e) => setConfirmacionEliminacion({ ...confirmacionEliminacion, contrasena: e.target.value })} autoComplete="current-password" /></div>
+              <div className="flex justify-end gap-3"><button type="button" disabled={eliminandoPermanentemente} onClick={() => setDeleteModalOpen(false)} className="px-4 py-2 text-sm bg-cream-100 text-primary-800 rounded-lg">Cancelar</button><button type="button" disabled={eliminandoPermanentemente || inventarioEliminacion.relaciones_no_contempladas?.length > 0 || confirmacionEliminacion.codigo !== alumnoAEliminar?.codigo_alumno || confirmacionEliminacion.motivo.trim().length < 10 || !confirmacionEliminacion.contrasena} onClick={handleEliminarPermanentemente} className="px-4 py-2 text-sm text-white bg-red-700 rounded-lg hover:bg-red-800 disabled:opacity-50">{eliminandoPermanentemente ? 'Eliminando...' : 'Eliminar permanentemente'}</button></div>
+            </> : null}
+          </div>
+        ) : (
         <div className="space-y-4">
           <p className="text-sm text-primary-800/80">
             ¿Está seguro que desea eliminar al alumno <strong>{alumnoAEliminar?.nombre_completo}</strong> ({alumnoAEliminar?.codigo_alumno})?
@@ -1196,6 +1258,7 @@ const Alumnos = () => {
             </button>
           </div>
         </div>
+        )}
       </Modal>
 
       {/* ==================== MODAL CARNET ==================== */}
