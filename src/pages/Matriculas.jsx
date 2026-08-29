@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { HiCheckCircle, HiCog, HiEye, HiMail, HiPlus, HiPrinter, HiRefresh, HiSearch, HiUserAdd, HiX } from 'react-icons/hi';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { cargarMatriculas, generarInvitacionMatricula, guardarBorradorAsistidoMatricula, guardarConfiguracionMatricula, guardarControlDocumentalMatricula, obtenerExpedienteMatricula, revisarMatricula } from '../services/matriculasService';
+import { cargarMatriculas, generarInvitacionMatricula, guardarBorradorAsistidoMatricula, guardarConfiguracionMatricula, guardarControlDocumentalMatricula, obtenerExpedienteMatricula, prepararMatricula, revisarMatricula } from '../services/matriculasService';
 import { actualizarAlumno, crearAlumno, obtenerSiguienteCodigoAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
@@ -145,6 +145,15 @@ export default function Matriculas() {
       await load();
     } catch (error) { toast.error(error.response?.data?.error || 'No se pudo preparar la invitación'); }
   };
+  const prepareRecord = async (student) => {
+    try {
+      const response = await prepararMatricula(student.id);
+      await load();
+      await openDetail(response.data.data.id);
+      setAssistedEditing(true);
+      toast.success('Expediente preparado. Complete los datos oficiales antes de invitar.');
+    } catch (error) { toast.error(error.response?.data?.error || 'No se pudo preparar el expediente'); }
+  };
   const openWhatsApp = () => {
     const phone = `51${String(invite.telefono || '').replace(/\D/g, '').replace(/^51/, '')}`;
     window.location.href = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(invite.mensaje)}`;
@@ -155,7 +164,7 @@ export default function Matriculas() {
   };
   const saveAssistedDraft = async () => {
     setAssistedSaving(true);
-    try { const response = await guardarBorradorAsistidoMatricula(detail.id, assistedDraft); setDetail({ ...detail, estado: response.data.data.estado || detail.estado, observacion_revision: response.data.data.estado === 'ABIERTA' ? null : detail.observacion_revision, borrador_asistido: response.data.data.borrador_asistido, borrador_preparado_en: response.data.data.borrador_preparado_en }); setAssistedEditing(false); toast.success('Borrador preparado para la verificación del apoderado'); }
+    try { const response = await guardarBorradorAsistidoMatricula(detail.id, assistedDraft); setDetail({ ...detail, estado: response.data.data.estado || detail.estado, observacion_revision: response.data.data.estado === 'ABIERTA' ? null : detail.observacion_revision, borrador_asistido: response.data.data.borrador_asistido, borrador_preparado_en: response.data.data.borrador_preparado_en }); setAssistedEditing(false); await load(); toast.success('Datos oficiales guardados. Ya puede generar la invitación.'); }
     catch (error) { toast.error(error.response?.data?.error || 'No se pudo guardar el borrador asistido'); }
     finally { setAssistedSaving(false); }
   };
@@ -216,7 +225,7 @@ export default function Matriculas() {
       </div>
       <div className="relative mb-5"><HiSearch className="absolute left-3 top-3.5 text-gold-600"/><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por código, alumno, DNI o apoderado" className={`${field} pl-10`} /></div>
       <div className="overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><thead className="bg-primary-800 text-white"><tr><th className="p-3">Alumno</th><th className="p-3">Apoderado</th><th className="p-3">Aula</th><th className="p-3">Deuda actual</th><th className="p-3">Estado</th><th className="p-3 text-right">Acción</th></tr></thead><tbody>
-        {students.map((x) => { const cerrada = ['ACEPTADA', 'COMPLETADA'].includes(x.estado_matricula); const action = expedienteAction(x.estado_matricula); return <tr key={x.id} className="border-b border-cream-200 hover:bg-cream-50"><td className="p-3"><b>{x.nombre_completo}</b><div className="text-xs text-primary-500">{x.codigo_alumno} · DNI {x.dni || 'no registrado'}</div></td><td className="p-3">{x.apoderado || <span className="text-rose-600">Sin apoderado</span>}<div className="text-xs text-primary-500">{x.celular || ''}</div></td><td className="p-3">{x.grado} {x.seccion}<div className="text-xs text-primary-500">{x.nivel}</div></td><td className="p-3 font-semibold">{money(x.deuda_actual)}</td><td className="p-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${badge[x.estado_matricula] || 'bg-gray-100 text-gray-600'}`}>{labels[x.estado_matricula] || 'Sin iniciar'}</span></td><td className="p-3 text-right">{x.id_matricula && <button onClick={() => openDetail(x.id_matricula)} className={`${btn} mr-2 border py-2 ${action.classes}`}><HiEye />{action.label}</button>}{!cerrada && <button onClick={() => createInvite(x)} disabled={!x.id_padre || !config.id} className={`${btn} bg-primary-700 py-2 text-white`}><HiMail />{x.id_matricula ? 'Reenviar' : 'Invitar'}</button>}</td></tr>; })}
+        {students.map((x) => { const cerrada = ['ACEPTADA', 'COMPLETADA'].includes(x.estado_matricula); const action = expedienteAction(x.estado_matricula); return <tr key={x.id} className="border-b border-cream-200 hover:bg-cream-50"><td className="p-3"><b>{x.nombre_completo}</b><div className="text-xs text-primary-500">{x.codigo_alumno} · DNI {x.dni || 'no registrado'}</div></td><td className="p-3">{x.apoderado || <span className="text-rose-600">Sin apoderado</span>}<div className="text-xs text-primary-500">{x.celular || ''}</div></td><td className="p-3">{x.grado} {x.seccion}<div className="text-xs text-primary-500">{x.nivel}</div></td><td className="p-3 font-semibold">{money(x.deuda_actual)}</td><td className="p-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${badge[x.estado_matricula] || 'bg-gray-100 text-gray-600'}`}>{labels[x.estado_matricula] || 'Sin iniciar'}</span></td><td className="p-3 text-right"><button onClick={() => x.id_matricula ? openDetail(x.id_matricula) : prepareRecord(x)} disabled={!x.id_padre} className={`${btn} mr-2 border py-2 ${action.classes}`}><HiEye />{action.label}</button>{!cerrada && x.borrador_preparado_en && <button onClick={() => createInvite(x)} disabled={!config.id} className={`${btn} bg-primary-700 py-2 text-white`}><HiMail />{['ENVIADA','ABIERTA'].includes(x.estado_matricula) ? 'Reenviar' : 'Invitar'}</button>}</td></tr>; })}
       </tbody></table></div>
       {!students.length && <p className="py-10 text-center text-primary-400">No hay coincidencias.</p>}
     </Card>

@@ -6,6 +6,7 @@ const publicClient = axios.create({ baseURL: API_URL, headers: { 'Content-Type':
 
 export const cargarMatriculas = () => apiClient.get('/matriculas/bootstrap');
 export const guardarConfiguracionMatricula = (data) => apiClient.put('/matriculas/configuracion', data);
+export const prepararMatricula = (id_alumno) => apiClient.post('/matriculas/preparar', { id_alumno });
 export const generarInvitacionMatricula = (id_alumno) => apiClient.post('/matriculas/invitar', { id_alumno });
 export const obtenerExpedienteMatricula = (id) => apiClient.get(`/matriculas/${id}`);
 export const guardarBorradorAsistidoMatricula = (id, borrador) => apiClient.put(`/matriculas/${id}/borrador-asistido`, { borrador });
