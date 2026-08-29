@@ -155,7 +155,7 @@ export default function Matriculas() {
   };
   const saveAssistedDraft = async () => {
     setAssistedSaving(true);
-    try { const response = await guardarBorradorAsistidoMatricula(detail.id, assistedDraft); setDetail({ ...detail, borrador_asistido: response.data.data.borrador_asistido, borrador_preparado_en: response.data.data.borrador_preparado_en }); setAssistedEditing(false); toast.success('Borrador preparado para la verificación del apoderado'); }
+    try { const response = await guardarBorradorAsistidoMatricula(detail.id, assistedDraft); setDetail({ ...detail, estado: response.data.data.estado || detail.estado, observacion_revision: response.data.data.estado === 'ABIERTA' ? null : detail.observacion_revision, borrador_asistido: response.data.data.borrador_asistido, borrador_preparado_en: response.data.data.borrador_preparado_en }); setAssistedEditing(false); toast.success('Borrador preparado para la verificación del apoderado'); }
     catch (error) { toast.error(error.response?.data?.error || 'No se pudo guardar el borrador asistido'); }
     finally { setAssistedSaving(false); }
   };

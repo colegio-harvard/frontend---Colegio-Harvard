@@ -13,4 +13,5 @@ export const guardarControlDocumentalMatricula = (id, control_documental) => api
 export const revisarMatricula = (id, data) => apiClient.put(`/matriculas/${id}/revisar`, data);
 export const obtenerMatriculaPublica = (token) => publicClient.get(`/matriculas/publica/${token}`);
 export const aceptarMatriculaPublica = (token, data) => publicClient.post(`/matriculas/publica/${token}/aceptar`, data);
+export const solicitarCorreccionMatriculaPublica = (token, observacion) => publicClient.post(`/matriculas/publica/${token}/solicitar-correccion`, { observacion });
 
