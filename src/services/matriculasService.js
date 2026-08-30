@@ -10,6 +10,7 @@ export const prepararMatricula = (id_alumno) => apiClient.post('/matriculas/prep
 export const generarInvitacionMatricula = (id_alumno) => apiClient.post('/matriculas/invitar', { id_alumno });
 export const obtenerExpedienteMatricula = (id) => apiClient.get(`/matriculas/${id}`);
 export const guardarBorradorAsistidoMatricula = (id, borrador) => apiClient.put(`/matriculas/${id}/borrador-asistido`, { borrador });
+export const guardarComplementoAdministrativoMatricula = (id, complemento, motivo) => apiClient.put(`/matriculas/${id}/complemento-administrativo`, { complemento, motivo });
 export const guardarControlDocumentalMatricula = (id, control_documental) => apiClient.put(`/matriculas/${id}/control-documental`, { control_documental });
 export const revisarMatricula = (id, data) => apiClient.put(`/matriculas/${id}/revisar`, data);
 export const obtenerMatriculaPublica = (token) => publicClient.get(`/matriculas/publica/${token}`);
