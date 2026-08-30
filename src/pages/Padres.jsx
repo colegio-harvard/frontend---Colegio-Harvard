@@ -10,13 +10,19 @@ import { formatFechaHora } from '../utils/formatters';
 import { HiPlus, HiPencil, HiTrash, HiEye, HiEyeOff, HiUser, HiPhone, HiIdentification, HiAcademicCap, HiSearch } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
+const separarNombre = (nombreCompleto) => {
+  const partes = String(nombreCompleto || '').trim().split(/\s+/).filter(Boolean);
+  if (partes.length < 3) return { nombres: partes[0] || '', apellido_paterno: partes[1] || '', apellido_materno: '' };
+  return { nombres: partes.slice(0, -2).join(' '), apellido_paterno: partes.at(-2), apellido_materno: partes.at(-1) };
+};
+
 const Padres = () => {
   const [padres, setPadres] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
   const [editando, setEditando] = useState(null);
-  const [form, setForm] = useState({ dni: '', nombre_completo: '', celular: '', username: '', contrasena: '' });
+  const [form, setForm] = useState({ dni: '', apellido_paterno: '', apellido_materno: '', nombres: '', celular: '', username: '', contrasena: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [perfilOpen, setPerfilOpen] = useState(false);
   const [perfilData, setPerfilData] = useState(null);
@@ -41,7 +47,7 @@ const Padres = () => {
     e.preventDefault();
     try {
       if (editando) {
-        await actualizarPadre(editando.id, { dni: form.dni, nombre_completo: form.nombre_completo, celular: form.celular });
+        await actualizarPadre(editando.id, { dni: form.dni, apellido_paterno: form.apellido_paterno, apellido_materno: form.apellido_materno, nombres: form.nombres, celular: form.celular });
         toast.success('Padre actualizado');
       } else {
         await crearPadre(form);
@@ -66,13 +72,14 @@ const Padres = () => {
 
   const openCreate = () => {
     setEditando(null);
-    setForm({ dni: '', nombre_completo: '', celular: '', username: '', contrasena: '' });
+    setForm({ dni: '', apellido_paterno: '', apellido_materno: '', nombres: '', celular: '', username: '', contrasena: '' });
     setModalOpen(true);
   };
 
   const openEdit = (p) => {
     setEditando(p);
-    setForm({ dni: p.dni, nombre_completo: p.nombre_completo, celular: p.celular || '', username: '', contrasena: '' });
+    const partes = separarNombre(p.nombre_completo);
+    setForm({ dni: p.dni, apellido_paterno: p.apellido_paterno || partes.apellido_paterno, apellido_materno: p.apellido_materno || partes.apellido_materno, nombres: p.nombres || partes.nombres, celular: p.celular || '', username: '', contrasena: '' });
     setModalOpen(true);
   };
 
@@ -148,11 +155,9 @@ const Padres = () => {
             <input type="text" value={form.dni} onChange={(e) => setForm({...form, dni: e.target.value})} required
               className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none" maxLength={8} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-primary-800/80 mb-1">Nombre Completo</label>
-            <input type="text" value={form.nombre_completo} onChange={(e) => setForm({...form, nombre_completo: e.target.value})} required
-              className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none" />
-          </div>
+          <div><label className="block text-sm font-medium text-primary-800/80 mb-1">Apellido paterno</label><input type="text" value={form.apellido_paterno} onChange={(e) => setForm({...form, apellido_paterno: e.target.value})} required className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none" /></div>
+          <div><label className="block text-sm font-medium text-primary-800/80 mb-1">Apellido materno</label><input type="text" value={form.apellido_materno} onChange={(e) => setForm({...form, apellido_materno: e.target.value})} className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none" /></div>
+          <div><label className="block text-sm font-medium text-primary-800/80 mb-1">Nombres</label><input type="text" value={form.nombres} onChange={(e) => setForm({...form, nombres: e.target.value})} required className="w-full px-3 py-2 border border-cream-300 rounded-lg outline-none" /></div>
           <div>
             <label className="block text-sm font-medium text-primary-800/80 mb-1">Celular</label>
             <input type="text" value={form.celular} onChange={(e) => setForm({...form, celular: e.target.value})}
