@@ -128,7 +128,7 @@ export default function Matriculas() {
       if (parentMode === 'existing') fd.append('padre_dni', selectedParent.dni);
       else {
         const nombrePadre = [parentForm.nombres, parentForm.apellido_paterno, parentForm.apellido_materno].filter(Boolean).join(' ').trim();
-        fd.append('padre_dni', parentForm.dni); fd.append('padre_nombre', nombrePadre); fd.append('padre_apellido_paterno', parentForm.apellido_paterno); fd.append('padre_apellido_materno', parentForm.apellido_materno); fd.append('padre_nombres', parentForm.nombres); fd.append('padre_celular', parentForm.celular);
+        fd.append('padre_dni', parentForm.dni); fd.append('padre_modo', 'NUEVO'); fd.append('padre_nombre', nombrePadre); fd.append('padre_apellido_paterno', parentForm.apellido_paterno); fd.append('padre_apellido_materno', parentForm.apellido_materno); fd.append('padre_nombres', parentForm.nombres); fd.append('padre_celular', parentForm.celular);
         fd.append('padre_username', parentForm.username); fd.append('padre_contrasena', parentForm.contrasena);
       }
       await crearAlumno(fd); toast.success('Alumno creado y listo para matrícula digital'); setNewStudentOpen(false); await load();

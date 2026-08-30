@@ -271,8 +271,8 @@ const Padres = () => {
       </Modal>
 
       <ConfirmDialog isOpen={deleteConfirm.open} onClose={() => setDeleteConfirm({ open: false, id: null })}
-        onConfirm={() => handleDelete(deleteConfirm.id)} title="Eliminar Padre"
-        message="¿Está seguro de eliminar este padre? Se eliminará también su cuenta de usuario." confirmText="Eliminar" />
+        onConfirm={() => handleDelete(deleteConfirm.id)} title="Eliminar apoderado"
+        message="Solo se podrá eliminar si ya no tiene alumnos vinculados. Se invalidarán sus credenciales y el DNI y nombre de usuario quedarán disponibles para una nueva prueba." confirmText="Eliminar" />
     </div>
   );
 };
