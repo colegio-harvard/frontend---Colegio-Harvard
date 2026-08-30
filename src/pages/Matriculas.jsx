@@ -18,7 +18,7 @@ const statusFilters = [
   { key: 'COMPLETADA', label: 'Completada', matches: (status) => status === 'COMPLETADA' },
   { key: 'OBSERVADA', label: 'Observada', matches: (status) => status === 'OBSERVADA' },
 ];
-const badge = { ENVIADA: 'bg-blue-100 text-blue-700', ABIERTA: 'bg-amber-100 text-amber-700', ACEPTADA: 'bg-emerald-100 text-emerald-700', OBSERVADA: 'bg-rose-100 text-rose-700', COMPLETADA: 'bg-primary-100 text-primary-800' };
+const badge = { ENVIADA: 'bg-amber-100 text-amber-800', ABIERTA: 'bg-amber-100 text-amber-800', ACEPTADA: 'bg-sky-100 text-sky-800', OBSERVADA: 'bg-rose-100 text-rose-700', COMPLETADA: 'bg-emerald-100 text-emerald-800' };
 const expedienteAction = (status) => {
   if (!status || ['SIN_INICIAR', 'BORRADOR', 'ENVIADA'].includes(status)) return { label: 'Cargar datos', classes: 'border-cream-300 bg-white text-primary-700' };
   if (status === 'ABIERTA') return { label: 'Continuar / ver datos', classes: 'border-amber-300 bg-amber-50 text-amber-800' };
