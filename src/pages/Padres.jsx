@@ -102,7 +102,13 @@ const Padres = () => {
     const term = busqueda.toLowerCase().trim();
     return padres.filter(p =>
       p.nombre_completo?.toLowerCase().includes(term) ||
-      p.dni?.toLowerCase().includes(term)
+      p.dni?.toLowerCase().includes(term) ||
+      p.celular?.toLowerCase().includes(term) ||
+      p.usuario?.username?.toLowerCase().includes(term) ||
+      p.hijos?.some((hijo) =>
+        hijo.codigo_alumno?.toLowerCase().includes(term) ||
+        hijo.nombre_completo?.toLowerCase().includes(term)
+      )
     );
   }, [padres, busqueda]);
 
@@ -112,7 +118,11 @@ const Padres = () => {
     { header: 'Nombre', accessor: 'nombre_completo' },
     { header: 'Celular', accessor: 'celular' },
     { header: 'Usuario', render: (r) => r.usuario?.username || '-' },
-    { header: 'Hijos', render: (r) => r.hijos?.length || 0 },
+    { header: 'Hijos', render: (r) => r.hijos?.length ? (
+      <div className="space-y-1">
+        {r.hijos.map((hijo) => <div key={hijo.id} className="text-xs"><span className="font-semibold text-primary-700">{hijo.codigo_alumno}</span><span className="ml-1 text-primary-500">{hijo.nombre_completo}</span></div>)}
+      </div>
+    ) : <span className="text-cream-500">Sin alumnos</span> },
     { header: 'Acciones', render: (row) => (
       <div className="flex gap-1">
         <button onClick={() => openPerfil(row)} className="p-1.5 text-primary-600 hover:bg-primary-50 rounded" title="Ver perfil"><HiEye className="w-4 h-4" /></button>
@@ -138,7 +148,7 @@ const Padres = () => {
             type="text"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar por nombre o DNI..."
+            placeholder="Buscar por padre, DNI, celular, alumno o código..."
             className="w-full pl-10 pr-4 py-2 border border-cream-300 rounded-lg outline-none text-sm focus:border-gold-400 focus:ring-1 focus:ring-gold-200 transition-colors"
           />
         </div>
