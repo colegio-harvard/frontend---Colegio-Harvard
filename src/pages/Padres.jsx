@@ -286,7 +286,7 @@ const Padres = () => {
 
       <ConfirmDialog isOpen={deleteConfirm.open} onClose={() => setDeleteConfirm({ open: false, id: null })}
         onConfirm={() => handleDelete(deleteConfirm.id)} title="Eliminar apoderado"
-        message="Solo se podrá eliminar si ya no tiene alumnos vinculados. Se invalidarán sus credenciales y el DNI y nombre de usuario quedarán disponibles para una nueva prueba." confirmText="Eliminar" />
+        message="Solo se podrá eliminar si no tiene alumnos vigentes vinculados. Los vínculos residuales de alumnos ya eliminados se limpiarán automáticamente; luego se invalidarán sus credenciales y el DNI y nombre de usuario quedarán disponibles." confirmText="Eliminar" />
     </div>
   );
 };
