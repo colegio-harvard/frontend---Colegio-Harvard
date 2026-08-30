@@ -100,7 +100,11 @@ const Padres = () => {
   const padresFiltrados = useMemo(() => {
     if (!busqueda.trim()) return padres;
     const term = busqueda.toLowerCase().trim();
-    return padres.filter(p =>
+    const coincidenciasExactas = padres.filter((p) =>
+      p.hijos?.some((hijo) => hijo.codigo_alumno?.toLowerCase() === term)
+    );
+    const candidatos = coincidenciasExactas.length ? coincidenciasExactas : padres;
+    return candidatos.filter(p =>
       p.nombre_completo?.toLowerCase().includes(term) ||
       p.dni?.toLowerCase().includes(term) ||
       p.celular?.toLowerCase().includes(term) ||
