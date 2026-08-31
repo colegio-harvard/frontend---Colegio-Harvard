@@ -14,17 +14,18 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
   const claseNombre = longitudNombre > 42 ? 'text-[12px]' : longitudNombre > 30 ? 'text-[14px]' : 'text-[16px]';
 
   return (
-    <div ref={carnetRef} className="flex shrink-0 flex-col overflow-hidden rounded-[14px] border border-cream-200 bg-white shadow-gold-lg" style={{ width: CARNET_WIDTH, height: CARNET_HEIGHT }}>
-      <header className="relative flex h-[72px] shrink-0 items-center gap-2.5 px-3 text-white" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
+    <div ref={carnetRef} className="relative flex shrink-0 flex-col overflow-hidden rounded-[14px] border border-cream-200 bg-white shadow-gold-lg" style={{ width: CARNET_WIDTH, height: CARNET_HEIGHT }}>
+      <div className="pointer-events-none absolute inset-[5px] z-30 rounded-[11px] border-2 border-gold-400" aria-hidden="true" />
+      <header className="relative flex h-[76px] shrink-0 items-center gap-2.5 px-3 pb-1 text-white" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
         <img src={logoHarvard} alt="Insignia del Colegio Harvard" className="h-[50px] w-[50px] shrink-0 rounded-full border-2 border-gold-400 bg-white object-contain" />
-        <div className="min-w-0 text-left font-display font-bold uppercase leading-none">
+        <div className="relative z-10 min-w-0 text-left font-display font-bold uppercase leading-none">
           <p className="text-[16px] tracking-[0.04em] text-white">Colegio</p>
           <p className="text-[27px] tracking-[0.025em] text-white">Harvard</p>
         </div>
-        <div className="absolute inset-x-3 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
+        <div className="absolute bottom-[-1px] left-[29px] right-[29px] h-[10px] rounded-t-[18px] border-x-2 border-t-2 border-gold-400 bg-white" aria-hidden="true" />
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col items-center px-3 pt-2 text-center">
+      <main className="flex min-h-0 flex-1 flex-col items-center px-3 pt-1 text-center">
         <div className="h-[84px] w-[118px] shrink-0 overflow-hidden rounded-[12px] border-2 border-gold-400 bg-cream-100 shadow-sm">
           {alumno.foto_url ? (
             <img key={`${alumno.id}-${alumno.foto_carnet_url || alumno.foto_url}`} src={fileUrl(alumno.foto_carnet_url || alumno.foto_url)} alt={alumno.nombre_completo} onError={(event) => { const original = fileUrl(alumno.foto_url); if (original && event.currentTarget.src !== original) event.currentTarget.src = original; }} className="h-full w-full object-cover" />
