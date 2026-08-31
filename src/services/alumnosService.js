@@ -17,6 +17,7 @@ export const obtenerInfoRetiroAlumno = (id) => apiClient.get(`/alumnos/${id}/ret
 export const retirarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/retirar`, data);
 export const reactivarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/reactivar`, data);
 export const obtenerAlertaOperativaAlumno = (id) => apiClient.get(`/alumnos/${id}/alerta-operativa`);
+export const listarAlertasOperativas = (params) => apiClient.get('/alumnos/alertas-operativas', { params });
 export const guardarAlertaOperativaAlumno = (id, data) => apiClient.put(`/alumnos/${id}/alerta-operativa`, data);
 export const resolverAlertaOperativaAlumno = (id) => apiClient.delete(`/alumnos/${id}/alerta-operativa`);
 export const actualizarSiagieAlumno = (id, inscrito) => apiClient.patch(`/alumnos/${id}/siagie`, { inscrito });

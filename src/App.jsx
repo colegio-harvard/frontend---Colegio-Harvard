@@ -13,6 +13,7 @@ const Usuarios = lazy(() => import('./pages/Usuarios'));
 const ConfigEscolar = lazy(() => import('./pages/ConfigEscolar'));
 const Padres = lazy(() => import('./pages/Padres'));
 const Alumnos = lazy(() => import('./pages/Alumnos'));
+const AlertasInternas = lazy(() => import('./pages/AlertasInternas'));
 const Asistencia = lazy(() => import('./pages/Asistencia'));
 const Agenda = lazy(() => import('./pages/Agenda'));
 const AgendaAula = lazy(() => import('./pages/AgendaAula'));
@@ -86,6 +87,10 @@ function App() {
 
             <Route path="/alumnos" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Alumnos /></ProtectedRoute>
+            } />
+
+            <Route path="/alertas-internas" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><AlertasInternas /></ProtectedRoute>
             } />
 
             <Route path="/matriculas" element={
