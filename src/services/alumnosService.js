@@ -18,6 +18,7 @@ export const reactivarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/reac
 export const obtenerAlertaOperativaAlumno = (id) => apiClient.get(`/alumnos/${id}/alerta-operativa`);
 export const guardarAlertaOperativaAlumno = (id, data) => apiClient.put(`/alumnos/${id}/alerta-operativa`, data);
 export const resolverAlertaOperativaAlumno = (id) => apiClient.delete(`/alumnos/${id}/alerta-operativa`);
+export const actualizarSiagieAlumno = (id, inscrito) => apiClient.patch(`/alumnos/${id}/siagie`, { inscrito });
 
 export const obtenerSiguienteCodigoAlumno = () => apiClient.get('/alumnos/siguiente-codigo');
 export const exportarAulasExcel = () => apiClient.get('/alumnos/exportar-aulas-excel', { responseType: 'blob' });

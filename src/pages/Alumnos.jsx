@@ -6,7 +6,7 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import CarnetCard from '../components/CarnetCard';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno } from '../services/alumnosService';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno, actualizarSiagieAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove, HiExclamation } from 'react-icons/hi';
@@ -52,6 +52,8 @@ const Alumnos = () => {
   const [filtroGrado, setFiltroGrado] = useState('');
   const [filtroSeccion, setFiltroSeccion] = useState('');
   const [filtroCodigo, setFiltroCodigo] = useState('');
+  const [filtroSiagie, setFiltroSiagie] = useState('');
+  const [siagieGuardando, setSiagieGuardando] = useState(null);
 
   // Modal carnet
   const [carnetModalOpen, setCarnetModalOpen] = useState(false);
@@ -154,6 +156,8 @@ const Alumnos = () => {
       if (filtroNivel && a.aula?.grado?.nivel !== filtroNivel) return false;
       if (filtroGrado && a.aula?.grado?.nombre !== filtroGrado) return false;
       if (filtroSeccion && a.aula?.seccion !== filtroSeccion) return false;
+      if (filtroSiagie === 'INSCRITO' && !a.siagie_inscrito) return false;
+      if (filtroSiagie === 'PENDIENTE' && a.siagie_inscrito) return false;
       if (filtroCodigo) {
         const coincideCodigo = includesSearchText(a.codigo_alumno, filtroCodigo);
         const coincideNombre = includesSearchText(a.nombre_completo, filtroCodigo);
@@ -162,7 +166,20 @@ const Alumnos = () => {
       }
       return true;
     });
-  }, [alumnos, filtroNivel, filtroGrado, filtroSeccion, filtroCodigo]);
+  }, [alumnos, filtroNivel, filtroGrado, filtroSeccion, filtroCodigo, filtroSiagie]);
+
+  const handleSiagieChange = async (alumno) => {
+    const siguiente = !alumno.siagie_inscrito;
+    if (!siguiente && !window.confirm(`¿Marcar a ${alumno.nombre_completo} nuevamente como pendiente en SIAGIE?`)) return;
+    setSiagieGuardando(alumno.id);
+    try {
+      const { data } = await actualizarSiagieAlumno(alumno.id, siguiente);
+      setAlumnos(actuales => actuales.map(a => a.id === alumno.id ? { ...a, siagie_inscrito: data.data.siagie_inscrito, siagie_actualizado_en: data.data.siagie_actualizado_en } : a));
+      toast.success(data.message);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo actualizar SIAGIE');
+    } finally { setSiagieGuardando(null); }
+  };
 
   // ===================== CARNET =====================
   const handleVerCarnet = async (id_alumno) => {
@@ -665,6 +682,12 @@ const Alumnos = () => {
     { header: 'Nombre', accessor: 'nombre_completo' },
     { header: 'Aula', render: (r) => r.aula ? `${r.aula.grado?.nombre || ''} ${r.aula.seccion}` : '-' },
     { header: 'Estado', render: (r) => <Badge variant={r.estado === 'ACTIVO' ? 'success' : r.estado === 'RETIRADO' ? 'warning' : 'danger'}>{r.estado}</Badge> },
+    { header: 'SIAGIE', render: (r) => (
+      <label className="inline-flex items-center gap-2 cursor-pointer" title={r.siagie_actualizado_en ? `Actualizado: ${new Date(r.siagie_actualizado_en).toLocaleString('es-PE')}` : 'Pendiente de inscripción'}>
+        <input type="checkbox" checked={Boolean(r.siagie_inscrito)} disabled={siagieGuardando === r.id} onChange={() => handleSiagieChange(r)} className="w-5 h-5 accent-emerald-600 cursor-pointer disabled:opacity-50" aria-label={`${r.nombre_completo}: ${r.siagie_inscrito ? 'inscrito' : 'pendiente'} en SIAGIE`} />
+        <span className={`text-xs font-semibold ${r.siagie_inscrito ? 'text-emerald-700' : 'text-amber-700'}`}>{r.siagie_inscrito ? 'Inscrito' : 'Pendiente'}</span>
+      </label>
+    )},
     { header: 'Padre', render: (r) => r.padre_alumno?.[0]?.padre?.nombre_completo || 'Sin vincular' },
     { header: 'Acciones', render: (row) => (
       <div className="flex gap-1">
@@ -720,7 +743,7 @@ const Alumnos = () => {
       <Card>
         {/* Filtros */}
         <div className="p-4 border-b border-cream-200 bg-cream-50/50">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div>
               <label className="block text-xs font-medium text-primary-800/60 mb-1">Nivel Escolar</label>
               <select
@@ -767,8 +790,16 @@ const Alumnos = () => {
                 />
               </div>
             </div>
+            <div>
+              <label className="block text-xs font-medium text-primary-800/60 mb-1">SIAGIE</label>
+              <select value={filtroSiagie} onChange={(e) => setFiltroSiagie(e.target.value)} className="w-full px-3 py-2 text-sm border border-cream-300 rounded-lg outline-none bg-white">
+                <option value="">Todos</option>
+                <option value="PENDIENTE">Pendientes</option>
+                <option value="INSCRITO">Inscritos</option>
+              </select>
+            </div>
           </div>
-          {(filtroNivel || filtroGrado || filtroSeccion || filtroCodigo) && (
+          {(filtroNivel || filtroGrado || filtroSeccion || filtroCodigo || filtroSiagie) && (
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-cream-200">
               <span className="text-xs text-primary-800/50">{alumnosFiltrados.length} de {alumnos.length} alumnos</span>
               <div className="flex items-center gap-3">
@@ -792,7 +823,7 @@ const Alumnos = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => { setFiltroNivel(''); setFiltroGrado(''); setFiltroSeccion(''); setFiltroCodigo(''); }}
+                  onClick={() => { setFiltroNivel(''); setFiltroGrado(''); setFiltroSeccion(''); setFiltroCodigo(''); setFiltroSiagie(''); }}
                   className="text-xs text-primary-600 hover:text-primary-800 font-medium"
                 >
                   Limpiar filtros
