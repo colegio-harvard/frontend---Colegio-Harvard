@@ -5,7 +5,7 @@ import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import CarnetCard from '../components/CarnetCard';
+import CarnetCard, { CARNET_EXPORT_HEIGHT, CARNET_EXPORT_WIDTH, CARNET_HEIGHT, CARNET_WIDTH } from '../components/CarnetCard';
 import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno, actualizarSiagieAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
@@ -203,26 +203,19 @@ const Alumnos = () => {
       const fontCSS = await getEmbeddedFontCSS();
       const el = carnetRef.current;
 
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:inline-block;padding:4px;';
-      el.parentNode.insertBefore(wrapper, el);
-      wrapper.appendChild(el);
-
-      let dataUrl;
-      try {
-        await waitForCaptureImages(wrapper);
-        dataUrl = await toJpeg(wrapper, {
+      await waitForCaptureImages(el);
+      const dataUrl = await toJpeg(el, {
           quality: 0.95,
-          pixelRatio: 3,
+          width: CARNET_WIDTH,
+          height: CARNET_HEIGHT,
+          canvasWidth: CARNET_EXPORT_WIDTH,
+          canvasHeight: CARNET_EXPORT_HEIGHT,
+          pixelRatio: 1,
           cacheBust: true,
           includeQueryParams: true,
           backgroundColor: '#ffffff',
           fontEmbedCSS: fontCSS,
-        });
-      } finally {
-        wrapper.parentNode.insertBefore(el, wrapper);
-        wrapper.remove();
-      }
+      });
 
       const link = document.createElement('a');
       link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;
@@ -262,6 +255,7 @@ const Alumnos = () => {
           id: a.id,
           nombre_completo: a.nombre_completo,
           codigo_alumno: a.codigo_alumno,
+          dni: a.dni,
           foto_url: a.foto_url,
           aula: `${a.aula?.grado?.nombre || ''} ${a.aula?.seccion || ''}`.trim(),
           nivel: a.aula?.grado?.nivel || '',
@@ -296,20 +290,18 @@ const Alumnos = () => {
           continue;
         }
 
-        // Aplicar wrapper con padding (mismo que descarga individual)
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'display:inline-block;padding:4px;';
-        carnetEl.parentNode.insertBefore(wrapper, carnetEl);
-        wrapper.appendChild(carnetEl);
-
         try {
           // Esperar a que las imágenes se carguen
-          await waitForCaptureImages(wrapper);
+          await waitForCaptureImages(carnetEl);
 
           // Generar JPEG con exactamente los mismos parámetros que la descarga individual
-          const dataUrl = await toJpeg(wrapper, {
+          const dataUrl = await toJpeg(carnetEl, {
             quality: 0.95,
-            pixelRatio: 3,
+            width: CARNET_WIDTH,
+            height: CARNET_HEIGHT,
+            canvasWidth: CARNET_EXPORT_WIDTH,
+            canvasHeight: CARNET_EXPORT_HEIGHT,
+            pixelRatio: 1,
             cacheBust: true,
             includeQueryParams: true,
             backgroundColor: '#ffffff',

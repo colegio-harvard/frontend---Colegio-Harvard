@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import CarnetCard from '../components/CarnetCard';
+import CarnetCard, { CARNET_EXPORT_HEIGHT, CARNET_EXPORT_WIDTH, CARNET_HEIGHT, CARNET_WIDTH } from '../components/CarnetCard';
 import apiClient from '../services/apiClient';
 import { HiArrowLeft, HiDownload } from 'react-icons/hi';
 import toast from 'react-hot-toast';
@@ -85,29 +85,19 @@ const CarnetView = () => {
       const fontCSS = await getEmbeddedFontCSS();
       const el = carnetRef.current;
 
-      // Envolver en contenedor con padding para evitar recorte de bordes
-      // (SVG foreignObject de Chrome recorta contenido en el borde exacto)
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:inline-block;padding:4px;';
-      el.parentNode.insertBefore(wrapper, el);
-      wrapper.appendChild(el);
-
-      let dataUrl;
-      try {
-        await waitForCaptureImages(wrapper);
-        dataUrl = await toJpeg(wrapper, {
+      await waitForCaptureImages(el);
+      const dataUrl = await toJpeg(el, {
           quality: 0.95,
-          pixelRatio: 3,
+          width: CARNET_WIDTH,
+          height: CARNET_HEIGHT,
+          canvasWidth: CARNET_EXPORT_WIDTH,
+          canvasHeight: CARNET_EXPORT_HEIGHT,
+          pixelRatio: 1,
           cacheBust: true,
           includeQueryParams: true,
           backgroundColor: '#ffffff',
           fontEmbedCSS: fontCSS,
-        });
-      } finally {
-        // Restaurar DOM original
-        wrapper.parentNode.insertBefore(el, wrapper);
-        wrapper.remove();
-      }
+      });
 
       const link = document.createElement('a');
       link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;

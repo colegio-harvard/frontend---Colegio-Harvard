@@ -1,63 +1,55 @@
-﻿import { fileUrl } from '../utils/constants';
-import logoHarvard from '../assets/insignia-harvard.jpeg';
+import { fileUrl } from '../utils/constants';
+import logoHarvard from '../assets/insignia-harvard-oficial.png';
 import { QRCodeSVG } from 'qrcode.react';
+
+export const CARNET_WIDTH = 250;
+export const CARNET_HEIGHT = 410;
+export const CARNET_EXPORT_WIDTH = 591;
+export const CARNET_EXPORT_HEIGHT = 969;
+export const CARNET_PIXEL_RATIO = CARNET_EXPORT_WIDTH / CARNET_WIDTH;
 
 const CarnetCard = ({ alumno, carnet, carnetRef }) => {
   const anioActual = new Date().getFullYear();
+  const nombreLargo = (alumno.nombre_completo?.length || 0) > 34;
 
   return (
-    <div ref={carnetRef} className="w-[340px] bg-white rounded-2xl overflow-hidden shadow-gold-lg border border-cream-200">
-      {/* Header azul con logo y nombre del colegio */}
-      <div className="px-5 pt-4 pb-3 text-center" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
-        <img src={logoHarvard} alt="Colegio Harvard" className="w-[72px] h-[72px] rounded-full mx-auto mb-2 border-[3px] border-gold-400 object-cover" />
-        <h3 className="text-gold-400 font-display text-[52px] font-bold tracking-[0.04em] uppercase leading-none">Colegio Harvard</h3>
-        <div className="mt-2 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
-      </div>
+    <div ref={carnetRef} className="flex shrink-0 flex-col overflow-hidden rounded-[14px] border border-cream-200 bg-white shadow-gold-lg" style={{ width: CARNET_WIDTH, height: CARNET_HEIGHT }}>
+      <header className="relative flex h-[72px] shrink-0 items-center gap-2.5 px-3 text-white" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
+        <img src={logoHarvard} alt="Insignia del Colegio Harvard" className="h-[50px] w-[50px] shrink-0 rounded-full border-2 border-gold-400 bg-white object-contain" />
+        <div className="min-w-0 text-left font-display font-bold uppercase leading-none">
+          <p className="text-[16px] tracking-[0.04em] text-white">Colegio</p>
+          <p className="text-[27px] tracking-[0.025em] text-white">Harvard</p>
+        </div>
+        <div className="absolute inset-x-3 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-500 to-transparent" />
+      </header>
 
-      {/* Foto con anillo dorado */}
-      <div className="flex justify-center -mt-5 relative z-10">
-        <div className="w-[88px] h-[88px] rounded-full bg-gold-gradient p-[3px] shadow-gold-md">
+      <main className="flex min-h-0 flex-1 flex-col items-center px-3 pt-2 text-center">
+        <div className="h-[82px] w-[112px] shrink-0 overflow-hidden rounded-[12px] border-2 border-gold-400 bg-cream-100 shadow-sm">
           {alumno.foto_url ? (
-            <img key={`${alumno.id}-${alumno.foto_url}`} src={fileUrl(alumno.foto_url)} alt={alumno.nombre_completo}
-              className="w-full h-full rounded-full object-cover border-2 border-white" />
+            <img key={`${alumno.id}-${alumno.foto_url}`} src={fileUrl(alumno.foto_url)} alt={alumno.nombre_completo} className="h-full w-full object-cover" />
           ) : (
-            <div className="w-full h-full rounded-full bg-cream-100 border-2 border-white flex items-center justify-center">
-              <span className="text-gold-600 font-bold text-[28px] font-display">{alumno.nombre_completo?.charAt(0)}</span>
-            </div>
+            <div className="flex h-full w-full items-center justify-center bg-cream-100"><span className="font-display text-[30px] font-bold text-gold-600">{alumno.nombre_completo?.charAt(0)}</span></div>
           )}
         </div>
-      </div>
 
-      {/* Info del alumno */}
-      <div className="px-6 pt-3 pb-4 text-center">
-        <h2 className={`font-bold font-display leading-tight ${(alumno.nombre_completo?.length || 0) > 35 ? 'text-base' : 'text-xl'}`} style={{ color: '#000080' }}>{alumno.nombre_completo}</h2>
-        <p className="text-sm text-black font-semibold mt-1">{alumno.codigo_alumno}</p>
-        <p className="text-sm text-black mt-0.5">{alumno.nivel} - {alumno.aula}</p>
+        <h2 className={`mt-2 max-w-full font-display font-bold leading-[1.05] text-[#000080] ${nombreLargo ? 'text-[14px]' : 'text-[17px]'}`}>{alumno.nombre_completo}</h2>
 
-        {/* QR Code */}
-        <div className="bg-cream-50 border border-cream-200 rounded-lg px-3 py-3 mt-3">
-          <p className="text-[9px] font-semibold text-black uppercase tracking-[0.12em] mb-2">Codigo de Identificacion</p>
-          <div className="flex justify-center">
-            <QRCodeSVG
-              value={carnet.qr_token}
-              size={120}
-              level="M"
-              bgColor="#FFFCF8"
-              fgColor="#000080"
-              marginSize={1}
-            />
+        <div className="mt-1.5 flex w-full items-center justify-center gap-2 border-t border-gold-300 pt-1 text-[10px] font-semibold text-black">
+          <span>Código: {alumno.codigo_alumno}</span><span className="h-3 w-px bg-gold-400" /><span>DNI: {alumno.dni || 'No registrado'}</span>
+        </div>
+
+        <div className="mt-1.5 flex h-[23px] w-full shrink-0 items-center justify-center rounded-md border border-gold-400 bg-[#000070] px-2 text-[11px] font-semibold text-white">{alumno.nivel} · {alumno.aula}</div>
+
+        <div className="mt-1.5 flex flex-1 items-center justify-center">
+          <div className="rounded-[10px] border-2 border-gold-400 bg-white p-[5px]">
+            <QRCodeSVG value={carnet.qr_token} size={112} level="M" bgColor="#FFFFFF" fgColor="#000060" marginSize={1} />
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* Footer */}
-      <div className="px-4 py-1.5 flex justify-between items-center" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>
-        <p className="text-[9px] text-gold-400/55">v{carnet.version}</p>
-        <p className="text-[9px] text-gold-400/55">{anioActual}</p>
-      </div>
+      <footer className="flex h-[25px] shrink-0 items-center justify-center border-t border-gold-400 text-[11px] font-semibold text-white" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>Válido {anioActual}</footer>
     </div>
   );
 };
 
 export default CarnetCard;
-
