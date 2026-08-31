@@ -10,7 +10,8 @@ export const CARNET_PIXEL_RATIO = CARNET_EXPORT_WIDTH / CARNET_WIDTH;
 
 const CarnetCard = ({ alumno, carnet, carnetRef }) => {
   const anioActual = new Date().getFullYear();
-  const nombreLargo = (alumno.nombre_completo?.length || 0) > 34;
+  const longitudNombre = alumno.nombre_completo?.length || 0;
+  const claseNombre = longitudNombre > 42 ? 'text-[12px]' : longitudNombre > 30 ? 'text-[14px]' : 'text-[16px]';
 
   return (
     <div ref={carnetRef} className="flex shrink-0 flex-col overflow-hidden rounded-[14px] border border-cream-200 bg-white shadow-gold-lg" style={{ width: CARNET_WIDTH, height: CARNET_HEIGHT }}>
@@ -24,7 +25,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col items-center px-3 pt-2 text-center">
-        <div className="h-[82px] w-[112px] shrink-0 overflow-hidden rounded-[12px] border-2 border-gold-400 bg-cream-100 shadow-sm">
+        <div className="h-[84px] w-[118px] shrink-0 overflow-hidden rounded-[12px] border-2 border-gold-400 bg-cream-100 shadow-sm">
           {alumno.foto_url ? (
             <img key={`${alumno.id}-${alumno.foto_url}`} src={fileUrl(alumno.foto_url)} alt={alumno.nombre_completo} className="h-full w-full object-cover" />
           ) : (
@@ -32,17 +33,17 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
           )}
         </div>
 
-        <h2 className={`mt-2 max-w-full font-display font-bold leading-[1.05] text-[#000080] ${nombreLargo ? 'text-[14px]' : 'text-[17px]'}`}>{alumno.nombre_completo}</h2>
+        <h2 className={`mt-2 max-w-full font-display font-bold leading-[1.05] text-[#000080] ${claseNombre}`}>{alumno.nombre_completo}</h2>
 
         <div className="mt-1.5 flex w-full items-center justify-center gap-2 border-t border-gold-300 pt-1 text-[10px] font-semibold text-black">
-          <span>Código: {alumno.codigo_alumno}</span><span className="h-3 w-px bg-gold-400" /><span>DNI: {alumno.dni || 'No registrado'}</span>
+          <span>{alumno.codigo_alumno}</span><span className="text-gold-500">·</span><span>DNI {alumno.dni || 'pendiente'}</span>
         </div>
 
         <div className="mt-1.5 flex h-[23px] w-full shrink-0 items-center justify-center rounded-md border border-gold-400 bg-[#000070] px-2 text-[11px] font-semibold text-white">{alumno.nivel} · {alumno.aula}</div>
 
-        <div className="mt-1.5 flex flex-1 items-center justify-center">
+        <div className="mb-2 mt-1.5 flex flex-1 items-center justify-center">
           <div className="rounded-[10px] border-2 border-gold-400 bg-white p-[5px]">
-            <QRCodeSVG value={carnet.qr_token} size={112} level="M" bgColor="#FFFFFF" fgColor="#000060" marginSize={1} />
+            <QRCodeSVG value={carnet.qr_token} size={104} level="M" bgColor="#FFFFFF" fgColor="#000060" marginSize={1} />
           </div>
         </div>
       </main>
