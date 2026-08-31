@@ -1,6 +1,7 @@
 import { fileUrl } from '../utils/constants';
 import logoHarvard from '../assets/insignia-harvard-oficial.png';
 import { QRCodeSVG } from 'qrcode.react';
+import { HiOutlineShieldCheck } from 'react-icons/hi';
 
 export const CARNET_WIDTH = 250;
 export const CARNET_HEIGHT = 410;
@@ -49,7 +50,12 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
         </div>
       </main>
 
-      <footer className="flex h-[25px] shrink-0 items-center justify-center border-t border-gold-400 text-[11px] font-semibold text-white" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>Válido {anioActual}</footer>
+      <footer className="relative h-[28px] shrink-0 border-t-2 border-gold-400 text-white" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>
+        <div className="absolute bottom-0 left-1/2 z-20 flex h-[35px] w-[112px] -translate-x-1/2 items-center justify-center gap-1.5 rounded-t-[22px] border-x-2 border-t-2 border-gold-400 bg-[#000070] text-[11px] font-semibold shadow-sm">
+          <HiOutlineShieldCheck className="h-[13px] w-[13px] text-gold-400" />
+          <span>Válido {anioActual}</span>
+        </div>
+      </footer>
     </div>
   );
 };
