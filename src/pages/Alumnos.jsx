@@ -6,7 +6,8 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import CarnetCard, { CARNET_EXPORT_HEIGHT, CARNET_EXPORT_WIDTH, CARNET_HEIGHT, CARNET_WIDTH } from '../components/CarnetCard';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno, actualizarSiagieAlumno } from '../services/alumnosService';
+import PhotoCropperModal from '../components/PhotoCropperModal';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno, actualizarSiagieAlumno, subirFotoCarnetAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove, HiExclamation } from 'react-icons/hi';
@@ -35,6 +36,10 @@ const Alumnos = () => {
   const [form, setForm] = useState({ codigo_alumno: '', dni: '', nombre_completo: '', monto_matricula: '', monto_materiales: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
   const [fotoFile, setFotoFile] = useState(null);
   const [fotoPreview, setFotoPreview] = useState(null);
+  const [fotoCarnetFile, setFotoCarnetFile] = useState(null);
+  const [fotoCarnetPreview, setFotoCarnetPreview] = useState(null);
+  const [cropSource, setCropSource] = useState(null);
+  const [cropOpen, setCropOpen] = useState(false);
   const fotoInputRef = useRef(null);
 
   // Padre (solo para creacion)
@@ -257,6 +262,7 @@ const Alumnos = () => {
           codigo_alumno: a.codigo_alumno,
           dni: a.dni,
           foto_url: a.foto_url,
+          foto_carnet_url: a.foto_carnet_url,
           aula: `${a.aula?.grado?.nombre || ''} ${a.aula?.seccion || ''}`.trim(),
           nivel: a.aula?.grado?.nivel || '',
         };
@@ -344,7 +350,19 @@ const Alumnos = () => {
     const file = e.target.files[0];
     if (!file) return;
     setFotoFile(file);
-    setFotoPreview(URL.createObjectURL(file));
+    const source = URL.createObjectURL(file);
+    setFotoPreview(source);
+    setFotoCarnetFile(null);
+    setFotoCarnetPreview(null);
+    setCropSource(source);
+    setCropOpen(true);
+  };
+
+  const handleCropSave = (blob) => {
+    const file = new File([blob], 'foto-carnet.webp', { type: 'image/webp' });
+    setFotoCarnetFile(file);
+    setFotoCarnetPreview(URL.createObjectURL(blob));
+    setCropOpen(false);
   };
 
   // ===================== BUSCAR PADRE (AUTOCOMPLETE) =====================
@@ -398,6 +416,9 @@ const Alumnos = () => {
     setForm(baseForm);
     setFotoFile(null);
     setFotoPreview(null);
+    setFotoCarnetFile(null);
+    setFotoCarnetPreview(null);
+    setCropSource(null);
     setPadreBusqueda('');
     setPadreResultados([]);
     setPadreSeleccionado(null);
@@ -436,6 +457,9 @@ const Alumnos = () => {
     });
     setFotoFile(null);
     setFotoPreview(fileUrl(a.foto_url));
+    setFotoCarnetFile(null);
+    setFotoCarnetPreview(fileUrl(a.foto_carnet_url || a.foto_url));
+    setCropSource(fileUrl(a.foto_url));
     // Pre-seleccionar padre actual si existe
     const padreActual = a.padre_alumno?.[0]?.padre;
     if (padreActual) {
@@ -508,6 +532,7 @@ const Alumnos = () => {
           fd.append('padre_id', '');
         }
         await actualizarAlumno(editando.id, fd);
+        if (fotoCarnetFile) { const cropData = new FormData(); cropData.append('foto', fotoCarnetFile); await subirFotoCarnetAlumno(editando.id, cropData); }
         toast.success('Alumno actualizado');
       } else {
         // Datos del padre para creacion
@@ -520,7 +545,8 @@ const Alumnos = () => {
           fd.append('padre_username', padreForm.username);
           fd.append('padre_contrasena', padreForm.contrasena);
         }
-        await crearAlumno(fd);
+        const response = await crearAlumno(fd);
+        if (fotoCarnetFile && response.data?.data?.id) { const cropData = new FormData(); cropData.append('foto', fotoCarnetFile); await subirFotoCarnetAlumno(response.data.data.id, cropData); }
         toast.success('Alumno creado');
       }
       setModalOpen(false);
@@ -937,7 +963,7 @@ const Alumnos = () => {
             <h4 className={sectionTitle}>
               <HiPhotograph className="w-4 h-4 text-gold-500" /> Foto del Alumno
             </h4>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               {fotoPreview ? (
                 <img src={fotoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border-2 border-gold-400" />
               ) : (
@@ -957,6 +983,7 @@ const Alumnos = () => {
                 <p className="text-xs text-cream-500 mt-1">JPG, PNG o WEBP. Max 5MB.</p>
                 {fotoFile && <p className="text-xs text-green-600 mt-0.5">{fotoFile.name}</p>}
               </div>
+              {fotoPreview && <div className="border-l border-cream-200 pl-4"><p className="mb-1 text-xs font-semibold text-primary-800/70">Vista en el fotocheck</p><img src={fotoCarnetPreview || fotoPreview} alt="Encuadre del fotocheck" className="h-[84px] w-[118px] rounded-xl border-2 border-gold-400 object-cover"/><button type="button" onClick={() => { setCropSource(fotoPreview); setCropOpen(true); }} className="mt-2 block rounded-lg border border-primary-200 px-3 py-1.5 text-xs font-semibold text-primary-700 hover:bg-primary-50">Mover y centrar</button></div>}
             </div>
           </div>
 
@@ -1363,6 +1390,7 @@ const Alumnos = () => {
           <p className="text-center text-gold-600 py-8">No se pudo cargar el carnet</p>
         )}
       </Modal>
+      <PhotoCropperModal open={cropOpen} imageSrc={cropSource} onCancel={() => setCropOpen(false)} onSave={handleCropSave} />
     </div>
   );
 };

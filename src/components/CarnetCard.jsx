@@ -27,7 +27,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
       <main className="flex min-h-0 flex-1 flex-col items-center px-3 pt-2 text-center">
         <div className="h-[84px] w-[118px] shrink-0 overflow-hidden rounded-[12px] border-2 border-gold-400 bg-cream-100 shadow-sm">
           {alumno.foto_url ? (
-            <img key={`${alumno.id}-${alumno.foto_url}`} src={fileUrl(alumno.foto_url)} alt={alumno.nombre_completo} className="h-full w-full object-cover" />
+            <img key={`${alumno.id}-${alumno.foto_carnet_url || alumno.foto_url}`} src={fileUrl(alumno.foto_carnet_url || alumno.foto_url)} alt={alumno.nombre_completo} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-cream-100"><span className="font-display text-[30px] font-bold text-gold-600">{alumno.nombre_completo?.charAt(0)}</span></div>
           )}
