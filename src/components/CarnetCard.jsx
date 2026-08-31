@@ -54,6 +54,8 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
       </main>
 
       <footer className="relative z-20 h-[28px] shrink-0 border-t-2 border-gold-400 text-white" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>
+        <div className="absolute -top-[2px] left-0 z-20 h-[12px] w-[42px] rounded-br-[18px] border-b-2 border-r-2 border-gold-400 bg-white" aria-hidden="true" />
+        <div className="absolute -top-[2px] right-0 z-20 h-[12px] w-[42px] rounded-bl-[18px] border-b-2 border-l-2 border-gold-400 bg-white" aria-hidden="true" />
         <div className="absolute bottom-0 left-1/2 z-30 flex h-[33px] w-[112px] -translate-x-1/2 items-center justify-center gap-1.5 rounded-t-[22px] border-x-2 border-t-2 border-gold-400 bg-[#000070] text-[11px] font-semibold shadow-sm">
           <HiOutlineShieldCheck className="h-[13px] w-[13px] text-gold-400" />
           <span>Válido {anioActual}</span>
