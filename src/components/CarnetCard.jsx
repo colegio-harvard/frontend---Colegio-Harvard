@@ -23,7 +23,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
           <p className="text-[16px] tracking-[0.04em] text-white">Colegio</p>
           <p className="text-[27px] tracking-[0.025em] text-white">Harvard</p>
         </div>
-        <div className="absolute bottom-[-1px] left-[29px] right-[29px] h-[10px] rounded-t-[18px] border-x-2 border-t-2 border-gold-400 bg-white" aria-hidden="true" />
+        <div className="absolute bottom-[-1px] left-[5px] right-[5px] z-20 h-[10px] rounded-t-[18px] border-x-2 border-t-2 border-gold-400 bg-white" aria-hidden="true" />
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col items-center px-3 pt-1 text-center">
@@ -54,8 +54,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
       </main>
 
       <footer className="relative z-20 h-[28px] shrink-0 border-t-2 border-gold-400 text-white" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>
-        <div className="absolute -top-[2px] left-0 z-20 h-[12px] w-[29px] rounded-br-[18px] border-b-2 border-r-2 border-gold-400 bg-white" aria-hidden="true" />
-        <div className="absolute -top-[2px] right-0 z-20 h-[12px] w-[29px] rounded-bl-[18px] border-b-2 border-l-2 border-gold-400 bg-white" aria-hidden="true" />
+        <div className="absolute -top-[2px] left-[5px] right-[5px] z-20 h-[10px] rounded-b-[18px] border-x-2 border-b-2 border-gold-400 bg-white" aria-hidden="true" />
         <div className="absolute bottom-0 left-1/2 z-30 flex h-[33px] w-[112px] -translate-x-1/2 items-center justify-center gap-1.5 rounded-t-[22px] border-x-2 border-t-2 border-gold-400 bg-[#000070] text-[11px] font-semibold shadow-sm">
           <HiOutlineShieldCheck className="h-[13px] w-[13px] text-gold-400" />
           <span>Válido {anioActual}</span>
