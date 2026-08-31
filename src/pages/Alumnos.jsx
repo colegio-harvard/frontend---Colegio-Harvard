@@ -6,10 +6,10 @@ import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import CarnetCard from '../components/CarnetCard';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno } from '../services/alumnosService';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
-import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove } from 'react-icons/hi';
+import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove, HiExclamation } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { fileUrl, studentPhotoUrl } from '../utils/constants';
 import { includesSearchText } from '../utils/textSearch';
@@ -26,6 +26,10 @@ const Alumnos = () => {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [alertaOperativa, setAlertaOperativa] = useState(null);
+  const [alertaForm, setAlertaForm] = useState({ mensaje: '', prioridad: 'URGENTE' });
+  const [alertaLoading, setAlertaLoading] = useState(false);
+  const [alertaGuardando, setAlertaGuardando] = useState(false);
 
   // Form alumno
   const [form, setForm] = useState({ codigo_alumno: '', dni: '', nombre_completo: '', monto_matricula: '', monto_materiales: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
@@ -379,6 +383,8 @@ const Alumnos = () => {
   // ===================== OPEN/CLOSE MODALS =====================
   const openCreate = async () => {
     setEditando(null);
+    setAlertaOperativa(null);
+    setAlertaForm({ mensaje: '', prioridad: 'URGENTE' });
     const baseForm = { codigo_alumno: '', dni: '', nombre_completo: '', monto_matricula: '', monto_materiales: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' };
     setForm(baseForm);
     setFotoFile(null);
@@ -398,7 +404,7 @@ const Alumnos = () => {
     }
   };
 
-  const openEdit = (a) => {
+  const openEdit = async (a) => {
     setEditando(a);
     // Determinar id_nivel e id_grado a partir del aula
     const aulaObj = aulas.find(au => au.id === a.id_aula);
@@ -434,6 +440,40 @@ const Alumnos = () => {
     setPadreNuevo(false);
     setPadreForm({ dni: '', nombre_completo: '', celular: '', username: '', contrasena: '' });
     setModalOpen(true);
+    setAlertaLoading(true);
+    try {
+      const { data } = await obtenerAlertaOperativaAlumno(a.id);
+      const alerta = data.data || null;
+      setAlertaOperativa(alerta);
+      setAlertaForm({ mensaje: alerta?.mensaje || '', prioridad: alerta?.prioridad || 'URGENTE' });
+    } catch {
+      setAlertaOperativa(null);
+      setAlertaForm({ mensaje: '', prioridad: 'URGENTE' });
+      toast.error('No se pudo cargar la alerta operativa');
+    } finally { setAlertaLoading(false); }
+  };
+
+  const guardarAlerta = async () => {
+    if (!editando || !alertaForm.mensaje.trim()) return;
+    setAlertaGuardando(true);
+    try {
+      const { data } = await guardarAlertaOperativaAlumno(editando.id, alertaForm);
+      setAlertaOperativa(data.data);
+      toast.success('Alerta visible en el próximo ingreso');
+    } catch (err) { toast.error(err.response?.data?.error || 'No se pudo guardar la alerta'); }
+    finally { setAlertaGuardando(false); }
+  };
+
+  const resolverAlerta = async () => {
+    if (!editando || !alertaOperativa) return;
+    setAlertaGuardando(true);
+    try {
+      await resolverAlertaOperativaAlumno(editando.id);
+      setAlertaOperativa(null);
+      setAlertaForm({ mensaje: '', prioridad: 'URGENTE' });
+      toast.success('Alerta marcada como resuelta');
+    } catch (err) { toast.error(err.response?.data?.error || 'No se pudo resolver la alerta'); }
+    finally { setAlertaGuardando(false); }
   };
 
   // ===================== SUBMIT =====================
@@ -852,6 +892,22 @@ const Alumnos = () => {
               </div>
             </div>
           </div>
+
+          {editando && (
+            <div className="border-b border-cream-200 pb-4">
+              <h4 className={sectionTitle}><HiExclamation className="w-4 h-4 text-red-600" /> Alerta especial de ingreso</h4>
+              <p className="text-xs text-primary-800/60 mb-3">Será visible para administración y portería después de registrar el ingreso. No bloquea la asistencia.</p>
+              {alertaLoading ? <div className="py-3"><LoadingSpinner /></div> : (
+                <div className="rounded-xl border border-red-200 bg-red-50/60 p-4 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-[1fr_170px] gap-3">
+                    <div><label className={labelClass}>Mensaje operativo</label><textarea value={alertaForm.mensaje} onChange={(e) => setAlertaForm({ ...alertaForm, mensaje: e.target.value })} className={`${inputClass} min-h-20 resize-y`} maxLength={250} placeholder="Ej.: FUM pendiente de entrega ¡Urgente!" /><p className="text-[11px] text-primary-800/45 mt-1">{alertaForm.mensaje.length}/250 caracteres</p></div>
+                    <div><label className={labelClass}>Prioridad</label><select value={alertaForm.prioridad} onChange={(e) => setAlertaForm({ ...alertaForm, prioridad: e.target.value })} className={inputClass}><option value="IMPORTANTE">Importante</option><option value="URGENTE">Urgente</option></select></div>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3"><span className={`text-xs font-semibold ${alertaOperativa ? 'text-red-700' : 'text-primary-700/60'}`}>{alertaOperativa ? 'Alerta activa en portería' : 'Sin alerta activa'}</span><div className="flex gap-2">{alertaOperativa && <button type="button" onClick={resolverAlerta} disabled={alertaGuardando} className="px-3 py-2 text-sm rounded-lg bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50">Marcar resuelta</button>}<button type="button" onClick={guardarAlerta} disabled={alertaGuardando || !alertaForm.mensaje.trim()} className="px-3 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50">{alertaGuardando ? 'Guardando...' : alertaOperativa ? 'Actualizar alerta' : 'Activar alerta'}</button></div></div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* --- Foto del Alumno --- */}
           <div className="border-b border-cream-200 pb-4">

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
-import { registrarAsistencia, obtenerPensionesEscaneo, historialPorteria } from '../services/asistenciaService';
+import { registrarAsistencia, obtenerPensionesEscaneo, historialPorteria, obtenerAlertaOperativaEscaneo, registrarAccionAlertaOperativa } from '../services/asistenciaService';
 import { formatHora, todayLimaISO } from '../utils/formatters';
-import { HiQrcode, HiKey, HiChevronLeft, HiChevronRight, HiCheck, HiClock, HiMinus, HiX } from 'react-icons/hi';
+import { HiQrcode, HiKey, HiChevronLeft, HiChevronRight, HiCheck, HiClock, HiMinus, HiX, HiExclamation, HiOfficeBuilding, HiSpeakerphone } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../hooks/useSocket';
 import { fileUrl } from '../utils/constants';
@@ -102,6 +102,21 @@ const PensionResumen = ({ pensiones }) => {
   );
 };
 
+const AlertaOperativa = ({ alerta, onAccion }) => {
+  if (!alerta) return null;
+  const urgente = alerta.prioridad === 'URGENTE';
+  return (
+    <div className={`w-full mt-4 rounded-xl border-2 p-4 text-left shadow-sm ${urgente ? 'border-red-500 bg-red-50' : 'border-amber-400 bg-amber-50'} animate-pulse motion-reduce:animate-none`} role="alert" aria-live="assertive">
+      <div className="flex gap-3"><HiExclamation className={`w-7 h-7 flex-shrink-0 ${urgente ? 'text-red-600' : 'text-amber-600'}`} /><div className="min-w-0 flex-1">
+        <p className={`text-xs font-extrabold uppercase tracking-wide ${urgente ? 'text-red-700' : 'text-amber-700'}`}>{alerta.prioridad}</p>
+        <p className="text-base font-extrabold text-primary-900 break-words">{alerta.mensaje}</p>
+        <div className="flex flex-wrap gap-2 mt-3"><button type="button" onClick={() => onAccion('DERIVAR_OFICINA')} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary-700 text-white text-xs font-bold hover:bg-primary-800"><HiOfficeBuilding className="w-4 h-4" /> Derivar a oficina</button><button type="button" onClick={() => onAccion('AVISAR_ADMINISTRACION')} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gold-600 text-white text-xs font-bold hover:bg-gold-700"><HiSpeakerphone className="w-4 h-4" /> Avisar a administración</button></div>
+        {alerta.ultima_accion && <p className="mt-2 text-[11px] text-primary-800/60">Última acción registrada: {alerta.ultima_accion === 'DERIVAR_OFICINA' ? 'Derivación a oficina' : 'Aviso a administración'}</p>}
+      </div></div>
+    </div>
+  );
+};
+
 const RegistroAsistencia = () => {
   const [modo, setModo] = useState('CAMARA');
   const [codigoAlumno, setCodigoAlumno] = useState('');
@@ -173,17 +188,13 @@ const RegistroAsistencia = () => {
       setPaginaHistorial(1);
       programarHistorial(1);
 
-      // La asistencia ya quedó confirmada; los datos financieros se completan sin bloquear la cámara.
+      // La asistencia ya quedó confirmada; los datos complementarios se cargan sin bloquear la cámara.
       if (resultado.id_alumno) {
         secondaryTimerRef.current = setTimeout(() => {
-          obtenerPensionesEscaneo(resultado.id_alumno)
-            .then(({ data: pensionesRes }) => {
-              setScanResult(actual => actual?.id_alumno === resultado.id_alumno
-                ? { ...actual, pensiones: pensionesRes.data }
-                : actual);
-            })
-            .catch(() => {});
-        }, 400);
+          Promise.allSettled([obtenerPensionesEscaneo(resultado.id_alumno), obtenerAlertaOperativaEscaneo(resultado.id_alumno)]).then(([pensionesRes, alertaRes]) => {
+            setScanResult(actual => actual?.id_alumno === resultado.id_alumno ? { ...actual, ...(pensionesRes.status === 'fulfilled' ? { pensiones: pensionesRes.value.data.data } : {}), ...(alertaRes.status === 'fulfilled' ? { alerta_operativa: alertaRes.value.data.data } : {}) } : actual);
+          });
+        }, 150);
       }
       const esIngreso = resultado.tipo_evento === 'CHECKIN';
 
@@ -273,6 +284,16 @@ const RegistroAsistencia = () => {
     e.preventDefault();
     if (!codigoAlumno.trim()) return;
     registrar({ codigo_alumno: codigoAlumno.trim().toUpperCase() });
+  };
+
+  const handleAccionAlerta = async (accion) => {
+    const alerta = scanResult?.alerta_operativa;
+    if (!alerta) return;
+    try {
+      const { data } = await registrarAccionAlertaOperativa(alerta.id, accion);
+      setScanResult(actual => actual ? { ...actual, alerta_operativa: data.data } : actual);
+      toast.success(data.message || 'Acción registrada');
+    } catch (err) { toast.error(err.response?.data?.error || 'No se pudo registrar la acción'); }
   };
 
   useEffect(() => {
@@ -496,6 +517,7 @@ const RegistroAsistencia = () => {
                 {scanResult.aula && (
                   <p className="text-sm text-gold-600 font-medium mt-1">{scanResult.aula}</p>
                 )}
+                <AlertaOperativa alerta={scanResult.alerta_operativa} onAccion={handleAccionAlerta} />
                 <div className="mt-4">
                   <span className={`inline-flex items-center gap-2 px-5 py-2 rounded-full text-base font-bold ${
                     scanResult.tipo_evento === 'CHECKIN'
