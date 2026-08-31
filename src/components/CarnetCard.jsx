@@ -16,7 +16,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
 
   return (
     <div ref={carnetRef} className="relative flex shrink-0 flex-col overflow-hidden rounded-[14px] border-2 border-[#000070] bg-white shadow-gold-lg" style={{ width: CARNET_WIDTH, height: CARNET_HEIGHT }}>
-      <div className="pointer-events-none absolute inset-[5px] z-30 rounded-[11px] border-2 border-gold-400" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-[5px] z-10 rounded-[11px] border-2 border-gold-400" aria-hidden="true" />
       <header className="relative flex h-[76px] shrink-0 items-center gap-2.5 px-3 pb-1 text-white" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
         <img src={logoHarvard} alt="Insignia del Colegio Harvard" className="h-[50px] w-[50px] shrink-0 rounded-full border-2 border-gold-400 bg-white object-contain" />
         <div className="relative z-10 min-w-0 text-left font-display font-bold uppercase leading-none">
@@ -44,14 +44,14 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
         <div className="mt-1.5 flex h-[23px] w-full shrink-0 items-center justify-center rounded-md border border-gold-400 bg-[#000070] px-2 text-[11px] font-semibold text-white">{alumno.nivel} · {alumno.aula}</div>
 
         <div className="mb-2 mt-1.5 flex flex-1 items-center justify-center">
-          <div className="rounded-[10px] border-2 border-gold-400 bg-white p-[5px]">
-            <QRCodeSVG value={carnet.qr_token} size={104} level="M" bgColor="#FFFFFF" fgColor="#000060" marginSize={1} />
+          <div className="rounded-[10px] border-2 border-gold-400 bg-white p-[4px]">
+            <QRCodeSVG value={carnet.qr_token} size={96} level="M" bgColor="#FFFFFF" fgColor="#000060" marginSize={1} />
           </div>
         </div>
       </main>
 
-      <footer className="relative h-[28px] shrink-0 border-t-2 border-gold-400 text-white" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>
-        <div className="absolute bottom-0 left-1/2 z-20 flex h-[35px] w-[112px] -translate-x-1/2 items-center justify-center gap-1.5 rounded-t-[22px] border-x-2 border-t-2 border-gold-400 bg-[#000070] text-[11px] font-semibold shadow-sm">
+      <footer className="relative z-20 h-[28px] shrink-0 border-t-2 border-gold-400 text-white" style={{ background: 'linear-gradient(90deg, #000060, #000080, #000060)' }}>
+        <div className="absolute bottom-0 left-1/2 z-30 flex h-[33px] w-[112px] -translate-x-1/2 items-center justify-center gap-1.5 rounded-t-[22px] border-x-2 border-t-2 border-gold-400 bg-[#000070] text-[11px] font-semibold shadow-sm">
           <HiOutlineShieldCheck className="h-[13px] w-[13px] text-gold-400" />
           <span>Válido {anioActual}</span>
         </div>
