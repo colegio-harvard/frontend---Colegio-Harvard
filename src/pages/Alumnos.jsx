@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { fileUrl, studentPhotoUrl } from '../utils/constants';
 import { includesSearchText } from '../utils/textSearch';
 import { toJpeg } from 'html-to-image';
+import { descargarBlob, jpegDataUrlTo300DpiBlob } from '../utils/jpegDpi';
 import { getEmbeddedFontCSS, waitForCaptureImages } from './CarnetView';
 import JSZip from 'jszip';
 import toast from 'react-hot-toast';
@@ -222,10 +223,8 @@ const Alumnos = () => {
           fontEmbedCSS: fontCSS,
       });
 
-      const link = document.createElement('a');
-      link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;
-      link.href = dataUrl;
-      link.click();
+      const blob = await jpegDataUrlTo300DpiBlob(dataUrl);
+      descargarBlob(blob, `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`);
     } catch {
       toast.error('Error al descargar el fotocheck');
     }
@@ -314,9 +313,9 @@ const Alumnos = () => {
             fontEmbedCSS: fontCSS,
           });
 
-          // Convertir data URL a blob y agregar al ZIP
-          const base64 = dataUrl.split(',')[1];
-          zip.file(`fotocheck-${a.codigo_alumno}.jpg`, base64, { base64: true });
+          // Incluir 300 DPI para que Word respete el tamaño físico de 5 x 8,2 cm.
+          const blob = await jpegDataUrlTo300DpiBlob(dataUrl);
+          zip.file(`fotocheck-${a.codigo_alumno}.jpg`, blob);
         } finally {
           root.unmount();
           container.remove();

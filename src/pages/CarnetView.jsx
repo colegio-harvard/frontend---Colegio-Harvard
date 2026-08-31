@@ -7,6 +7,7 @@ import apiClient from '../services/apiClient';
 import { HiArrowLeft, HiDownload } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { toJpeg } from 'html-to-image';
+import { descargarBlob, jpegDataUrlTo300DpiBlob } from '../utils/jpegDpi';
 
 /* ─── Pre-fetch Google Fonts con base64 embebido (evita CORS SecurityError) ─── */
 let _fontCSSPromise = null;
@@ -99,10 +100,8 @@ const CarnetView = () => {
           fontEmbedCSS: fontCSS,
       });
 
-      const link = document.createElement('a');
-      link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;
-      link.href = dataUrl;
-      link.click();
+      const blob = await jpegDataUrlTo300DpiBlob(dataUrl);
+      descargarBlob(blob, `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`);
     } catch {
       toast.error('Error al descargar el fotocheck');
     }
