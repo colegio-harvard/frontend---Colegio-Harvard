@@ -1,7 +1,7 @@
 import { fileUrl } from '../utils/constants';
 import logoHarvard from '../assets/insignia-harvard-oficial.png';
 import { QRCodeSVG } from 'qrcode.react';
-import { HiOutlineShieldCheck } from 'react-icons/hi';
+import { HiAcademicCap, HiOutlineShieldCheck } from 'react-icons/hi';
 
 export const CARNET_WIDTH = 250;
 export const CARNET_HEIGHT = 410;
@@ -41,7 +41,10 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
           <span>{alumno.codigo_alumno}</span><span className="text-gold-500">·</span><span>DNI {alumno.dni || 'pendiente'}</span>
         </div>
 
-        <div className="mt-1.5 flex h-[23px] w-full shrink-0 items-center justify-center rounded-md border border-gold-400 bg-[#000070] px-2 text-[11px] font-semibold text-white">{alumno.nivel} · {alumno.aula}</div>
+        <div className="mt-1.5 flex h-[23px] w-full shrink-0 items-center justify-center gap-2 rounded-md border-2 border-gold-400 bg-[#000070] px-2 text-[11px] font-semibold text-white">
+          <HiAcademicCap className="h-[17px] w-[17px] shrink-0 text-gold-400" />
+          <span>{alumno.nivel} · {alumno.aula}</span>
+        </div>
 
         <div className="mb-2 mt-1.5 flex flex-1 items-center justify-center">
           <div className="rounded-[10px] border-2 border-gold-400 bg-white p-[4px]">
