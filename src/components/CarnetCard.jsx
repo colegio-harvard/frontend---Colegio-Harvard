@@ -15,7 +15,7 @@ const CarnetCard = ({ alumno, carnet, carnetRef }) => {
   const claseNombre = longitudNombre > 42 ? 'text-[12px]' : longitudNombre > 30 ? 'text-[14px]' : 'text-[16px]';
 
   return (
-    <div ref={carnetRef} className="relative flex shrink-0 flex-col overflow-hidden rounded-[14px] border border-cream-200 bg-white shadow-gold-lg" style={{ width: CARNET_WIDTH, height: CARNET_HEIGHT }}>
+    <div ref={carnetRef} className="relative flex shrink-0 flex-col overflow-hidden rounded-[14px] border-2 border-[#000070] bg-white shadow-gold-lg" style={{ width: CARNET_WIDTH, height: CARNET_HEIGHT }}>
       <div className="pointer-events-none absolute inset-[5px] z-30 rounded-[11px] border-2 border-gold-400" aria-hidden="true" />
       <header className="relative flex h-[76px] shrink-0 items-center gap-2.5 px-3 pb-1 text-white" style={{ background: 'linear-gradient(135deg, #000060 0%, #000080 50%, #000060 100%)' }}>
         <img src={logoHarvard} alt="Insignia del Colegio Harvard" className="h-[50px] w-[50px] shrink-0 rounded-full border-2 border-gold-400 bg-white object-contain" />
