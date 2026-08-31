@@ -26,7 +26,7 @@ const storageKeyFromPath = (value) => {
   }
 
   const segments = decoded.split('/').filter(Boolean);
-  const prefixIndex = segments.findIndex(segment => segment === 'fotos' || segment === 'adjuntos');
+  const prefixIndex = segments.findIndex(segment => segment === 'fotos' || segment === 'fotos-carnet' || segment === 'adjuntos');
   return prefixIndex >= 0 ? segments.slice(prefixIndex).join('/') : null;
 };
 
