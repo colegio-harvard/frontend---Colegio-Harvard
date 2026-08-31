@@ -12,6 +12,7 @@ import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { fileUrl, studentPhotoUrl } from '../utils/constants';
+import { includesSearchText } from '../utils/textSearch';
 import { toJpeg } from 'html-to-image';
 import { getEmbeddedFontCSS, waitForCaptureImages } from './CarnetView';
 import JSZip from 'jszip';
@@ -150,10 +151,10 @@ const Alumnos = () => {
       if (filtroGrado && a.aula?.grado?.nombre !== filtroGrado) return false;
       if (filtroSeccion && a.aula?.seccion !== filtroSeccion) return false;
       if (filtroCodigo) {
-        const busqueda = filtroCodigo.toLowerCase();
-        const coincideCodigo = a.codigo_alumno?.toLowerCase().includes(busqueda);
-        const coincideNombre = a.nombre_completo?.toLowerCase().includes(busqueda);
-        if (!coincideCodigo && !coincideNombre) return false;
+        const coincideCodigo = includesSearchText(a.codigo_alumno, filtroCodigo);
+        const coincideNombre = includesSearchText(a.nombre_completo, filtroCodigo);
+        const coincideDni = includesSearchText(a.dni, filtroCodigo);
+        if (!coincideCodigo && !coincideNombre && !coincideDni) return false;
       }
       return true;
     });

@@ -7,6 +7,7 @@ import Badge from '../components/ui/Badge';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { listarPadres, obtenerPadre, crearPadre, actualizarPadre, eliminarPadre } from '../services/padresService';
 import { formatFechaHora } from '../utils/formatters';
+import { includesSearchText, normalizeSearchText } from '../utils/textSearch';
 import { HiPlus, HiPencil, HiTrash, HiEye, HiEyeOff, HiUser, HiPhone, HiIdentification, HiAcademicCap, HiSearch } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
@@ -99,19 +100,19 @@ const Padres = () => {
 
   const padresFiltrados = useMemo(() => {
     if (!busqueda.trim()) return padres;
-    const term = busqueda.toLowerCase().trim();
+    const term = normalizeSearchText(busqueda);
     const coincidenciasExactas = padres.filter((p) =>
-      p.hijos?.some((hijo) => hijo.codigo_alumno?.toLowerCase() === term)
+      p.hijos?.some((hijo) => normalizeSearchText(hijo.codigo_alumno) === term)
     );
     const candidatos = coincidenciasExactas.length ? coincidenciasExactas : padres;
     return candidatos.filter(p =>
-      p.nombre_completo?.toLowerCase().includes(term) ||
-      p.dni?.toLowerCase().includes(term) ||
-      p.celular?.toLowerCase().includes(term) ||
-      p.usuario?.username?.toLowerCase().includes(term) ||
+      includesSearchText(p.nombre_completo, term) ||
+      includesSearchText(p.dni, term) ||
+      includesSearchText(p.celular, term) ||
+      includesSearchText(p.usuario?.username, term) ||
       p.hijos?.some((hijo) =>
-        hijo.codigo_alumno?.toLowerCase().includes(term) ||
-        hijo.nombre_completo?.toLowerCase().includes(term)
+        includesSearchText(hijo.codigo_alumno, term) ||
+        includesSearchText(hijo.nombre_completo, term)
       )
     );
   }, [padres, busqueda]);

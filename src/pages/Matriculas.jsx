@@ -8,6 +8,7 @@ import { actualizarAlumno, crearAlumno, obtenerSiguienteCodigoAlumno } from '../
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { useAuth } from '../context/AuthContext';
+import { includesSearchText, normalizeSearchText } from '../utils/textSearch';
 
 const money = (value) => `S/ ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
 const labels = { BORRADOR: 'Borrador', ENVIADA: 'Invitación enviada', ABIERTA: 'Abierta por el padre', ACEPTADA: 'Aceptada', OBSERVADA: 'Observada', COMPLETADA: 'Completada' };
@@ -100,10 +101,10 @@ export default function Matriculas() {
   useEffect(() => { setAdminComplementEditing(false); setAdminComplementReason(''); }, [detail?.id]);
 
   const students = useMemo(() => {
-    const text = query.trim().toLocaleLowerCase('es');
+    const text = normalizeSearchText(query);
     const rows = data?.alumnos || [];
     const selectedFilter = statusFilters.find((filter) => filter.key === statusFilter) || statusFilters[0];
-    return rows.filter((x) => selectedFilter.matches(x.estado_matricula) && (!text || [x.codigo_alumno, x.nombre_completo, x.apoderado, x.dni, x.dni_apoderado].some((v) => String(v || '').toLocaleLowerCase('es').includes(text))));
+    return rows.filter((x) => selectedFilter.matches(x.estado_matricula) && (!text || [x.codigo_alumno, x.nombre_completo, x.apoderado, x.dni, x.dni_apoderado].some((v) => includesSearchText(v, text))));
   }, [data, query, statusFilter]);
   const stats = useMemo(() => (data?.alumnos || []).reduce((acc, x) => { const key = x.estado_matricula || 'SIN_INICIAR'; acc[key] = (acc[key] || 0) + 1; return acc; }, {}), [data]);
   const documentSummary = useMemo(() => documentosControl.reduce((total, [key]) => { const estado = documentCheck[key]?.estado || 'PENDIENTE'; total[estado] = (total[estado] || 0) + 1; return total; }, { ENTREGADO: 0, PENDIENTE: 0, NO_APLICA: 0 }), [documentCheck]);
