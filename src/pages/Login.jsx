@@ -5,7 +5,7 @@ import { login } from '../services/authService';
 
 import { HiEye, HiEyeOff, HiArrowLeft } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import fallbackLogo from '../assets/logo-oficial-padre.webp';
+import fallbackLogo from '../assets/insignia-jesus.webp';
 import { API_URL } from '../utils/constants';
 
 const Login = () => {
