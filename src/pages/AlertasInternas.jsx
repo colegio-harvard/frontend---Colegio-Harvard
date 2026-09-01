@@ -75,7 +75,7 @@ export default function AlertasInternas() {
   };
 
   return <div className="space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="page-title">Alertas internas</h1><p className="mt-1 text-sm text-primary-700/70">Seguimiento central de situaciones especiales vinculadas a los alumnos.</p></div><button onClick={abrirNueva} className="btn-primary flex items-center gap-2"><HiPlus /> Nueva alerta</button></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="page-title">Alertas internas</h1><p className="mt-1 text-sm text-primary-700/70">Seguimiento central de situaciones especiales vinculadas a los alumnos.</p></div><button onClick={abrirNueva} className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"><HiPlus /> Nueva alerta</button></div>
 
     <section className="card p-5">
       <div className="grid gap-3 md:grid-cols-[1fr_180px_180px]">
