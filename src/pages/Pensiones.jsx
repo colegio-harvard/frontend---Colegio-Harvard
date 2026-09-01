@@ -589,8 +589,8 @@ const PensionAdmin = () => {
           <table className="min-w-full">
             <thead>
               <tr className="bg-cream-50">
-                <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Alumno</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">DNI</th>
+                <th className="sticky left-0 z-20 bg-cream-50 px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Alumno</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">DNI alumno</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Padre/Apoderado</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Aula</th>
                 <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Matrícula</th>
@@ -603,14 +603,14 @@ const PensionAdmin = () => {
             </thead>
             <tbody>
               {paginatedData.map(alumno => (
-                <tr key={alumno.id} className="border-t hover:bg-cream-50">
-                  <td className="px-3 py-2 whitespace-nowrap">
+                <tr key={alumno.id} className="group border-t hover:bg-cream-50">
+                  <td className="sticky left-0 z-10 bg-white px-3 py-2 whitespace-nowrap group-hover:bg-cream-50">
                     <div className="text-sm font-medium text-primary-800">{alumno.nombre_completo}</div>
                     <div className="text-xs text-gold-600">{alumno.codigo_alumno}</div>
                   </td>
                   <td className="px-3 py-2 text-sm text-primary-800/70">{alumno.dni || '-'}</td>
                   <td className="px-3 py-2 text-sm text-primary-800/70 whitespace-nowrap">
-                    {alumno.padre?.nombre_completo || <span className="text-cream-400 italic">Sin vincular</span>}
+                    {alumno.padre ? <><div>{alumno.padre.nombre_completo}</div>{alumno.padre.celular ? <a href={`tel:${String(alumno.padre.celular).replace(/\s/g, '')}`} className="text-xs font-medium text-gold-600 hover:text-gold-700 hover:underline">{alumno.padre.celular}</a> : <div className="text-xs italic text-cream-400">Celular no registrado</div>}</> : <span className="text-cream-400 italic">Sin vincular</span>}
                   </td>
                   <td className="px-3 py-2 text-sm text-primary-800/70 whitespace-nowrap">
                     {alumno.aula ? `${alumno.aula.grado?.nombre || ''} ${alumno.aula.seccion}` : '-'}
