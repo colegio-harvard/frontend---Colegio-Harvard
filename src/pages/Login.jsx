@@ -5,7 +5,7 @@ import { login } from '../services/authService';
 
 import { HiEye, HiEyeOff, HiArrowLeft } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import fallbackLogo from '../assets/insignia-jesus.webp';
+import fallbackLogo from '../assets/logo-oficial-padre.webp';
 import { API_URL } from '../utils/constants';
 
 const Login = () => {
@@ -13,7 +13,7 @@ const Login = () => {
   const [contrasena, setContrasena] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loginLogo, setLoginLogo] = useState(null);
+  const [loginLogo, setLoginLogo] = useState(fallbackLogo);
   const { usuario, iniciarSesion } = useAuth();
   const navigate = useNavigate();
 
@@ -97,9 +97,7 @@ const Login = () => {
             {/* Header with shield motif */}
             <div className="text-center mb-8">
               <div className="w-24 h-24 mx-auto mb-4">
-                {loginLogo && (
-                  <img src={loginLogo} alt="Colegio Harvard" className="w-full h-full rounded-full object-cover border-3 border-gold-400 shadow-gold-lg animate-fade-in" />
-                )}
+                <img src={loginLogo} alt="Colegio Harvard" className="w-full h-full rounded-full object-cover border-3 border-gold-400 shadow-gold-lg transition-opacity duration-300" />
               </div>
               <h1 className="text-2xl font-bold text-primary-800 font-display tracking-tight">Colegio Harvard</h1>
               <div className="gold-line w-32 mx-auto my-3"></div>

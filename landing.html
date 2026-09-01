@@ -63,8 +63,8 @@
     .navbar .container { display: flex; align-items: center; justify-content: space-between; }
     .nav-brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--crimson-800); }
     .nav-logo { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-400); box-shadow: var(--shadow-gold-sm); transition: transform 0.3s; }
-    .landing-logo { opacity: 0; }
-    .landing-logo.is-ready { opacity: 1; transition: opacity 0.35s ease-out; }
+    .landing-logo { opacity: 1; transition: opacity 0.25s ease-out; }
+    .landing-logo.is-updating { opacity: 0.45; }
     .nav-brand:hover .nav-logo { transform: rotate(10deg) scale(1.05); }
     .nav-brand-text { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
     .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
@@ -211,7 +211,7 @@
   <nav class="navbar" id="navbar">
     <div class="container">
       <a href="#" class="nav-brand">
-        <img alt="Colegio Harvard" class="nav-logo landing-logo" />
+        <img src="src/assets/logo-oficial-padre.webp" alt="Colegio Harvard" class="nav-logo landing-logo" />
         <span class="nav-brand-text">Colegio Harvard</span>
       </a>
       <ul class="nav-links" id="navLinks">
@@ -241,7 +241,7 @@
       <div class="hero-logo-wrapper">
         <div class="hero-logo-glow"></div>
         <div class="hero-logo-ring"></div>
-        <img id="hero-logo-img" alt="Escudo Colegio Harvard" class="hero-logo landing-logo" />
+        <img id="hero-logo-img" src="src/assets/logo-oficial-padre.webp" alt="Escudo Colegio Harvard" class="hero-logo landing-logo" />
       </div>
       <h1 id="hero-title">Colegio <em>Harvard</em></h1>
       <p class="hero-subtitle" id="hero-subtitle">Formando líderes con valores, comprometidos con la excelencia académica y el desarrollo integral de cada estudiante.</p>
@@ -392,7 +392,7 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-brand">
-        <img alt="Colegio Harvard" class="footer-logo landing-logo" />
+        <img src="src/assets/logo-oficial-padre.webp" alt="Colegio Harvard" class="footer-logo landing-logo" />
         <span class="footer-brand-name">Colegio Harvard</span>
       </div>
       <ul class="footer-links">
@@ -448,14 +448,16 @@
       });
     });
 
-    const fallbackLogo = '/src/assets/insignia-jesus.webp';
+    const fallbackLogo = '/src/assets/logo-oficial-padre.webp';
     const showLandingLogo = (source) => new Promise((resolve) => {
       const preloaded = new Image();
       preloaded.onload = () => {
-        document.querySelectorAll('.landing-logo').forEach((logo) => {
+        const logos = document.querySelectorAll('.landing-logo');
+        logos.forEach((logo) => logo.classList.add('is-updating'));
+        window.setTimeout(() => logos.forEach((logo) => {
           logo.src = source;
-          logo.classList.add('is-ready');
-        });
+          logo.classList.remove('is-updating');
+        }), 120);
         resolve();
       };
       preloaded.onerror = () => {
