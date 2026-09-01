@@ -5,7 +5,7 @@ import { login } from '../services/authService';
 
 import { HiEye, HiEyeOff, HiArrowLeft } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import logoHarvard from '../assets/logo-harvard.png';
+import fallbackLogo from '../assets/insignia-jesus.webp';
 import { API_URL } from '../utils/constants';
 
 const Login = () => {
@@ -13,7 +13,7 @@ const Login = () => {
   const [contrasena, setContrasena] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loginLogo, setLoginLogo] = useState(logoHarvard);
+  const [loginLogo, setLoginLogo] = useState(null);
   const { usuario, iniciarSesion } = useAuth();
   const navigate = useNavigate();
 
@@ -22,13 +22,33 @@ const Login = () => {
   }, [usuario, navigate]);
 
   useEffect(() => {
-    fetch(`${API_URL}/landing`)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    let active = true;
+
+    const revealLogo = (source) => {
+      const image = new Image();
+      image.onload = () => { if (active) setLoginLogo(source); };
+      image.onerror = () => {
+        if (source !== fallbackLogo) revealLogo(fallbackLogo);
+      };
+      image.src = source;
+    };
+
+    fetch(`${API_URL}/landing`, { signal: controller.signal })
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         const portada = data?.data?.portada_imagen_url || data?.portada_imagen_url;
-        if (portada) setLoginLogo(portada);
+        revealLogo(portada || fallbackLogo);
       })
-      .catch(() => {});
+      .catch(() => revealLogo(fallbackLogo))
+      .finally(() => clearTimeout(timeoutId));
+
+    return () => {
+      active = false;
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
   }, []);
 
   const handleSubmit = async (e) => {
@@ -76,7 +96,11 @@ const Login = () => {
           <div className="p-8">
             {/* Header with shield motif */}
             <div className="text-center mb-8">
-              <img src={loginLogo} alt="Colegio Harvard" className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-3 border-gold-400 shadow-gold-lg" />
+              <div className="w-24 h-24 mx-auto mb-4">
+                {loginLogo && (
+                  <img src={loginLogo} alt="Colegio Harvard" className="w-full h-full rounded-full object-cover border-3 border-gold-400 shadow-gold-lg animate-fade-in" />
+                )}
+              </div>
               <h1 className="text-2xl font-bold text-primary-800 font-display tracking-tight">Colegio Harvard</h1>
               <div className="gold-line w-32 mx-auto my-3"></div>
               <p className="text-sm text-gold-600 font-medium">Sistema de Gestión Escolar</p>
