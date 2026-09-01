@@ -10,12 +10,12 @@
   "theme_color": "#8f1616",
   "icons": [
     {
-      "src": "/harvard-app-icon-192.png",
+      "src": "/harvard-jesus-icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/harvard-app-icon-512.png",
+      "src": "/harvard-jesus-icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
