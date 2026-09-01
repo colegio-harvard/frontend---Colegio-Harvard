@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import { registrarAsistencia, obtenerPensionesEscaneo, historialPorteria } from '../../services/asistenciaService';
+import { registrarAsistencia, obtenerPensionesEscaneo, historialPorteria, obtenerAlertaOperativaEscaneo, registrarAccionAlertaOperativa } from '../../services/asistenciaService';
 import { formatHora, todayLimaISO } from '../../utils/formatters';
-import { HiQrcode, HiKey, HiCheck, HiClock, HiMinus, HiX } from 'react-icons/hi';
+import { HiQrcode, HiKey, HiCheck, HiClock, HiMinus, HiX, HiExclamation, HiOfficeBuilding, HiSpeakerphone } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import { useSocket } from '../../hooks/useSocket';
 import { fileUrl } from '../../utils/constants';
@@ -79,6 +79,21 @@ const PensionResumen = ({ pensiones }) => {
     </div>
   );
 };
+
+const AlertaOperativa = ({ alerta, onAccion }) => {
+  if (!alerta) return null;
+  const urgente = alerta.prioridad === 'URGENTE';
+  return (
+    <div className={`mt-4 w-full animate-pulse rounded-xl border-2 p-4 text-left shadow-sm motion-reduce:animate-none ${urgente ? 'border-red-500 bg-red-50' : 'border-amber-400 bg-amber-50'}`} role="alert" aria-live="assertive">
+      <div className="flex gap-3"><HiExclamation className={`h-7 w-7 flex-shrink-0 ${urgente ? 'text-red-600' : 'text-amber-600'}`} /><div className="min-w-0 flex-1">
+        <p className={`text-xs font-extrabold uppercase tracking-wide ${urgente ? 'text-red-700' : 'text-amber-700'}`}>{alerta.prioridad}</p>
+        <p className="break-words text-base font-extrabold text-primary-900">{alerta.mensaje}</p>
+        <div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => onAccion('DERIVAR_OFICINA')} className="inline-flex items-center gap-1.5 rounded-lg bg-primary-700 px-3 py-2 text-xs font-bold text-white hover:bg-primary-800"><HiOfficeBuilding className="h-4 w-4" /> Derivar a oficina</button><button type="button" onClick={() => onAccion('AVISAR_ADMINISTRACION')} className="inline-flex items-center gap-1.5 rounded-lg bg-gold-600 px-3 py-2 text-xs font-bold text-white hover:bg-gold-700"><HiSpeakerphone className="h-4 w-4" /> Avisar a administración</button></div>
+        {alerta.ultima_accion && <p className="mt-2 text-[11px] text-primary-800/60">Última acción: {alerta.ultima_accion === 'DERIVAR_OFICINA' ? 'Derivación a oficina' : 'Aviso a administración'}</p>}
+      </div></div>
+    </div>
+  );
+};
 class CameraErrorBoundary extends Component {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
@@ -149,22 +164,22 @@ const DashboardPorteria = () => {
       const { data } = await registrarAsistencia(payload);
       playSuccessBeep();
       const resultado = data.data;
-      setUltimoRegistro({ ...resultado, pensionesCargando: Boolean(resultado.id_alumno) });
+      setUltimoRegistro({ ...resultado, pensionesCargando: Boolean(resultado.id_alumno), alertaCargando: Boolean(resultado.id_alumno) });
       setCodigoAlumno('');
       programarHistorial(0);
 
       if (resultado.id_alumno) {
-        obtenerPensionesEscaneo(resultado.id_alumno)
-          .then(({ data: pensionesRes }) => {
-            setUltimoRegistro(actual => actual?.id_alumno === resultado.id_alumno
-              ? { ...actual, pensiones: pensionesRes.data, pensionesCargando: false }
-              : actual);
-          })
-          .catch(() => {
-            setUltimoRegistro(actual => actual?.id_alumno === resultado.id_alumno
-              ? { ...actual, pensionesCargando: false, pensionesError: true }
-              : actual);
-            toast.error('La asistencia se registró, pero no se pudo cargar el cuadro de pagos');
+        Promise.allSettled([obtenerPensionesEscaneo(resultado.id_alumno), obtenerAlertaOperativaEscaneo(resultado.id_alumno)])
+          .then(([pensionesRes, alertaRes]) => {
+            setUltimoRegistro(actual => actual?.id_alumno === resultado.id_alumno ? {
+              ...actual,
+              ...(pensionesRes.status === 'fulfilled' ? { pensiones: pensionesRes.value.data.data } : { pensionesError: true }),
+              ...(alertaRes.status === 'fulfilled' ? { alerta_operativa: alertaRes.value.data.data } : { alertaError: true }),
+              pensionesCargando: false,
+              alertaCargando: false,
+            } : actual);
+            if (pensionesRes.status === 'rejected') toast.error('La asistencia se registró, pero no se pudo cargar el cuadro de pagos');
+            if (alertaRes.status === 'rejected') toast.error('La asistencia se registró, pero no se pudo consultar la alerta interna');
           });
       }
 
@@ -213,6 +228,16 @@ const DashboardPorteria = () => {
     e.preventDefault();
     if (!codigoAlumno.trim()) return;
     registrar({ codigo_alumno: codigoAlumno.trim() });
+  };
+
+  const handleAccionAlerta = async (accion) => {
+    const alerta = ultimoRegistro?.alerta_operativa;
+    if (!alerta) return;
+    try {
+      const { data } = await registrarAccionAlertaOperativa(alerta.id, accion);
+      setUltimoRegistro(actual => actual ? { ...actual, alerta_operativa: data.data } : actual);
+      toast.success(accion === 'DERIVAR_OFICINA' ? 'Derivación registrada' : 'Aviso registrado');
+    } catch (error) { toast.error(error.response?.data?.error || 'No se pudo registrar la acción'); }
   };
 
   useEffect(() => {
@@ -380,6 +405,8 @@ const DashboardPorteria = () => {
               Cargando cuadro de pagos...
             </div>
           )}
+          {ultimoRegistro.alertaCargando && <div className="mt-4 border-t border-cream-200 pt-4 text-center text-sm text-primary-800/60">Consultando alertas internas...</div>}
+          <AlertaOperativa alerta={ultimoRegistro.alerta_operativa} onAccion={handleAccionAlerta} />
           <PensionResumen pensiones={ultimoRegistro.pensiones} />
 </Card>
       )}
