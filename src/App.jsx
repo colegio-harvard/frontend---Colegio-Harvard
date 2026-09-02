@@ -43,6 +43,7 @@ const AulaDetalle = lazy(() => import('./pages/AulaDetalle'));
 const AlumnoDetalle = lazy(() => import('./pages/AlumnoDetalle'));
 const Libretas = lazy(() => import('./pages/Libretas'));
 const ReciboPublico = lazy(() => import('./pages/ReciboPublico'));
+const ReciboInventarioPublico = lazy(() => import('./pages/ReciboInventarioPublico'));
 const Matriculas = lazy(() => import('./pages/Matriculas'));
 const MatriculaPublica = lazy(() => import('./pages/MatriculaPublica'));
 
@@ -69,6 +70,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/recibo/:codigo" element={<ReciboPublico />} />
+          <Route path="/recibo-inventario/:codigo" element={<ReciboInventarioPublico />} />
           <Route path="/matricula/:token" element={<MatriculaPublica />} />
 
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

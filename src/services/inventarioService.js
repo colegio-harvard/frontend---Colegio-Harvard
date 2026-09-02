@@ -8,4 +8,5 @@ export const listarMovimientosInventario = () => apiClient.get('/inventario/movi
 export const registrarMovimientoInventario = data => apiClient.post('/inventario/movimientos', data);
 export const listarVentasInventario = () => apiClient.get('/inventario/ventas');
 export const registrarVentaInventario = data => apiClient.post('/inventario/ventas', data);
+export const obtenerReciboInventario = codigo => apiClient.get(`/inventario/recibo/${encodeURIComponent(codigo)}`);
 export const exportarInventario = () => apiClient.get('/inventario/exportar', { responseType: 'blob' });
