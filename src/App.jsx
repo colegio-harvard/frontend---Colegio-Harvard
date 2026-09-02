@@ -28,6 +28,7 @@ const Pensiones = lazy(() => import('./pages/Pensiones'));
 const ReportePagos = lazy(() => import('./pages/ReportePagos'));
 const DashboardPagos = lazy(() => import('./pages/DashboardPagos'));
 const Cobranzas = lazy(() => import('./pages/Cobranzas'));
+const Inventario = lazy(() => import('./pages/Inventario'));
 const ImprimirRecibos = lazy(() => import('./pages/ImprimirRecibos'));
 const ImportarPagosExcel = lazy(() => import('./pages/ImportarPagosExcel'));
 const Notificaciones = lazy(() => import('./pages/Notificaciones'));
@@ -151,6 +152,10 @@ function App() {
 
             <Route path="/cobranzas" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Cobranzas /></ProtectedRoute>
+            } />
+
+            <Route path="/inventario" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Inventario /></ProtectedRoute>
             } />
 
             <Route path="/reporte-pagos" element={
