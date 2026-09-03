@@ -641,7 +641,9 @@ const PensionAdmin = () => {
                         <button
                           onClick={() => abrirModal(alumno, p)}
                           className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${btnColors[estado]}`}
-                          title={estado === 'PAGO_PARCIAL' && est ? `Pagado: ${formatMonto(est.monto_pagado)} / ${formatMonto(est.monto_total)}` : estado}
+                          title={estado === 'PAGO_PARCIAL' && est
+                            ? `Pagado: ${formatMonto(est.monto_pagado)} · Saldo: ${formatMonto(Math.max(0, Number(est.monto_total || 0) - Number(est.monto_pagado || 0)))}`
+                            : estado}
                         >
                           <IconComp className="w-4 h-4" />
                         </button>

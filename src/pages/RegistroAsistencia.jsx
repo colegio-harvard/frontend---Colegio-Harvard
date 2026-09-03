@@ -49,12 +49,13 @@ const PensionStatus = ({ mes }) => {
 };
 
 const detallePension = (mes) => {
+  const saldo = mes.saldo ?? Math.max(0, Number(mes.monto_total || 0) - Number(mes.monto_pagado || 0));
   const lineas = [
     mes.nombre || mes.clave,
     `Estado: ${mes.estado || 'PENDIENTE'}`,
-    `Pagado: ${formatMonto(mes.monto_pagado || 0)} / ${formatMonto(mes.monto_total || 0)}`,
+    `Pagado: ${formatMonto(mes.monto_pagado || 0)}`,
+    `Saldo: ${formatMonto(saldo)}`,
   ];
-  if (mes.saldo !== null && mes.saldo !== undefined) lineas.push(`Saldo: ${formatMonto(mes.saldo)}`);
   if (mes.observacion_no_corresponde) lineas.push(`Obs.: ${mes.observacion_no_corresponde}`);
   if (Array.isArray(mes.pagos) && mes.pagos.length > 0) {
     lineas.push('Pagos:');
