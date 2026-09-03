@@ -9,4 +9,6 @@ export const registrarMovimientoInventario = data => apiClient.post('/inventario
 export const listarVentasInventario = () => apiClient.get('/inventario/ventas');
 export const registrarVentaInventario = data => apiClient.post('/inventario/ventas', data);
 export const obtenerReciboInventario = codigo => apiClient.get(`/inventario/recibo/${encodeURIComponent(codigo)}`);
+export const obtenerReporteEconomicoInventario = params => apiClient.get('/inventario/reporte-economico', { params });
+export const exportarReporteEconomicoInventario = params => apiClient.get('/inventario/reporte-economico/exportar', { params, responseType: 'blob' });
 export const exportarInventario = () => apiClient.get('/inventario/exportar', { responseType: 'blob' });
