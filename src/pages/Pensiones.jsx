@@ -49,31 +49,42 @@ const ticketHtml = (ticket) => {
       <meta charset="utf-8" />
       <title>Ticket ${escapeHtml(ticket.codigo)}</title>
       <style>
+        @page { size: A4 portrait; margin: 8mm; }
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; padding: 18px; color: #3a1f1f; }
-        .ticket { max-width: 380px; margin: 0 auto; border: 1px solid #d8c7aa; padding: 16px; border-radius: 8px; }
-        h1 { margin: 0; font-size: 20px; text-align: center; color: #8b1d1d; }
-        h2 { margin: 4px 0 16px; font-size: 13px; text-align: center; color: #9a7a19; font-weight: 500; }
-        .code { text-align: center; border: 1px dashed #b08a19; padding: 8px; margin: 12px 0; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        td { padding: 6px 0; border-bottom: 1px solid #f0e6d8; vertical-align: top; }
-        td:first-child { width: 42%; color: #9a7a19; font-weight: 700; }
-        .verify { margin-top: 12px; font-size: 10px; overflow-wrap: anywhere; color: #6b5b43; }
-        .foot { margin-top: 14px; text-align: center; font-size: 11px; color: #7a6a55; }
-        @media print { body { padding: 0; } .ticket { border: none; } }
+        body { margin: 0; color: #321818; font-family: Arial, sans-serif; background: #fff; }
+        .sheet { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 138mm; gap: 4mm; }
+        .ticket { border: 1px dashed #bda46c; border-radius: 4px; padding: 3mm; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
+        .ticket-inner { height: 100%; border: 1px solid #e6d9bd; border-radius: 4px; padding: 4mm; }
+        .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; border-bottom: 1px solid #eadfca; padding-bottom: 5px; margin-bottom: 5px; }
+        h1 { margin: 0; font-size: 15px; color: #8b1d1d; }
+        h2 { margin: 1px 0 0; font-size: 10px; color: #a67a00; font-weight: 500; }
+        .code { border: 1px dashed #b08a19; padding: 4px 6px; font-size: 13px; font-weight: 700; letter-spacing: .5px; white-space: nowrap; }
+        table { width: 100%; border-collapse: collapse; font-size: 9.2px; line-height: 1.15; }
+        td { border-bottom: 1px solid #f0e6d8; padding: 2.8px 0; vertical-align: top; }
+        td:first-child { width: 34%; color: #9a7a19; font-weight: 700; padding-right: 4px; }
+        .verify { margin-top: 5px; font-size: 7.5px; color: #6b5b43; overflow-wrap: anywhere; }
+        @media screen {
+          body { background: #f7f0e6; padding: 16px; }
+          .sheet { width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; padding: 8mm; box-shadow: 0 3px 16px rgba(0,0,0,.12); }
+        }
+        @media print { body { background: #fff; } }
       </style>
     </head>
     <body>
-      <div class="ticket">
-        <h1>Colegio Harvard</h1>
-        <h2>Ticket de pago de pensión</h2>
-        <div class="code">${escapeHtml(ticket.codigo)}</div>
-        <table>
-          ${filas.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('')}
-        </table>
-        <div class="verify"><strong>Verificacion:</strong> ${escapeHtml(verifyUrl)}</div>
-        <div class="foot">Conserve este ticket. El codigo permite verificar su autenticidad.</div>
-      </div>
+      <main class="sheet">
+        <section class="ticket">
+          <div class="ticket-inner">
+            <div class="head">
+              <div><h1>Colegio Harvard</h1><h2>Recibo de pago</h2></div>
+              <div class="code">${escapeHtml(ticket.codigo)}</div>
+            </div>
+            <table>
+              ${filas.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('')}
+            </table>
+            <div class="verify"><strong>Verificacion:</strong> ${escapeHtml(verifyUrl)}</div>
+          </div>
+        </section>
+      </main>
       <script>window.onload = () => setTimeout(() => window.print(), 250);</script>
     </body>
   </html>`;
