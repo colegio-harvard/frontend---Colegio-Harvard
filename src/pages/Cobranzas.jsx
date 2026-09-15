@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { HiChatAlt2, HiDeviceMobile, HiRefresh, HiCalendar, HiExternalLink, HiSearch, HiX, HiCheckCircle } from 'react-icons/hi';
 import Card from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
+import { normalizeSearchText } from '../utils/textSearch';
 import {
   actualizarEstadoMensaje,
   listarCandidatosCobranza,
@@ -86,9 +87,9 @@ export default function Cobranzas() {
     return [...grupos.values()].map((grupo) => ({ ...grupo, conceptos: grupo.conceptos.sort((a, b) => (a.fecha_vencimiento || '').localeCompare(b.fecha_vencimiento || '')) })).sort((a, b) => a.alumno.localeCompare(b.alumno, 'es'));
   }, [candidatos]);
   const alumnosFiltrados = useMemo(() => {
-    const texto = busqueda.trim().toLocaleLowerCase('es');
+    const texto = normalizeSearchText(busqueda);
     if (!texto) return alumnos;
-    return alumnos.filter((grupo) => [grupo.codigo_alumno, grupo.alumno, grupo.apoderado, grupo.telefono].some((valor) => String(valor || '').toLocaleLowerCase('es').includes(texto)));
+    return alumnos.filter((grupo) => [grupo.codigo_alumno, grupo.alumno, grupo.apoderado, grupo.telefono].some((valor) => normalizeSearchText(valor).includes(texto)));
   }, [alumnos, busqueda]);
   const total = useMemo(() => candidatos.filter((x) => seleccionados.has(x.id_estado_pension)).reduce((s, x) => s + Number(x.saldo), 0), [candidatos, seleccionados]);
   const todasLasDeudasSeleccionadas = elegibles.length > 0 && elegibles.every((x) => seleccionados.has(x.id_estado_pension));
