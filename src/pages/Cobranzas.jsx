@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { HiChatAlt2, HiDeviceMobile, HiRefresh, HiCalendar, HiExternalLink, HiSearch, HiX, HiCheckCircle } from 'react-icons/hi';
 import Card from '../components/ui/Card';
+import Modal from '../components/ui/Modal';
 import {
   actualizarEstadoMensaje,
   listarCandidatosCobranza,
@@ -28,6 +29,26 @@ export default function Cobranzas() {
   const [compromiso, setCompromiso] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [envioAbiertoId, setEnvioAbiertoId] = useState(null);
+  const [dialogo, setDialogo] = useState(null);
+  const copiarMensaje = async (texto) => {
+    try { await navigator.clipboard.writeText(texto); toast.success('Mensaje copiado'); }
+    catch { toast.error('No se pudo copiar. Selecciona el texto y cópialo manualmente.'); }
+  };
+  const niveles = [
+    { nivel: 1, nombre: 'Recordatorio', descripcion: 'Mensaje cordial actual.', color: 'border-emerald-300 bg-emerald-50 text-emerald-900', icono: '🟢' },
+    { nivel: 2, nombre: 'Segundo aviso', descripcion: 'Seguimiento con un tono más firme.', color: 'border-amber-300 bg-amber-50 text-amber-900', icono: '🟡' },
+    { nivel: 3, nombre: 'Citación obligatoria', descripcion: 'Solicita la presencia del apoderado en el colegio.', color: 'border-orange-300 bg-orange-50 text-orange-900', icono: '🟠' },
+    { nivel: 4, nombre: 'Último aviso', descripcion: 'Regularización inmediata y atención prioritaria.', color: 'border-red-300 bg-red-50 text-red-900', icono: '🔴' },
+  ];
+  const iniciarPreparacion = () => setDialogo({ paso: 'TIPO', canal, ids: [...seleccionados], nivel: 1, mensajes: [] });
+  const revisarNivel = async (nivel) => {
+    setProcesando(true);
+    try {
+      const { data } = await prepararMensajesCobranza(dialogo.canal, dialogo.ids, { nivel, vista_previa: true });
+      setDialogo({ ...dialogo, paso: 'PREVIA', nivel, mensajes: data.data?.preparados || [], omitidos: data.data?.omitidos?.length || 0 });
+    } catch (error) { toast.error(error.response?.data?.error || 'No se pudo obtener la vista previa'); }
+    finally { setProcesando(false); }
+  };
 
   const cargar = async () => {
     setCargando(true);
@@ -82,8 +103,9 @@ export default function Cobranzas() {
     if (!seleccionados.size) return toast.error('Selecciona al menos una deuda');
     setProcesando(true);
     try {
-      const { data } = await prepararMensajesCobranza(canal, [...seleccionados]);
+      const { data } = await prepararMensajesCobranza(dialogo.canal, dialogo.ids, { nivel: dialogo.nivel, revisados: dialogo.mensajes.map(({ id_alumno, mensaje }) => ({ id_alumno, mensaje })) });
       setCola(data.data?.preparados || []);
+      setDialogo(null);
       toast.success(`${data.data?.preparados?.length || 0} mensaje(s) preparados. Revísalos antes de abrirlos.`);
     } catch (error) {
       toast.error(error.response?.data?.error || 'No se pudieron preparar los mensajes');
@@ -115,7 +137,7 @@ export default function Cobranzas() {
     try {
       const { telefono, texto } = obtenerDatosWhatsApp(envio);
       if (!telefono) throw new Error('Teléfono inválido');
-      window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(texto)}`;
+      window.location.assign(`whatsapp://send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(texto)}`);
       await marcarAbierto(envio);
     } catch {
       toast.error('No se pudo abrir la aplicación de WhatsApp. Usa la alternativa Web.');
@@ -152,6 +174,22 @@ export default function Cobranzas() {
 
   return (
     <div className="space-y-6">
+      {dialogo && <Modal isOpen onClose={() => !procesando && setDialogo(null)} title={dialogo.paso === 'TIPO' ? 'Seleccione el tipo de mensaje que desea preparar' : 'Revise los mensajes antes de confirmar'} size="xl">
+        {dialogo.paso === 'TIPO' ? <div className="space-y-3">
+          {dialogo.canal === 'SMS' && <p className="text-sm text-gray-600">SMS conserva su recordatorio actual. Los cuatro niveles están disponibles para WhatsApp.</p>}
+          {(dialogo.canal === 'SMS' ? niveles.slice(0, 1) : niveles).map(tipo => <button key={tipo.nivel} type="button" disabled={procesando} onClick={() => revisarNivel(tipo.nivel)} className={`w-full rounded-xl border-2 p-4 text-left ${tipo.color}`}><span className="block font-bold">{tipo.icono} {tipo.nivel}. {tipo.nombre}</span><span className="mt-1 block text-sm">{tipo.descripcion}</span></button>)}
+          <p className="text-sm text-gray-600">Seleccionar un nivel solo muestra la vista previa; no prepara ni envía mensajes.</p>
+          <button type="button" disabled={procesando} className="btn-secondary" onClick={() => setDialogo(null)}>Cancelar</button>
+        </div> : <div className="space-y-4">
+          <div className={`rounded-xl border p-3 ${niveles[dialogo.nivel - 1].color}`}><p className="font-bold">{niveles[dialogo.nivel - 1].icono} Nivel {dialogo.nivel} · {niveles[dialogo.nivel - 1].nombre}</p><p className="text-sm">{dialogo.mensajes.length} estudiante(s) · Total seleccionado: {moneda(dialogo.mensajes.reduce((s, x) => s + Number(x.total), 0))}</p></div>
+          {dialogo.nivel === 4 && <p className="text-sm text-red-800">Utiliza este nivel solo si ya hubo avisos o coordinaciones previas.</p>}
+          {dialogo.omitidos > 0 && <p className="text-sm text-amber-800">{dialogo.omitidos} concepto(s) omitidos por las reglas actuales de elegibilidad.</p>}
+          {!dialogo.mensajes.length && <p>No hay deudas elegibles para preparar.</p>}
+          {dialogo.mensajes.map(mensaje => <section key={mensaje.id_alumno} className="rounded-xl border border-gray-200 p-4"><h3 className="font-bold">{mensaje.alumno}</h3><p className="text-sm text-gray-600">{mensaje.apoderado} · Total: {moneda(mensaje.total)}</p><pre className="my-3 whitespace-pre-wrap break-words font-sans text-sm">{mensaje.mensaje}</pre><button type="button" className="btn-secondary" onClick={() => copiarMensaje(mensaje.mensaje)}>Copiar mensaje</button></section>)}
+          <div className="flex flex-wrap justify-end gap-2"><button type="button" disabled={procesando} className="btn-secondary" onClick={() => setDialogo(null)}>Cancelar</button><button type="button" disabled={procesando} className="btn-secondary" onClick={() => setDialogo({ ...dialogo, paso: 'TIPO' })}>Atrás / Cambiar tipo</button><button type="button" disabled={procesando || !dialogo.mensajes.length} className="btn-primary" onClick={preparar}>{procesando ? 'Preparando…' : 'Confirmar y preparar mensajes'}</button></div>
+          <p className="text-xs text-gray-600">Después podrás abrir cada mensaje. El envío final se confirma dentro de WhatsApp o SMS.</p>
+        </div>}
+      </Modal>}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="page-title">Cobranzas</h1>
@@ -184,7 +222,7 @@ export default function Cobranzas() {
             <button type="button" aria-pressed={todasLasDeudasSeleccionadas} className={`inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 ${todasLasDeudasSeleccionadas ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-200 hover:bg-emerald-100' : 'border-primary-300 bg-white text-primary-800 hover:border-primary-500 hover:bg-primary-50 focus:ring-primary-300'}`} onClick={alternarTodasLasDeudas}>
               <HiCheckCircle className="text-lg" /> {todasLasDeudasSeleccionadas ? 'Deseleccionar todas las deudas' : 'Seleccionar todas las deudas'}
             </button>
-            <button className="btn-primary" disabled={procesando || !seleccionados.size} onClick={preparar}>{procesando ? 'Preparando…' : 'Preparar mensajes'}</button>
+            <button className="btn-primary" disabled={procesando || !seleccionados.size} onClick={iniciarPreparacion}>{procesando ? 'Preparando…' : 'Preparar mensajes'}</button>
           </div>
         </div>
         <div className="mb-4 flex flex-wrap items-center gap-3"><div className="relative min-w-[280px] max-w-xl flex-1"><HiSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar por código, alumno, apoderado o teléfono" className="input-field w-full pl-10 pr-10" />{busqueda && <button type="button" aria-label="Limpiar búsqueda" onClick={() => setBusqueda('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary-700"><HiX /></button>}</div>{busqueda && <span className="text-sm text-primary-800/60">{alumnosFiltrados.length} de {alumnos.length} alumnos</span>}</div>
