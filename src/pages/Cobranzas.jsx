@@ -11,6 +11,15 @@ import {
 } from '../services/cobranzasService';
 
 const moneda = (value) => `S/ ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+const modeloMensaje = (envio) => {
+  if (!envio) return '';
+  const conceptos = envio.conceptos.map(x => `${x.concepto || x.clave_mes}: S/${Number(x.saldo).toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`);
+  return envio.mensaje
+    .replace(conceptos.join('\n'), '[DETALLE DE DEUDA]')
+    .replace(conceptos.join(', '), '[DETALLE DE DEUDA]')
+    .replaceAll(envio.alumno, '[NOMBRE DEL ESTUDIANTE]')
+    .replace(/Total( pendiente)?:? S\/\d+(?:[.,]\d+)*/, (_, pendiente) => `Total${pendiente || ''}: S/[TOTAL PENDIENTE]`);
+};
 const motivo = {
   COMPROMISO_VIGENTE: 'Compromiso vigente',
   SIN_APODERADO: 'Sin apoderado',
@@ -174,20 +183,20 @@ export default function Cobranzas() {
 
   return (
     <div className="space-y-6">
-      {dialogo && <Modal isOpen onClose={() => !procesando && setDialogo(null)} title={dialogo.paso === 'TIPO' ? 'Seleccione el tipo de mensaje que desea preparar' : 'Revise los mensajes antes de confirmar'} size="xl">
+      {dialogo && <Modal isOpen onClose={() => !procesando && setDialogo(null)} title={dialogo.paso === 'TIPO' ? 'Seleccione el tipo de mensaje que desea preparar' : 'Revise el modelo del mensaje'} size="xl">
         {dialogo.paso === 'TIPO' ? <div className="space-y-3">
           {dialogo.canal === 'SMS' && <p className="text-sm text-gray-600">SMS conserva su recordatorio actual. Los cuatro niveles están disponibles para WhatsApp.</p>}
           {(dialogo.canal === 'SMS' ? niveles.slice(0, 1) : niveles).map(tipo => <button key={tipo.nivel} type="button" disabled={procesando} onClick={() => revisarNivel(tipo.nivel)} className={`w-full rounded-xl border-2 p-4 text-left ${tipo.color}`}><span className="block font-bold">{tipo.icono} {tipo.nivel}. {tipo.nombre}</span><span className="mt-1 block text-sm">{tipo.descripcion}</span></button>)}
           <p className="text-sm text-gray-600">Seleccionar un nivel solo muestra la vista previa; no prepara ni envía mensajes.</p>
           <button type="button" disabled={procesando} className="btn-secondary" onClick={() => setDialogo(null)}>Cancelar</button>
         </div> : <div className="space-y-4">
-          <div className={`rounded-xl border p-3 ${niveles[dialogo.nivel - 1].color}`}><p className="font-bold">{niveles[dialogo.nivel - 1].icono} Nivel {dialogo.nivel} · {niveles[dialogo.nivel - 1].nombre}</p><p className="text-sm">{dialogo.mensajes.length} estudiante(s) · Total seleccionado: {moneda(dialogo.mensajes.reduce((s, x) => s + Number(x.total), 0))}</p></div>
+          <div className={`rounded-xl border p-3 ${niveles[dialogo.nivel - 1].color}`}><p className="font-bold">{niveles[dialogo.nivel - 1].icono} Nivel {dialogo.nivel} · {niveles[dialogo.nivel - 1].nombre}</p><p className="text-sm">Se prepararán mensajes personalizados para {dialogo.mensajes.length} estudiante(s).</p></div>
           {dialogo.nivel === 4 && <p className="text-sm text-red-800">Utiliza este nivel solo si ya hubo avisos o coordinaciones previas.</p>}
           {dialogo.omitidos > 0 && <p className="text-sm text-amber-800">{dialogo.omitidos} concepto(s) omitidos por las reglas actuales de elegibilidad.</p>}
           {!dialogo.mensajes.length && <p>No hay deudas elegibles para preparar.</p>}
-          {dialogo.mensajes.map(mensaje => <section key={mensaje.id_alumno} className="rounded-xl border border-gray-200 p-4"><h3 className="font-bold">{mensaje.alumno}</h3><p className="text-sm text-gray-600">{mensaje.apoderado} · Total: {moneda(mensaje.total)}</p><pre className="my-3 whitespace-pre-wrap break-words font-sans text-sm">{mensaje.mensaje}</pre><button type="button" className="btn-secondary" onClick={() => copiarMensaje(mensaje.mensaje)}>Copiar mensaje</button></section>)}
-          <div className="flex flex-wrap justify-end gap-2"><button type="button" disabled={procesando} className="btn-secondary" onClick={() => setDialogo(null)}>Cancelar</button><button type="button" disabled={procesando} className="btn-secondary" onClick={() => setDialogo({ ...dialogo, paso: 'TIPO' })}>Atrás / Cambiar tipo</button><button type="button" disabled={procesando || !dialogo.mensajes.length} className="btn-primary" onClick={preparar}>{procesando ? 'Preparando…' : 'Confirmar y preparar mensajes'}</button></div>
-          <p className="text-xs text-gray-600">Después podrás abrir cada mensaje. El envío final se confirma dentro de WhatsApp o SMS.</p>
+          {dialogo.mensajes.length > 0 && <section className="rounded-xl border border-gray-200 p-4"><pre className="max-h-[40vh] overflow-y-auto whitespace-pre-wrap break-words font-sans text-sm">{modeloMensaje(dialogo.mensajes[0])}</pre><button type="button" className="btn-secondary mt-3" onClick={() => copiarMensaje(modeloMensaje(dialogo.mensajes[0]))}>Copiar modelo</button></section>}
+          <div className="sticky bottom-0 z-10 flex flex-wrap justify-end gap-2 border-t border-gray-200 bg-white py-3"><button type="button" disabled={procesando} className="btn-secondary" onClick={() => setDialogo(null)}>Cancelar</button><button type="button" disabled={procesando} className="btn-secondary" onClick={() => setDialogo({ ...dialogo, paso: 'TIPO' })}>Atrás / Cambiar tipo</button><button type="button" disabled={procesando || !dialogo.mensajes.length} className="btn-primary" onClick={preparar}>{procesando ? 'Preparando…' : 'Confirmar y preparar mensajes'}</button></div>
+          <p className="text-xs text-gray-600">Los marcadores se sustituirán por el nombre y la deuda real de cada estudiante. Después podrás abrir cada mensaje; nada se envía automáticamente.</p>
         </div>}
       </Modal>}
       <div className="flex flex-wrap items-start justify-between gap-3">
