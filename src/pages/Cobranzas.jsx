@@ -99,11 +99,6 @@ export default function Cobranzas() {
     return siguiente;
   });
 
-  const seleccionarUltimo = () => {
-    const ids = alumnos.map((grupo) => grupo.conceptos.filter((x) => x.elegible).reduce((ultimo, actual) => !ultimo || (actual.fecha_vencimiento || '') > (ultimo.fecha_vencimiento || '') ? actual : ultimo, null)?.id_estado_pension).filter(Boolean);
-    setSeleccionados(new Set(ids));
-  };
-
   const alternarTodasLasDeudas = () => setSeleccionados(todasLasDeudasSeleccionadas
     ? new Set()
     : new Set(elegibles.map((x) => x.id_estado_pension)));
@@ -224,9 +219,6 @@ export default function Cobranzas() {
           <div className="flex flex-wrap gap-2" role="group" aria-label="Selección rápida de deudas">
             <button type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 text-sm font-semibold text-primary-800 shadow-sm transition hover:border-primary-500 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-300" onClick={() => setSeleccionados(new Set())}>
               <HiX className="text-lg" /> Ninguno
-            </button>
-            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 text-sm font-semibold text-primary-800 shadow-sm transition hover:border-primary-500 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-300" onClick={seleccionarUltimo}>
-              <HiCalendar className="text-lg" /> Último por alumno
             </button>
             <button type="button" aria-pressed={todasLasDeudasSeleccionadas} className={`inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 ${todasLasDeudasSeleccionadas ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-200 hover:bg-emerald-100' : 'border-primary-300 bg-white text-primary-800 hover:border-primary-500 hover:bg-primary-50 focus:ring-primary-300'}`} onClick={alternarTodasLasDeudas}>
               <HiCheckCircle className="text-lg" /> {todasLasDeudasSeleccionadas ? 'Deseleccionar todas las deudas' : 'Seleccionar todas las deudas'}
