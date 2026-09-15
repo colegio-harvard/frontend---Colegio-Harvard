@@ -9,6 +9,7 @@ import { listarNiveles, listarGrados, listarAulas } from '../services/configEsco
 import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter, HiDownload, HiChatAlt2, HiDeviceMobile, HiExternalLink } from 'react-icons/hi';
 import { formatFecha } from '../utils/formatters';
 import toast from 'react-hot-toast';
+import { normalizeSearchText } from '../utils/textSearch';
 
 const nombreMes = (p) => p.nombre || p.clave;
 
@@ -430,19 +431,24 @@ const PensionAdmin = () => {
   };
 
   // Busqueda client-side
+  const indiceNombres = useMemo(() => cuadricula.map(alumno => ({
+    alumno,
+    nombre: normalizeSearchText(alumno.nombre_completo),
+    padreNombre: normalizeSearchText(alumno.padre?.nombre_completo),
+  })), [cuadricula]);
+
   const cuadriculaFiltrada = useMemo(() => {
     if (!busqueda.trim()) return cuadricula;
     const term = busqueda.toLowerCase();
-    return cuadricula.filter(a => {
-      const nombre = a.nombre_completo?.toLowerCase() || '';
+    const termNombre = normalizeSearchText(busqueda);
+    return indiceNombres.filter(({ alumno: a, nombre, padreNombre }) => {
       const codigo = a.codigo_alumno?.toLowerCase() || '';
       const dniAlumno = a.dni?.toLowerCase() || '';
-      const padreNombre = a.padre?.nombre_completo?.toLowerCase() || '';
       const padreDni = a.padre?.dni?.toLowerCase() || '';
-      return nombre.includes(term) || codigo.includes(term) || dniAlumno.includes(term) ||
-             padreNombre.includes(term) || padreDni.includes(term);
-    });
-  }, [cuadricula, busqueda]);
+      return nombre.includes(termNombre) || codigo.includes(term) || dniAlumno.includes(term) ||
+             padreNombre.includes(termNombre) || padreDni.includes(term);
+    }).map(({ alumno }) => alumno);
+  }, [cuadricula, indiceNombres, busqueda]);
 
   // Opciones cascading
   const gradosFiltrados = useMemo(() => {
