@@ -23,6 +23,7 @@ const buildRuta = (codigo, refId) => {
   // Comunicados: referencia_id es id_comunicado, no id_alumno
   if (codigo === 'NUEVO_COMUNICADO') return '/comunicados';
   if (codigo === 'PENSION_25_30') return '/pensiones';
+  if (codigo === 'ALERTA_OPERATIVA') return '/alertas-internas';
 
   const base = RUTAS_ALUMNO[codigo];
   if (!base) return null;

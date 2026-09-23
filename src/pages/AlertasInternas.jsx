@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { HiBell, HiCheck, HiExclamation, HiPencil, HiPlus, HiSearch } from 'react-icons/hi';
-import { guardarAlertaOperativaAlumno, listarAlertasOperativas, listarAlumnos, resolverAlertaOperativaAlumno } from '../services/alumnosService';
+import { confirmarAccionAlertaOperativa, guardarAlertaOperativaAlumno, listarAlertasOperativas, listarAlumnos, resolverAlertaOperativaAlumno } from '../services/alumnosService';
 import { fileUrl } from '../utils/constants';
 
 const normalizar = (value) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -74,6 +74,19 @@ export default function AlertasInternas() {
     catch { toast.error('No se pudo resolver la alerta'); }
   };
 
+  const confirmarAccion = async (alerta) => {
+    const esDerivacion = alerta.ultima_accion === 'DERIVAR_OFICINA';
+    const pregunta = esDerivacion
+      ? 'Confirme únicamente cuando el alumno se encuentre físicamente en la oficina. Esta acción cerrará la alerta. ¿Confirmar recepción?'
+      : 'Confirme únicamente cuando administración haya atendido el aviso. Esta acción cerrará la alerta. ¿Confirmar atención?';
+    if (!window.confirm(pregunta)) return;
+    try {
+      const { data } = await confirmarAccionAlertaOperativa(alerta.id);
+      toast.success(data.message);
+      await cargar();
+    } catch (error) { toast.error(error.response?.data?.error || 'No se pudo confirmar la atención'); }
+  };
+
   return <div className="space-y-5">
     <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="page-title">Alertas internas</h1><p className="mt-1 text-sm text-primary-700/70">Seguimiento central de situaciones especiales vinculadas a los alumnos.</p></div><button onClick={abrirNueva} className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"><HiPlus /> Nueva alerta</button></div>
 
@@ -91,8 +104,8 @@ export default function AlertasInternas() {
         const alumno = alerta.tbl_alumnos;
         const activa = alerta.estado === 'ACTIVA';
         return <article key={alerta.id} className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center">
-          <div className="flex min-w-0 flex-1 items-center gap-4"><div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-gold-300 bg-cream-100">{alumno?.foto_url ? <img src={fileUrl(alumno.foto_url)} alt="" className="h-full w-full object-cover"/> : null}</div><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold text-primary-900">{alumno?.nombre_completo}</h3><span className="text-sm font-medium text-primary-600">{alumno?.codigo_alumno}</span></div><p className="text-sm text-primary-700/65">{aulaDe(alumno) || 'Sin aula asignada'}</p><p className="mt-2 text-primary-800">{alerta.mensaje}</p></div></div>
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end"><span className={`rounded-full px-3 py-1 text-xs font-bold ${alerta.prioridad === 'URGENTE' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}><HiExclamation className="mr-1 inline"/>{alerta.prioridad}</span><span className={`rounded-full px-3 py-1 text-xs font-bold ${activa ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{alerta.estado}</span><button onClick={() => abrirEdicion(alerta)} className="rounded-lg border border-cream-300 p-2 text-primary-700" title={activa ? 'Editar' : 'Reactivar'}><HiPencil/></button>{activa && <button onClick={() => resolver(alerta)} className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white"><HiCheck/> Resolver</button>}</div>
+          <div className="flex min-w-0 flex-1 items-center gap-4"><div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-gold-300 bg-cream-100">{alumno?.foto_url ? <img src={fileUrl(alumno.foto_url)} alt="" className="h-full w-full object-cover"/> : null}</div><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold text-primary-900">{alumno?.nombre_completo}</h3><span className="text-sm font-medium text-primary-600">{alumno?.codigo_alumno}</span></div><p className="text-sm text-primary-700/65">{aulaDe(alumno) || 'Sin aula asignada'}</p><p className="mt-2 text-primary-800">{alerta.mensaje}</p>{alerta.ultima_accion && activa && <div className={`mt-3 rounded-lg border px-3 py-2 text-sm font-semibold ${alerta.ultima_accion === 'DERIVAR_OFICINA' ? 'border-blue-200 bg-blue-50 text-blue-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>{alerta.ultima_accion === 'DERIVAR_OFICINA' ? 'Pendiente: confirmar recepción del alumno en oficina.' : 'Pendiente: confirmar atención del aviso administrativo.'}</div>}</div></div>
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end"><span className={`rounded-full px-3 py-1 text-xs font-bold ${alerta.prioridad === 'URGENTE' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}><HiExclamation className="mr-1 inline"/>{alerta.prioridad}</span><span className={`rounded-full px-3 py-1 text-xs font-bold ${activa ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{alerta.estado}</span><button onClick={() => abrirEdicion(alerta)} className="rounded-lg border border-cream-300 p-2 text-primary-700" title={activa ? 'Editar' : 'Reactivar'}><HiPencil/></button>{activa && alerta.ultima_accion && <button onClick={() => confirmarAccion(alerta)} className="flex items-center gap-1 rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800"><HiCheck/> {alerta.ultima_accion === 'DERIVAR_OFICINA' ? 'Confirmar recepción' : 'Confirmar atención'}</button>}{activa && !alerta.ultima_accion && <button onClick={() => resolver(alerta)} className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white"><HiCheck/> Resolver</button>}</div>
         </article>;
       })}</div>}
     </section>
