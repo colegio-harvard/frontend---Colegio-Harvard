@@ -144,6 +144,31 @@ const ConfirmacionRecibo = ({ ticket, onClose }) => {
   </Modal>;
 };
 
+const ResultadoBusquedaRecibo = ({ ticket, onClose }) => {
+  if (!ticket) return null;
+  const pension = ticket.pension || {};
+  return <Modal isOpen={true} onClose={onClose} title="Recibo encontrado" size="md">
+    <div className="space-y-5">
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <div className="flex items-center gap-2 text-emerald-800"><HiCheck className="h-6 w-6"/><p className="text-lg font-bold">Recibo {ticket.codigo}</p></div>
+        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <div><dt className="text-gray-500">Alumno</dt><dd className="font-semibold text-primary-900">{ticket.alumno?.nombre_completo || '-'}</dd></div>
+          <div><dt className="text-gray-500">Código del alumno</dt><dd className="font-semibold text-primary-900">{ticket.alumno?.codigo_alumno || '-'}</dd></div>
+          <div><dt className="text-gray-500">Concepto</dt><dd className="font-semibold text-primary-900">{pension.concepto || '-'}</dd></div>
+          <div><dt className="text-gray-500">Fecha</dt><dd className="font-semibold text-primary-900">{ticket.fecha_pago || '-'}</dd></div>
+          <div><dt className="text-gray-500">Monto recibido</dt><dd className="font-semibold text-primary-900">{formatMonto(pension.monto_pagado_en_ticket)}</dd></div>
+          <div><dt className="text-gray-500">Saldo pendiente</dt><dd className="font-semibold text-primary-900">{formatMonto(pension.saldo_pendiente)}</dd></div>
+        </dl>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <button type="button" onClick={() => window.open(urlRecibo(ticket), '_blank', 'noopener,noreferrer')} className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 font-semibold text-primary-800 hover:bg-primary-50"><HiExternalLink/> Ver recibo</button>
+        <button type="button" onClick={() => imprimirTicket(ticket)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gold-600 px-4 py-2.5 font-semibold text-white hover:bg-gold-700"><HiPrinter/> Imprimir</button>
+      </div>
+      <div className="flex justify-end"><button type="button" onClick={onClose} className="btn-secondary">Cerrar</button></div>
+    </div>
+  </Modal>;
+};
+
 // ============================
 // Badge de estado reutilizable
 // ============================
@@ -315,6 +340,9 @@ const PensionAdmin = () => {
   const [filtros, setFiltros] = useState({ id_nivel: '', id_grado: '', id_aula: '' });
   const [busqueda, setBusqueda] = useState('');
   const [ticketBusqueda, setTicketBusqueda] = useState('');
+  const [ticketEncontrado, setTicketEncontrado] = useState(null);
+  const [buscandoTicket, setBuscandoTicket] = useState(false);
+  const [errorTicket, setErrorTicket] = useState('');
   const [conceptoDeudores, setConceptoDeudores] = useState('');
   const [descargandoDeudores, setDescargandoDeudores] = useState(false);
   const [niveles, setNiveles] = useState([]);
@@ -388,11 +416,17 @@ const PensionAdmin = () => {
   const handleBuscarTicket = async () => {
     const codigo = ticketBusqueda.trim().toUpperCase();
     if (!codigo) return toast.error('Ingrese el código del ticket');
+    setBuscandoTicket(true);
+    setErrorTicket('');
     try {
       const { data } = await obtenerTicketPension(codigo);
-      imprimirTicket(data.data);
+      setTicketEncontrado(data.data);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Ticket no encontrado');
+      const mensaje = err.response?.data?.error || 'Ticket no encontrado';
+      setErrorTicket(`No existe ningún recibo con el código ${codigo}.`);
+      toast.error(mensaje);
+    } finally {
+      setBuscandoTicket(false);
     }
   };
 
@@ -539,28 +573,6 @@ const PensionAdmin = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gold-600 mb-1">Buscar ticket</label>
-              <div className="relative">
-                <HiPrinter className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-800/30 w-4 h-4" />
-                <input
-                  type="text"
-                  value={ticketBusqueda}
-                  onChange={(e) => setTicketBusqueda(e.target.value.toUpperCase())}
-                  onKeyDown={(e) => e.key === 'Enter' && handleBuscarTicket()}
-                  placeholder="Ej: R8F3A2C"
-                  className="pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm w-full uppercase"
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={handleBuscarTicket}
-              className="self-end px-5 py-2 bg-gold-600 hover:bg-gold-700 text-white rounded-lg text-sm font-medium"
-            >
-              Ticket
-            </button>
-
-            <div>
               <label className="block text-xs font-medium text-gold-600 mb-1">Concepto de deuda</label>
               <select
                 value={conceptoDeudores}
@@ -586,6 +598,20 @@ const PensionAdmin = () => {
           >
             Filtrar
           </button>
+        </div>
+
+        <div className="mt-4 border-t border-cream-200 pt-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+            <div className="w-full sm:max-w-md">
+              <label className="mb-1 block text-xs font-semibold text-primary-700">Buscar recibo por código</label>
+              <div className="relative">
+                <HiPrinter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-600"/>
+                <input type="text" value={ticketBusqueda} onChange={(e) => { setTicketBusqueda(e.target.value.toUpperCase()); setErrorTicket(''); }} onKeyDown={(e) => e.key === 'Enter' && handleBuscarTicket()} placeholder="Ej.: R80963D" className={`w-full rounded-lg border bg-white py-2 pl-9 pr-3 text-sm uppercase outline-none ${errorTicket ? 'border-red-400 focus:ring-2 focus:ring-red-200' : 'border-cream-300 focus:border-gold-500 focus:ring-2 focus:ring-gold-200'}`}/>
+              </div>
+            </div>
+            <button type="button" onClick={handleBuscarTicket} disabled={buscandoTicket} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gold-600 px-5 py-2 text-sm font-semibold text-white hover:bg-gold-700 disabled:cursor-wait disabled:opacity-60"><HiSearch className="h-4 w-4"/>{buscandoTicket ? 'Buscando...' : 'Buscar recibo'}</button>
+          </div>
+          <p className={`mt-2 text-xs ${errorTicket ? 'font-semibold text-red-600' : 'text-primary-600/70'}`}>{errorTicket || 'Esta búsqueda abre la ficha del recibo; no modifica los filtros de la cuadrícula.'}</p>
         </div>
 
         {hayFiltros && (
@@ -733,6 +759,7 @@ const PensionAdmin = () => {
         />
       )}
       <ConfirmacionRecibo ticket={ticketConfirmacion} onClose={() => setTicketConfirmacion(null)} />
+      <ResultadoBusquedaRecibo ticket={ticketEncontrado} onClose={() => setTicketEncontrado(null)} />
     </div>
   );
 };
