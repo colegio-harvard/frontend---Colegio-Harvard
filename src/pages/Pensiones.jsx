@@ -10,6 +10,7 @@ import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight
 import { formatFecha } from '../utils/formatters';
 import toast from 'react-hot-toast';
 import { normalizeSearchText } from '../utils/textSearch';
+import { limpiarTelefono, normalizarTelefonoWhatsAppPeru } from '../utils/phone';
 
 const nombreMes = (p) => p.nombre || p.clave;
 
@@ -117,15 +118,16 @@ const mensajeReciboSms = (ticket) => {
   return `COLEGIO HARVARD: Pago registrado de ${formatMonto(pension.monto_pagado_en_ticket)} por ${pension.concepto || 'pensión'} de ${alumno.nombre_completo || 'alumno(a)'}. Recibo ${ticket?.codigo || '-'}. Acumulado ${formatMonto(pension.monto_pagado_acumulado)}. Saldo ${formatMonto(pension.saldo_pendiente)}. Gracias.`;
 };
 
-const telefonoRecibo = (ticket) => String(ticket?.apoderado?.celular || '').replace(/\D/g, '');
+const telefonoRecibo = (ticket) => limpiarTelefono(ticket?.apoderado?.celular);
 
 const ConfirmacionRecibo = ({ ticket, onClose }) => {
   if (!ticket) return null;
   const pension = ticket.pension || {};
   const telefono = telefonoRecibo(ticket);
+  const telefonoWhatsApp = normalizarTelefonoWhatsAppPeru(telefono);
   const abrirWhatsApp = () => {
-    if (!telefono) return toast.error('El apoderado no tiene un celular registrado');
-    window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(mensajeReciboWhatsApp(ticket))}`;
+    if (!telefonoWhatsApp) return toast.error('El apoderado no tiene un celular peruano válido');
+    window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefonoWhatsApp)}&text=${encodeURIComponent(mensajeReciboWhatsApp(ticket))}`;
   };
   const abrirSms = () => {
     if (!telefono) return toast.error('El apoderado no tiene un celular registrado');
