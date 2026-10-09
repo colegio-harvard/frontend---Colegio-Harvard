@@ -9,8 +9,10 @@ export const guardarConfiguracionMatricula = (data) => apiClient.put('/matricula
 export const generarInvitacionMatricula = (id_alumno) => apiClient.post('/matriculas/invitar', { id_alumno });
 export const prepararMatriculaFisica = (id_alumno) => apiClient.post('/matriculas/preparar', { id_alumno });
 export const obtenerExpedienteMatricula = (id) => apiClient.get(`/matriculas/${id}`);
-export const revisarMatricula = (id, data) => apiClient.put(`/matriculas/${id}/revisar`, data);`r`nexport const actualizarMatriculaFisica = (id, data) => apiClient.put(`/matriculas/${id}/fisica`, data);
+export const revisarMatricula = (id, data) => apiClient.put(`/matriculas/${id}/revisar`, data);
+export const actualizarMatriculaFisica = (id, data) => apiClient.put(`/matriculas/${id}/fisica`, data);
 export const obtenerMatriculaPublica = (token) => publicClient.get(`/matriculas/publica/${token}`);
 export const aceptarMatriculaPublica = (token, data) => publicClient.post(`/matriculas/publica/${token}/aceptar`, data);
+
 
 
