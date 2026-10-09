@@ -200,3 +200,6 @@
   .physical-sheet-header { display: flex !important; flex-wrap: nowrap !important; }
   .physical-qr { width: 34mm !important; height: 34mm !important; min-width: 34mm !important; }
 }
+
+.physical-mode .evidence-observation, .physical-mode .evidence-controls { display: none; }
+
