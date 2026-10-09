@@ -14,8 +14,11 @@ export const obtenerInfoRetiroAlumno = (id) => apiClient.get(`/alumnos/${id}/ret
 export const retirarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/retirar`, data);
 export const reactivarAlumno = (id, data) => apiClient.post(`/alumnos/${id}/reactivar`, data);
 export const obtenerAlertaOperativaAlumno = (id) => apiClient.get(`/alumnos/${id}/alerta-operativa`);
-export const guardarAlertaOperativaAlumno = (id, data) => apiClient.put(`/alumnos/${id}/alerta-operativa`, data);
+export const listarAlertasOperativas = (params) => apiClient.get('/alumnos/alertas-operativas', { params });
+export const confirmarAccionAlertaOperativa = (id) => apiClient.post(`/alumnos/alertas-operativas/${id}/confirmar`);export const guardarAlertaOperativaAlumno = (id, data) => apiClient.put(`/alumnos/${id}/alerta-operativa`, data);
 export const resolverAlertaOperativaAlumno = (id) => apiClient.delete(`/alumnos/${id}/alerta-operativa`);
 
 export const obtenerSiguienteCodigoAlumno = () => apiClient.get('/alumnos/siguiente-codigo');
 export const exportarAulasExcel = () => apiClient.get('/alumnos/exportar-aulas-excel', { responseType: 'blob' });
+
+
