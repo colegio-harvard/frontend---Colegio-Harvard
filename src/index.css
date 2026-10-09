@@ -204,3 +204,6 @@
 .physical-mode .evidence-observation, .physical-mode .evidence-controls { display: none !important; }
 
 
+
+.physical-sheet .physical-qr { width: 8.5rem; height: 8.5rem; flex: 0 0 auto; object-fit: contain; }
+
