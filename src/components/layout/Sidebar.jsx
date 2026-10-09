@@ -3,7 +3,7 @@ import { ROLES } from '../../utils/constants';
 import {
   HiHome, HiUsers, HiAcademicCap, HiUserGroup,
   HiClipboardCheck, HiBookOpen, HiChat, HiSpeakerphone, HiCurrencyDollar,
-  HiCog, HiBell, HiDocumentText, HiChartBar, HiPrinter, HiCalendar, HiShieldCheck, HiX, HiQrcode, HiUpload, HiMail, HiClipboardList, HiShoppingCart
+  HiCog, HiBell, HiDocumentText, HiChartBar, HiPrinter, HiCalendar, HiShieldCheck, HiX, HiQrcode, HiUpload, HiMail, HiClipboardList
 } from 'react-icons/hi';
 import logoHarvard from '../../assets/logo-harvard.png';
 
@@ -15,7 +15,6 @@ const menuItems = {
     { to: '/config-escolar', icon: HiCog, label: 'Config. Escolar' },
     { to: '/padres', icon: HiUserGroup, label: 'Padres' },
     { to: '/alumnos', icon: HiAcademicCap, label: 'Alumnos' },
-    { to: '/alertas-internas', icon: HiBell, label: 'Alertas internas' },
     { to: '/matriculas', icon: HiClipboardList, label: 'Matrícula Digital' },
     { to: '/libretas', icon: HiAcademicCap, label: 'Libretas' },
     { to: '/asistencia', icon: HiClipboardCheck, label: 'Asistencia' },
@@ -26,7 +25,6 @@ const menuItems = {
     { to: '/pensiones', icon: HiCurrencyDollar, label: 'Pensiones' },
     { to: '/dashboard-pagos', icon: HiChartBar, label: 'Dashboard Pagos' },
     { to: '/cobranzas', icon: HiMail, label: 'Cobranzas' },
-    { to: '/inventario', icon: HiShoppingCart, label: 'Inventario y Ventas' },
     { to: '/reporte-pagos', icon: HiChartBar, label: 'Reporte Pagos' },
     { to: '/imprimir-recibos', icon: HiPrinter, label: 'Imprimir Recibos' },
     { to: '/importar-pagos', icon: HiUpload, label: 'Importar Pagos' },
@@ -38,7 +36,6 @@ const menuItems = {
     { to: '/dashboard', icon: HiHome, label: 'Dashboard' },
     { to: '/padres', icon: HiUserGroup, label: 'Padres' },
     { to: '/alumnos', icon: HiAcademicCap, label: 'Alumnos' },
-    { to: '/alertas-internas', icon: HiBell, label: 'Alertas internas' },
     { to: '/matriculas', icon: HiClipboardList, label: 'Matrícula Digital' },
     { to: '/config-escolar', icon: HiCog, label: 'Config. Escolar' },
     { to: '/asistencia', icon: HiClipboardCheck, label: 'Asistencia' },
@@ -49,7 +46,6 @@ const menuItems = {
     { to: '/pensiones', icon: HiCurrencyDollar, label: 'Pensiones' },
     { to: '/dashboard-pagos', icon: HiChartBar, label: 'Dashboard Pagos' },
     { to: '/cobranzas', icon: HiMail, label: 'Cobranzas' },
-    { to: '/inventario', icon: HiShoppingCart, label: 'Inventario y Ventas' },
     { to: '/reporte-pagos', icon: HiChartBar, label: 'Reporte Pagos' },
     { to: '/imprimir-recibos', icon: HiPrinter, label: 'Imprimir Recibos' },
     { to: '/importar-pagos', icon: HiUpload, label: 'Importar Pagos' },
@@ -139,5 +135,4 @@ const Sidebar = ({ isOpen, onClose }) => {
 };
 
 export default Sidebar;
-
 

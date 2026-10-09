@@ -13,7 +13,6 @@ const Usuarios = lazy(() => import('./pages/Usuarios'));
 const ConfigEscolar = lazy(() => import('./pages/ConfigEscolar'));
 const Padres = lazy(() => import('./pages/Padres'));
 const Alumnos = lazy(() => import('./pages/Alumnos'));
-const AlertasInternas = lazy(() => import('./pages/AlertasInternas'));
 const Asistencia = lazy(() => import('./pages/Asistencia'));
 const Agenda = lazy(() => import('./pages/Agenda'));
 const AgendaAula = lazy(() => import('./pages/AgendaAula'));
@@ -28,7 +27,6 @@ const Pensiones = lazy(() => import('./pages/Pensiones'));
 const ReportePagos = lazy(() => import('./pages/ReportePagos'));
 const DashboardPagos = lazy(() => import('./pages/DashboardPagos'));
 const Cobranzas = lazy(() => import('./pages/Cobranzas'));
-const Inventario = lazy(() => import('./pages/Inventario'));
 const ImprimirRecibos = lazy(() => import('./pages/ImprimirRecibos'));
 const ImportarPagosExcel = lazy(() => import('./pages/ImportarPagosExcel'));
 const Notificaciones = lazy(() => import('./pages/Notificaciones'));
@@ -43,7 +41,6 @@ const AulaDetalle = lazy(() => import('./pages/AulaDetalle'));
 const AlumnoDetalle = lazy(() => import('./pages/AlumnoDetalle'));
 const Libretas = lazy(() => import('./pages/Libretas'));
 const ReciboPublico = lazy(() => import('./pages/ReciboPublico'));
-const ReciboInventarioPublico = lazy(() => import('./pages/ReciboInventarioPublico'));
 const Matriculas = lazy(() => import('./pages/Matriculas'));
 const MatriculaPublica = lazy(() => import('./pages/MatriculaPublica'));
 
@@ -70,7 +67,6 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/recibo/:codigo" element={<ReciboPublico />} />
-          <Route path="/recibo-inventario/:codigo" element={<ReciboInventarioPublico />} />
           <Route path="/matricula/:token" element={<MatriculaPublica />} />
 
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
@@ -90,10 +86,6 @@ function App() {
 
             <Route path="/alumnos" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Alumnos /></ProtectedRoute>
-            } />
-
-            <Route path="/alertas-internas" element={
-              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><AlertasInternas /></ProtectedRoute>
             } />
 
             <Route path="/matriculas" element={
@@ -156,10 +148,6 @@ function App() {
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Cobranzas /></ProtectedRoute>
             } />
 
-            <Route path="/inventario" element={
-              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Inventario /></ProtectedRoute>
-            } />
-
             <Route path="/reporte-pagos" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><ReportePagos /></ProtectedRoute>
             } />
@@ -208,4 +196,3 @@ function App() {
 }
 
 export default App;
-

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, API_URL } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -9,8 +9,6 @@ import { listarNiveles, listarGrados, listarAulas } from '../services/configEsco
 import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter, HiDownload, HiChatAlt2, HiDeviceMobile, HiExternalLink } from 'react-icons/hi';
 import { formatFecha } from '../utils/formatters';
 import toast from 'react-hot-toast';
-import { normalizeSearchText } from '../utils/textSearch';
-import { limpiarTelefono, normalizarTelefonoWhatsAppPeru } from '../utils/phone';
 
 const nombreMes = (p) => p.nombre || p.clave;
 
@@ -51,42 +49,31 @@ const ticketHtml = (ticket) => {
       <meta charset="utf-8" />
       <title>Ticket ${escapeHtml(ticket.codigo)}</title>
       <style>
-        @page { size: A4 portrait; margin: 8mm; }
         * { box-sizing: border-box; }
-        body { margin: 0; color: #321818; font-family: Arial, sans-serif; background: #fff; }
-        .sheet { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 138mm; gap: 4mm; }
-        .ticket { border: 1px dashed #bda46c; border-radius: 4px; padding: 3mm; overflow: hidden; break-inside: avoid; page-break-inside: avoid; }
-        .ticket-inner { height: 100%; border: 1px solid #e6d9bd; border-radius: 4px; padding: 4mm; }
-        .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; border-bottom: 1px solid #eadfca; padding-bottom: 5px; margin-bottom: 5px; }
-        h1 { margin: 0; font-size: 15px; color: #8b1d1d; }
-        h2 { margin: 1px 0 0; font-size: 10px; color: #a67a00; font-weight: 500; }
-        .code { border: 1px dashed #b08a19; padding: 4px 6px; font-size: 13px; font-weight: 700; letter-spacing: .5px; white-space: nowrap; }
-        table { width: 100%; border-collapse: collapse; font-size: 9.2px; line-height: 1.15; }
-        td { border-bottom: 1px solid #f0e6d8; padding: 2.8px 0; vertical-align: top; }
-        td:first-child { width: 34%; color: #9a7a19; font-weight: 700; padding-right: 4px; }
-        .verify { margin-top: 5px; font-size: 7.5px; color: #6b5b43; overflow-wrap: anywhere; }
-        @media screen {
-          body { background: #f7f0e6; padding: 16px; }
-          .sheet { width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; padding: 8mm; box-shadow: 0 3px 16px rgba(0,0,0,.12); }
-        }
-        @media print { body { background: #fff; } }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 18px; color: #3a1f1f; }
+        .ticket { max-width: 380px; margin: 0 auto; border: 1px solid #d8c7aa; padding: 16px; border-radius: 8px; }
+        h1 { margin: 0; font-size: 20px; text-align: center; color: #8b1d1d; }
+        h2 { margin: 4px 0 16px; font-size: 13px; text-align: center; color: #9a7a19; font-weight: 500; }
+        .code { text-align: center; border: 1px dashed #b08a19; padding: 8px; margin: 12px 0; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        td { padding: 6px 0; border-bottom: 1px solid #f0e6d8; vertical-align: top; }
+        td:first-child { width: 42%; color: #9a7a19; font-weight: 700; }
+        .verify { margin-top: 12px; font-size: 10px; overflow-wrap: anywhere; color: #6b5b43; }
+        .foot { margin-top: 14px; text-align: center; font-size: 11px; color: #7a6a55; }
+        @media print { body { padding: 0; } .ticket { border: none; } }
       </style>
     </head>
     <body>
-      <main class="sheet">
-        <section class="ticket">
-          <div class="ticket-inner">
-            <div class="head">
-              <div><h1>Colegio Harvard</h1><h2>Recibo de pago</h2></div>
-              <div class="code">${escapeHtml(ticket.codigo)}</div>
-            </div>
-            <table>
-              ${filas.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('')}
-            </table>
-            <div class="verify"><strong>Verificacion:</strong> ${escapeHtml(verifyUrl)}</div>
-          </div>
-        </section>
-      </main>
+      <div class="ticket">
+        <h1>Colegio Harvard</h1>
+        <h2>Ticket de pago de pensión</h2>
+        <div class="code">${escapeHtml(ticket.codigo)}</div>
+        <table>
+          ${filas.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`).join('')}
+        </table>
+        <div class="verify"><strong>Verificacion:</strong> ${escapeHtml(verifyUrl)}</div>
+        <div class="foot">Conserve este ticket. El codigo permite verificar su autenticidad.</div>
+      </div>
       <script>window.onload = () => setTimeout(() => window.print(), 250);</script>
     </body>
   </html>`;
@@ -118,16 +105,15 @@ const mensajeReciboSms = (ticket) => {
   return `COLEGIO HARVARD: Pago registrado de ${formatMonto(pension.monto_pagado_en_ticket)} por ${pension.concepto || 'pensión'} de ${alumno.nombre_completo || 'alumno(a)'}. Recibo ${ticket?.codigo || '-'}. Acumulado ${formatMonto(pension.monto_pagado_acumulado)}. Saldo ${formatMonto(pension.saldo_pendiente)}. Gracias.`;
 };
 
-const telefonoRecibo = (ticket) => limpiarTelefono(ticket?.apoderado?.celular);
+const telefonoRecibo = (ticket) => String(ticket?.apoderado?.celular || '').replace(/\D/g, '');
 
 const ConfirmacionRecibo = ({ ticket, onClose }) => {
   if (!ticket) return null;
   const pension = ticket.pension || {};
   const telefono = telefonoRecibo(ticket);
-  const telefonoWhatsApp = normalizarTelefonoWhatsAppPeru(telefono);
   const abrirWhatsApp = () => {
-    if (!telefonoWhatsApp) return toast.error('El apoderado no tiene un celular peruano válido');
-    window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefonoWhatsApp)}&text=${encodeURIComponent(mensajeReciboWhatsApp(ticket))}`;
+    if (!telefono) return toast.error('El apoderado no tiene un celular registrado');
+    window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(mensajeReciboWhatsApp(ticket))}`;
   };
   const abrirSms = () => {
     if (!telefono) return toast.error('El apoderado no tiene un celular registrado');
@@ -141,31 +127,6 @@ const ConfirmacionRecibo = ({ ticket, onClose }) => {
       </div>
       <div className="rounded-xl border border-cream-200 bg-cream-50 p-4"><p className="mb-2 text-xs font-semibold uppercase text-gold-700">Mensaje preparado</p><pre className="whitespace-pre-wrap font-sans text-sm text-gray-700">{mensajeReciboWhatsApp(ticket)}</pre></div>
       <div className="grid gap-2 sm:grid-cols-2"><button type="button" onClick={abrirWhatsApp} className="btn-primary flex items-center justify-center gap-2"><HiChatAlt2 /> Enviar por WhatsApp</button><button type="button" onClick={abrirSms} className="inline-flex items-center justify-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2.5 font-semibold text-blue-800 hover:bg-blue-100"><HiDeviceMobile /> Enviar por SMS</button><button type="button" onClick={() => imprimirTicket(ticket)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 font-semibold text-primary-800 hover:bg-primary-50"><HiPrinter /> Imprimir / guardar PDF</button><button type="button" onClick={() => window.open(urlRecibo(ticket), '_blank', 'noopener,noreferrer')} className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 font-semibold text-primary-800 hover:bg-primary-50"><HiExternalLink /> Ver recibo digital</button></div>
-      <div className="flex justify-end"><button type="button" onClick={onClose} className="btn-secondary">Cerrar</button></div>
-    </div>
-  </Modal>;
-};
-
-const ResultadoBusquedaRecibo = ({ ticket, onClose }) => {
-  if (!ticket) return null;
-  const pension = ticket.pension || {};
-  return <Modal isOpen={true} onClose={onClose} title="Recibo encontrado" size="md">
-    <div className="space-y-5">
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-        <div className="flex items-center gap-2 text-emerald-800"><HiCheck className="h-6 w-6"/><p className="text-lg font-bold">Recibo {ticket.codigo}</p></div>
-        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-          <div><dt className="text-gray-500">Alumno</dt><dd className="font-semibold text-primary-900">{ticket.alumno?.nombre_completo || '-'}</dd></div>
-          <div><dt className="text-gray-500">Código del alumno</dt><dd className="font-semibold text-primary-900">{ticket.alumno?.codigo_alumno || '-'}</dd></div>
-          <div><dt className="text-gray-500">Concepto</dt><dd className="font-semibold text-primary-900">{pension.concepto || '-'}</dd></div>
-          <div><dt className="text-gray-500">Fecha</dt><dd className="font-semibold text-primary-900">{ticket.fecha_pago || '-'}</dd></div>
-          <div><dt className="text-gray-500">Monto recibido</dt><dd className="font-semibold text-primary-900">{formatMonto(pension.monto_pagado_en_ticket)}</dd></div>
-          <div><dt className="text-gray-500">Saldo pendiente</dt><dd className="font-semibold text-primary-900">{formatMonto(pension.saldo_pendiente)}</dd></div>
-        </dl>
-      </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <button type="button" onClick={() => window.open(urlRecibo(ticket), '_blank', 'noopener,noreferrer')} className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary-300 bg-white px-4 py-2.5 font-semibold text-primary-800 hover:bg-primary-50"><HiExternalLink/> Ver recibo</button>
-        <button type="button" onClick={() => imprimirTicket(ticket)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gold-600 px-4 py-2.5 font-semibold text-white hover:bg-gold-700"><HiPrinter/> Imprimir</button>
-      </div>
       <div className="flex justify-end"><button type="button" onClick={onClose} className="btn-secondary">Cerrar</button></div>
     </div>
   </Modal>;
@@ -342,9 +303,6 @@ const PensionAdmin = () => {
   const [filtros, setFiltros] = useState({ id_nivel: '', id_grado: '', id_aula: '' });
   const [busqueda, setBusqueda] = useState('');
   const [ticketBusqueda, setTicketBusqueda] = useState('');
-  const [ticketEncontrado, setTicketEncontrado] = useState(null);
-  const [buscandoTicket, setBuscandoTicket] = useState(false);
-  const [errorTicket, setErrorTicket] = useState('');
   const [conceptoDeudores, setConceptoDeudores] = useState('');
   const [descargandoDeudores, setDescargandoDeudores] = useState(false);
   const [niveles, setNiveles] = useState([]);
@@ -418,17 +376,11 @@ const PensionAdmin = () => {
   const handleBuscarTicket = async () => {
     const codigo = ticketBusqueda.trim().toUpperCase();
     if (!codigo) return toast.error('Ingrese el código del ticket');
-    setBuscandoTicket(true);
-    setErrorTicket('');
     try {
       const { data } = await obtenerTicketPension(codigo);
-      setTicketEncontrado(data.data);
+      imprimirTicket(data.data);
     } catch (err) {
-      const mensaje = err.response?.data?.error || 'Ticket no encontrado';
-      setErrorTicket(`No existe ningún recibo con el código ${codigo}.`);
-      toast.error(mensaje);
-    } finally {
-      setBuscandoTicket(false);
+      toast.error(err.response?.data?.error || 'Ticket no encontrado');
     }
   };
 
@@ -467,24 +419,19 @@ const PensionAdmin = () => {
   };
 
   // Busqueda client-side
-  const indiceNombres = useMemo(() => cuadricula.map(alumno => ({
-    alumno,
-    nombre: normalizeSearchText(alumno.nombre_completo),
-    padreNombre: normalizeSearchText(alumno.padre?.nombre_completo),
-  })), [cuadricula]);
-
   const cuadriculaFiltrada = useMemo(() => {
     if (!busqueda.trim()) return cuadricula;
     const term = busqueda.toLowerCase();
-    const termNombre = normalizeSearchText(busqueda);
-    return indiceNombres.filter(({ alumno: a, nombre, padreNombre }) => {
+    return cuadricula.filter(a => {
+      const nombre = a.nombre_completo?.toLowerCase() || '';
       const codigo = a.codigo_alumno?.toLowerCase() || '';
       const dniAlumno = a.dni?.toLowerCase() || '';
+      const padreNombre = a.padre?.nombre_completo?.toLowerCase() || '';
       const padreDni = a.padre?.dni?.toLowerCase() || '';
-      return nombre.includes(termNombre) || codigo.includes(term) || dniAlumno.includes(term) ||
-             padreNombre.includes(termNombre) || padreDni.includes(term);
-    }).map(({ alumno }) => alumno);
-  }, [cuadricula, indiceNombres, busqueda]);
+      return nombre.includes(term) || codigo.includes(term) || dniAlumno.includes(term) ||
+             padreNombre.includes(term) || padreDni.includes(term);
+    });
+  }, [cuadricula, busqueda]);
 
   // Opciones cascading
   const gradosFiltrados = useMemo(() => {
@@ -575,6 +522,28 @@ const PensionAdmin = () => {
             </div>
 
             <div>
+              <label className="block text-xs font-medium text-gold-600 mb-1">Buscar ticket</label>
+              <div className="relative">
+                <HiPrinter className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-800/30 w-4 h-4" />
+                <input
+                  type="text"
+                  value={ticketBusqueda}
+                  onChange={(e) => setTicketBusqueda(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === 'Enter' && handleBuscarTicket()}
+                  placeholder="Ej: R8F3A2C"
+                  className="pl-9 pr-3 py-2 border border-cream-300 rounded-lg outline-none text-sm w-full uppercase"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleBuscarTicket}
+              className="self-end px-5 py-2 bg-gold-600 hover:bg-gold-700 text-white rounded-lg text-sm font-medium"
+            >
+              Ticket
+            </button>
+
+            <div>
               <label className="block text-xs font-medium text-gold-600 mb-1">Concepto de deuda</label>
               <select
                 value={conceptoDeudores}
@@ -602,20 +571,6 @@ const PensionAdmin = () => {
           </button>
         </div>
 
-        <div className="mt-4 border-t border-cream-200 pt-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-            <div className="w-full sm:max-w-md">
-              <label className="mb-1 block text-xs font-semibold text-primary-700">Buscar recibo por código</label>
-              <div className="relative">
-                <HiPrinter className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gold-600"/>
-                <input type="text" value={ticketBusqueda} onChange={(e) => { setTicketBusqueda(e.target.value.toUpperCase()); setErrorTicket(''); }} onKeyDown={(e) => e.key === 'Enter' && handleBuscarTicket()} placeholder="Ej.: R80963D" className={`w-full rounded-lg border bg-white py-2 pl-9 pr-3 text-sm uppercase outline-none ${errorTicket ? 'border-red-400 focus:ring-2 focus:ring-red-200' : 'border-cream-300 focus:border-gold-500 focus:ring-2 focus:ring-gold-200'}`}/>
-              </div>
-            </div>
-            <button type="button" onClick={handleBuscarTicket} disabled={buscandoTicket} className="inline-flex items-center justify-center gap-2 rounded-lg bg-gold-600 px-5 py-2 text-sm font-semibold text-white hover:bg-gold-700 disabled:cursor-wait disabled:opacity-60"><HiSearch className="h-4 w-4"/>{buscandoTicket ? 'Buscando...' : 'Buscar recibo'}</button>
-          </div>
-          <p className={`mt-2 text-xs ${errorTicket ? 'font-semibold text-red-600' : 'text-primary-600/70'}`}>{errorTicket || 'Esta búsqueda abre la ficha del recibo; no modifica los filtros de la cuadrícula.'}</p>
-        </div>
-
         {hayFiltros && (
           <div className="flex items-center justify-between mt-3 pt-3 border-t border-cream-200">
             <span className="text-xs text-primary-800/50">
@@ -634,8 +589,8 @@ const PensionAdmin = () => {
           <table className="min-w-full">
             <thead>
               <tr className="bg-cream-50">
-                <th className="sticky left-0 z-20 bg-cream-50 px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Alumno</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">DNI alumno</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Alumno</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">DNI</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Padre/Apoderado</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gold-600 uppercase">Aula</th>
                 <th className="px-3 py-2 text-right text-xs font-medium text-gold-600 uppercase">Matrícula</th>
@@ -648,14 +603,14 @@ const PensionAdmin = () => {
             </thead>
             <tbody>
               {paginatedData.map(alumno => (
-                <tr key={alumno.id} className="group border-t hover:bg-cream-50">
-                  <td className="sticky left-0 z-10 bg-white px-3 py-2 whitespace-nowrap group-hover:bg-cream-50">
+                <tr key={alumno.id} className="border-t hover:bg-cream-50">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-primary-800">{alumno.nombre_completo}</div>
                     <div className="text-xs text-gold-600">{alumno.codigo_alumno}</div>
                   </td>
                   <td className="px-3 py-2 text-sm text-primary-800/70">{alumno.dni || '-'}</td>
                   <td className="px-3 py-2 text-sm text-primary-800/70 whitespace-nowrap">
-                    {alumno.padre ? <><div>{alumno.padre.nombre_completo}</div>{alumno.padre.celular ? <a href={`tel:${String(alumno.padre.celular).replace(/\s/g, '')}`} className="text-xs font-medium text-gold-600 hover:text-gold-700 hover:underline">{alumno.padre.celular}</a> : <div className="text-xs italic text-cream-400">Celular no registrado</div>}</> : <span className="text-cream-400 italic">Sin vincular</span>}
+                    {alumno.padre?.nombre_completo || <span className="text-cream-400 italic">Sin vincular</span>}
                   </td>
                   <td className="px-3 py-2 text-sm text-primary-800/70 whitespace-nowrap">
                     {alumno.aula ? `${alumno.aula.grado?.nombre || ''} ${alumno.aula.seccion}` : '-'}
@@ -686,9 +641,7 @@ const PensionAdmin = () => {
                         <button
                           onClick={() => abrirModal(alumno, p)}
                           className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${btnColors[estado]}`}
-                          title={estado === 'PAGO_PARCIAL' && est
-                            ? `Pagado: ${formatMonto(est.monto_pagado)} · Saldo: ${formatMonto(Math.max(0, Number(est.monto_total || 0) - Number(est.monto_pagado || 0)))}`
-                            : estado}
+                          title={estado === 'PAGO_PARCIAL' && est ? `Pagado: ${formatMonto(est.monto_pagado)} / ${formatMonto(est.monto_total)}` : estado}
                         >
                           <IconComp className="w-4 h-4" />
                         </button>
@@ -761,7 +714,6 @@ const PensionAdmin = () => {
         />
       )}
       <ConfirmacionRecibo ticket={ticketConfirmacion} onClose={() => setTicketConfirmacion(null)} />
-      <ResultadoBusquedaRecibo ticket={ticketEncontrado} onClose={() => setTicketEncontrado(null)} />
     </div>
   );
 };
@@ -1182,7 +1134,6 @@ export const ModalPago = ({ alumno, mes, onClose, onSaved }) => {
 };
 
 export default Pensiones;
-
 
 
 

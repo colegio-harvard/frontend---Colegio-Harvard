@@ -6,14 +6,11 @@ const publicClient = axios.create({ baseURL: API_URL, headers: { 'Content-Type':
 
 export const cargarMatriculas = () => apiClient.get('/matriculas/bootstrap');
 export const guardarConfiguracionMatricula = (data) => apiClient.put('/matriculas/configuracion', data);
-export const prepararMatricula = (id_alumno) => apiClient.post('/matriculas/preparar', { id_alumno });
 export const generarInvitacionMatricula = (id_alumno) => apiClient.post('/matriculas/invitar', { id_alumno });
+export const prepararMatriculaFisica = (id_alumno) => apiClient.post('/matriculas/preparar', { id_alumno });
 export const obtenerExpedienteMatricula = (id) => apiClient.get(`/matriculas/${id}`);
-export const guardarBorradorAsistidoMatricula = (id, borrador) => apiClient.put(`/matriculas/${id}/borrador-asistido`, { borrador });
-export const guardarComplementoAdministrativoMatricula = (id, complemento, motivo, id_aula_actual) => apiClient.put(`/matriculas/${id}/complemento-administrativo`, { complemento, motivo, id_aula_actual });
-export const guardarControlDocumentalMatricula = (id, control_documental) => apiClient.put(`/matriculas/${id}/control-documental`, { control_documental });
-export const revisarMatricula = (id, data) => apiClient.put(`/matriculas/${id}/revisar`, data);
+export const revisarMatricula = (id, data) => apiClient.put(`/matriculas/${id}/revisar`, data);`r`nexport const actualizarMatriculaFisica = (id, data) => apiClient.put(`/matriculas/${id}/fisica`, data);
 export const obtenerMatriculaPublica = (token) => publicClient.get(`/matriculas/publica/${token}`);
 export const aceptarMatriculaPublica = (token, data) => publicClient.post(`/matriculas/publica/${token}/aceptar`, data);
-export const solicitarCorreccionMatriculaPublica = (token, observacion) => publicClient.post(`/matriculas/publica/${token}/solicitar-correccion`, { observacion });
+
 

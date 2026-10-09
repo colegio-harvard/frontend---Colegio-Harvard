@@ -49,13 +49,12 @@ const PensionStatus = ({ mes }) => {
 };
 
 const detallePension = (mes) => {
-  const saldo = mes.saldo ?? Math.max(0, Number(mes.monto_total || 0) - Number(mes.monto_pagado || 0));
   const lineas = [
     mes.nombre || mes.clave,
     `Estado: ${mes.estado || 'PENDIENTE'}`,
-    `Pagado: ${formatMonto(mes.monto_pagado || 0)}`,
-    `Saldo: ${formatMonto(saldo)}`,
+    `Pagado: ${formatMonto(mes.monto_pagado || 0)} / ${formatMonto(mes.monto_total || 0)}`,
   ];
+  if (mes.saldo !== null && mes.saldo !== undefined) lineas.push(`Saldo: ${formatMonto(mes.saldo)}`);
   if (mes.observacion_no_corresponde) lineas.push(`Obs.: ${mes.observacion_no_corresponde}`);
   if (Array.isArray(mes.pagos) && mes.pagos.length > 0) {
     lineas.push('Pagos:');
@@ -108,12 +107,22 @@ const AlertaOperativa = ({ alerta, onAccion }) => {
   const urgente = alerta.prioridad === 'URGENTE';
   return (
     <div className={`w-full mt-4 rounded-xl border-2 p-4 text-left shadow-sm ${urgente ? 'border-red-500 bg-red-50' : 'border-amber-400 bg-amber-50'} animate-pulse motion-reduce:animate-none`} role="alert" aria-live="assertive">
-      <div className="flex gap-3"><HiExclamation className={`w-7 h-7 flex-shrink-0 ${urgente ? 'text-red-600' : 'text-amber-600'}`} /><div className="min-w-0 flex-1">
-        <p className={`text-xs font-extrabold uppercase tracking-wide ${urgente ? 'text-red-700' : 'text-amber-700'}`}>{alerta.prioridad}</p>
-        <p className="text-base font-extrabold text-primary-900 break-words">{alerta.mensaje}</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2"><div><button type="button" onClick={() => onAccion('DERIVAR_OFICINA')} className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary-700 px-3 py-2 text-xs font-bold text-white hover:bg-primary-800"><HiOfficeBuilding className="h-4 w-4" /> Derivar a oficina</button><p className="mt-1 text-[11px] leading-snug text-primary-800/70">El alumno será enviado físicamente a la oficina para su atención.</p></div><div><button type="button" onClick={() => onAccion('AVISAR_ADMINISTRACION')} className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-gold-600 px-3 py-2 text-xs font-bold text-white hover:bg-gold-700"><HiSpeakerphone className="h-4 w-4" /> Avisar a administración</button><p className="mt-1 text-[11px] leading-snug text-primary-800/70">Notifica a administración; el alumno permanece en portería.</p></div></div>
-        {alerta.ultima_accion && <p className="mt-3 rounded-md bg-white/70 px-2 py-1.5 text-[11px] font-semibold text-primary-800">{alerta.accion_confirmada_en ? `${alerta.ultima_accion === 'DERIVAR_OFICINA' ? 'Recepción' : 'Atención'} confirmada; la alerta continúa activa hasta su resolución.` : alerta.ultima_accion === 'DERIVAR_OFICINA' ? 'Pendiente: recepción del alumno en oficina.' : 'Pendiente: atención del aviso por administración.'}</p>}
-      </div></div>
+      <div className="flex gap-3">
+        <HiExclamation className={`w-7 h-7 flex-shrink-0 ${urgente ? 'text-red-600' : 'text-amber-600'}`} />
+        <div className="min-w-0 flex-1">
+          <p className={`text-xs font-extrabold uppercase tracking-wide ${urgente ? 'text-red-700' : 'text-amber-700'}`}>{alerta.prioridad}</p>
+          <p className="text-base font-extrabold text-primary-900 break-words">{alerta.mensaje}</p>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <button type="button" onClick={() => onAccion('DERIVAR_OFICINA')} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary-700 text-white text-xs font-bold hover:bg-primary-800">
+              <HiOfficeBuilding className="w-4 h-4" /> Derivar a oficina
+            </button>
+            <button type="button" onClick={() => onAccion('AVISAR_ADMINISTRACION')} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gold-600 text-white text-xs font-bold hover:bg-gold-700">
+              <HiSpeakerphone className="w-4 h-4" /> Avisar a administración
+            </button>
+          </div>
+          {alerta.ultima_accion && <p className="mt-2 text-[11px] text-primary-800/60">Última acción registrada: {alerta.ultima_accion === 'DERIVAR_OFICINA' ? 'Derivación a oficina' : 'Aviso a administración'}</p>}
+        </div>
+      </div>
     </div>
   );
 };
@@ -192,8 +201,15 @@ const RegistroAsistencia = () => {
       // La asistencia ya quedó confirmada; los datos complementarios se cargan sin bloquear la cámara.
       if (resultado.id_alumno) {
         secondaryTimerRef.current = setTimeout(() => {
-          Promise.allSettled([obtenerPensionesEscaneo(resultado.id_alumno), obtenerAlertaOperativaEscaneo(resultado.id_alumno)]).then(([pensionesRes, alertaRes]) => {
-            setScanResult(actual => actual?.id_alumno === resultado.id_alumno ? { ...actual, ...(pensionesRes.status === 'fulfilled' ? { pensiones: pensionesRes.value.data.data } : {}), ...(alertaRes.status === 'fulfilled' ? { alerta_operativa: alertaRes.value.data.data } : {}) } : actual);
+          Promise.allSettled([
+            obtenerPensionesEscaneo(resultado.id_alumno),
+            obtenerAlertaOperativaEscaneo(resultado.id_alumno),
+          ]).then(([pensionesRes, alertaRes]) => {
+            setScanResult(actual => actual?.id_alumno === resultado.id_alumno ? {
+              ...actual,
+              ...(pensionesRes.status === 'fulfilled' ? { pensiones: pensionesRes.value.data.data } : {}),
+              ...(alertaRes.status === 'fulfilled' ? { alerta_operativa: alertaRes.value.data.data } : {}),
+            } : actual);
           });
         }, 150);
       }
@@ -294,7 +310,9 @@ const RegistroAsistencia = () => {
       const { data } = await registrarAccionAlertaOperativa(alerta.id, accion);
       setScanResult(actual => actual ? { ...actual, alerta_operativa: data.data } : actual);
       toast.success(data.message || 'Acción registrada');
-    } catch (err) { toast.error(err.response?.data?.error || 'No se pudo registrar la acción'); }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo registrar la acción');
+    }
   };
 
   useEffect(() => {

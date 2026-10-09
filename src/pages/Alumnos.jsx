@@ -5,17 +5,14 @@ import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import CarnetCard, { CARNET_EXPORT_HEIGHT, CARNET_EXPORT_WIDTH, CARNET_HEIGHT, CARNET_WIDTH } from '../components/CarnetCard';
-import PhotoCropperModal from '../components/PhotoCropperModal';
-import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerInventarioEliminacionAlumno, eliminarAlumnoPermanentemente, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno, actualizarSiagieAlumno, subirFotoCarnetAlumno } from '../services/alumnosService';
+import CarnetCard from '../components/CarnetCard';
+import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
 import { HiPlus, HiPencil, HiEye, HiEyeOff, HiSearch, HiDownload, HiPhotograph, HiUserAdd, HiTrash, HiUserRemove, HiExclamation } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { fileUrl, studentPhotoUrl } from '../utils/constants';
-import { includesSearchText } from '../utils/textSearch';
 import { toJpeg } from 'html-to-image';
-import { descargarBlob, jpegDataUrlTo300DpiBlob } from '../utils/jpegDpi';
 import { getEmbeddedFontCSS, waitForCaptureImages } from './CarnetView';
 import JSZip from 'jszip';
 import toast from 'react-hot-toast';
@@ -37,10 +34,6 @@ const Alumnos = () => {
   const [form, setForm] = useState({ codigo_alumno: '', dni: '', nombre_completo: '', monto_matricula: '', monto_materiales: '', monto_pension: '', id_nivel: '', id_grado: '', id_aula: '' });
   const [fotoFile, setFotoFile] = useState(null);
   const [fotoPreview, setFotoPreview] = useState(null);
-  const [fotoCarnetFile, setFotoCarnetFile] = useState(null);
-  const [fotoCarnetPreview, setFotoCarnetPreview] = useState(null);
-  const [cropSource, setCropSource] = useState(null);
-  const [cropOpen, setCropOpen] = useState(false);
   const fotoInputRef = useRef(null);
 
   // Padre (solo para creacion)
@@ -58,8 +51,6 @@ const Alumnos = () => {
   const [filtroGrado, setFiltroGrado] = useState('');
   const [filtroSeccion, setFiltroSeccion] = useState('');
   const [filtroCodigo, setFiltroCodigo] = useState('');
-  const [filtroSiagie, setFiltroSiagie] = useState('');
-  const [siagieGuardando, setSiagieGuardando] = useState(null);
 
   // Modal carnet
   const [carnetModalOpen, setCarnetModalOpen] = useState(false);
@@ -70,10 +61,6 @@ const Alumnos = () => {
   // Modal eliminar
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [alumnoAEliminar, setAlumnoAEliminar] = useState(null);
-  const [inventarioEliminacion, setInventarioEliminacion] = useState(null);
-  const [cargandoEliminacion, setCargandoEliminacion] = useState(false);
-  const [eliminandoPermanentemente, setEliminandoPermanentemente] = useState(false);
-  const [confirmacionEliminacion, setConfirmacionEliminacion] = useState({ codigo: '', motivo: '', contrasena: '' });
   const [retiroModalOpen, setRetiroModalOpen] = useState(false);
   const [retiroInfo, setRetiroInfo] = useState(null);
   const [retiroLoading, setRetiroLoading] = useState(false);
@@ -162,30 +149,15 @@ const Alumnos = () => {
       if (filtroNivel && a.aula?.grado?.nivel !== filtroNivel) return false;
       if (filtroGrado && a.aula?.grado?.nombre !== filtroGrado) return false;
       if (filtroSeccion && a.aula?.seccion !== filtroSeccion) return false;
-      if (filtroSiagie === 'INSCRITO' && !a.siagie_inscrito) return false;
-      if (filtroSiagie === 'PENDIENTE' && a.siagie_inscrito) return false;
       if (filtroCodigo) {
-        const coincideCodigo = includesSearchText(a.codigo_alumno, filtroCodigo);
-        const coincideNombre = includesSearchText(a.nombre_completo, filtroCodigo);
-        const coincideDni = includesSearchText(a.dni, filtroCodigo);
-        if (!coincideCodigo && !coincideNombre && !coincideDni) return false;
+        const busqueda = filtroCodigo.toLowerCase();
+        const coincideCodigo = a.codigo_alumno?.toLowerCase().includes(busqueda);
+        const coincideNombre = a.nombre_completo?.toLowerCase().includes(busqueda);
+        if (!coincideCodigo && !coincideNombre) return false;
       }
       return true;
     });
-  }, [alumnos, filtroNivel, filtroGrado, filtroSeccion, filtroCodigo, filtroSiagie]);
-
-  const handleSiagieChange = async (alumno) => {
-    const siguiente = !alumno.siagie_inscrito;
-    if (!siguiente && !window.confirm(`¿Marcar a ${alumno.nombre_completo} nuevamente como pendiente en SIAGIE?`)) return;
-    setSiagieGuardando(alumno.id);
-    try {
-      const { data } = await actualizarSiagieAlumno(alumno.id, siguiente);
-      setAlumnos(actuales => actuales.map(a => a.id === alumno.id ? { ...a, siagie_inscrito: data.data.siagie_inscrito, siagie_actualizado_en: data.data.siagie_actualizado_en } : a));
-      toast.success(data.message);
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'No se pudo actualizar SIAGIE');
-    } finally { setSiagieGuardando(null); }
-  };
+  }, [alumnos, filtroNivel, filtroGrado, filtroSeccion, filtroCodigo]);
 
   // ===================== CARNET =====================
   const handleVerCarnet = async (id_alumno) => {
@@ -209,22 +181,31 @@ const Alumnos = () => {
       const fontCSS = await getEmbeddedFontCSS();
       const el = carnetRef.current;
 
-      await waitForCaptureImages(el);
-      const dataUrl = await toJpeg(el, {
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:inline-block;padding:4px;';
+      el.parentNode.insertBefore(wrapper, el);
+      wrapper.appendChild(el);
+
+      let dataUrl;
+      try {
+        await waitForCaptureImages(wrapper);
+        dataUrl = await toJpeg(wrapper, {
           quality: 0.95,
-          width: CARNET_WIDTH,
-          height: CARNET_HEIGHT,
-          canvasWidth: CARNET_EXPORT_WIDTH,
-          canvasHeight: CARNET_EXPORT_HEIGHT,
-          pixelRatio: 1,
+          pixelRatio: 3,
           cacheBust: true,
           includeQueryParams: true,
           backgroundColor: '#ffffff',
           fontEmbedCSS: fontCSS,
-      });
+        });
+      } finally {
+        wrapper.parentNode.insertBefore(el, wrapper);
+        wrapper.remove();
+      }
 
-      const blob = await jpegDataUrlTo300DpiBlob(dataUrl);
-      descargarBlob(blob, `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`);
+      const link = document.createElement('a');
+      link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;
+      link.href = dataUrl;
+      link.click();
     } catch {
       toast.error('Error al descargar el fotocheck');
     }
@@ -259,9 +240,7 @@ const Alumnos = () => {
           id: a.id,
           nombre_completo: a.nombre_completo,
           codigo_alumno: a.codigo_alumno,
-          dni: a.dni,
           foto_url: a.foto_url,
-          foto_carnet_url: a.foto_carnet_url,
           aula: `${a.aula?.grado?.nombre || ''} ${a.aula?.seccion || ''}`.trim(),
           nivel: a.aula?.grado?.nivel || '',
         };
@@ -295,27 +274,29 @@ const Alumnos = () => {
           continue;
         }
 
+        // Aplicar wrapper con padding (mismo que descarga individual)
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:inline-block;padding:4px;';
+        carnetEl.parentNode.insertBefore(wrapper, carnetEl);
+        wrapper.appendChild(carnetEl);
+
         try {
           // Esperar a que las imágenes se carguen
-          await waitForCaptureImages(carnetEl);
+          await waitForCaptureImages(wrapper);
 
           // Generar JPEG con exactamente los mismos parámetros que la descarga individual
-          const dataUrl = await toJpeg(carnetEl, {
+          const dataUrl = await toJpeg(wrapper, {
             quality: 0.95,
-            width: CARNET_WIDTH,
-            height: CARNET_HEIGHT,
-            canvasWidth: CARNET_EXPORT_WIDTH,
-            canvasHeight: CARNET_EXPORT_HEIGHT,
-            pixelRatio: 1,
+            pixelRatio: 3,
             cacheBust: true,
             includeQueryParams: true,
             backgroundColor: '#ffffff',
             fontEmbedCSS: fontCSS,
           });
 
-          // Incluir 300 DPI para que Word respete el tamaño físico de 5 x 8,2 cm.
-          const blob = await jpegDataUrlTo300DpiBlob(dataUrl);
-          zip.file(`fotocheck-${a.codigo_alumno}.jpg`, blob);
+          // Convertir data URL a blob y agregar al ZIP
+          const base64 = dataUrl.split(',')[1];
+          zip.file(`fotocheck-${a.codigo_alumno}.jpg`, base64, { base64: true });
         } finally {
           root.unmount();
           container.remove();
@@ -349,19 +330,7 @@ const Alumnos = () => {
     const file = e.target.files[0];
     if (!file) return;
     setFotoFile(file);
-    const source = URL.createObjectURL(file);
-    setFotoPreview(source);
-    setFotoCarnetFile(null);
-    setFotoCarnetPreview(null);
-    setCropSource(source);
-    setCropOpen(true);
-  };
-
-  const handleCropSave = (blob) => {
-    const file = new File([blob], 'foto-carnet.webp', { type: 'image/webp' });
-    setFotoCarnetFile(file);
-    setFotoCarnetPreview(URL.createObjectURL(blob));
-    setCropOpen(false);
+    setFotoPreview(URL.createObjectURL(file));
   };
 
   // ===================== BUSCAR PADRE (AUTOCOMPLETE) =====================
@@ -415,9 +384,6 @@ const Alumnos = () => {
     setForm(baseForm);
     setFotoFile(null);
     setFotoPreview(null);
-    setFotoCarnetFile(null);
-    setFotoCarnetPreview(null);
-    setCropSource(null);
     setPadreBusqueda('');
     setPadreResultados([]);
     setPadreSeleccionado(null);
@@ -456,9 +422,6 @@ const Alumnos = () => {
     });
     setFotoFile(null);
     setFotoPreview(fileUrl(a.foto_url));
-    setFotoCarnetFile(null);
-    setFotoCarnetPreview(fileUrl(a.foto_carnet_url || a.foto_url));
-    setCropSource(fileUrl(a.foto_url));
     // Pre-seleccionar padre actual si existe
     const padreActual = a.padre_alumno?.[0]?.padre;
     if (padreActual) {
@@ -482,7 +445,9 @@ const Alumnos = () => {
       setAlertaOperativa(null);
       setAlertaForm({ mensaje: '', prioridad: 'URGENTE' });
       toast.error('No se pudo cargar la alerta operativa');
-    } finally { setAlertaLoading(false); }
+    } finally {
+      setAlertaLoading(false);
+    }
   };
 
   const guardarAlerta = async () => {
@@ -492,8 +457,11 @@ const Alumnos = () => {
       const { data } = await guardarAlertaOperativaAlumno(editando.id, alertaForm);
       setAlertaOperativa(data.data);
       toast.success('Alerta visible en el próximo ingreso');
-    } catch (err) { toast.error(err.response?.data?.error || 'No se pudo guardar la alerta'); }
-    finally { setAlertaGuardando(false); }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo guardar la alerta');
+    } finally {
+      setAlertaGuardando(false);
+    }
   };
 
   const resolverAlerta = async () => {
@@ -504,8 +472,11 @@ const Alumnos = () => {
       setAlertaOperativa(null);
       setAlertaForm({ mensaje: '', prioridad: 'URGENTE' });
       toast.success('Alerta marcada como resuelta');
-    } catch (err) { toast.error(err.response?.data?.error || 'No se pudo resolver la alerta'); }
-    finally { setAlertaGuardando(false); }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'No se pudo resolver la alerta');
+    } finally {
+      setAlertaGuardando(false);
+    }
   };
 
   // ===================== SUBMIT =====================
@@ -531,7 +502,6 @@ const Alumnos = () => {
           fd.append('padre_id', '');
         }
         await actualizarAlumno(editando.id, fd);
-        if (fotoCarnetFile) { const cropData = new FormData(); cropData.append('foto', fotoCarnetFile); await subirFotoCarnetAlumno(editando.id, cropData); }
         toast.success('Alumno actualizado');
       } else {
         // Datos del padre para creacion
@@ -544,8 +514,7 @@ const Alumnos = () => {
           fd.append('padre_username', padreForm.username);
           fd.append('padre_contrasena', padreForm.contrasena);
         }
-        const response = await crearAlumno(fd);
-        if (fotoCarnetFile && response.data?.data?.id) { const cropData = new FormData(); cropData.append('foto', fotoCarnetFile); await subirFotoCarnetAlumno(response.data.data.id, cropData); }
+        await crearAlumno(fd);
         toast.success('Alumno creado');
       }
       setModalOpen(false);
@@ -556,22 +525,9 @@ const Alumnos = () => {
   };
 
   // ===================== ELIMINAR ALUMNO =====================
-  const handleConfirmDelete = async (alumno) => {
+  const handleConfirmDelete = (alumno) => {
     setAlumnoAEliminar(alumno);
     setDeleteModalOpen(true);
-    setInventarioEliminacion(null);
-    setConfirmacionEliminacion({ codigo: '', motivo: '', contrasena: '' });
-    if (usuario?.rol_codigo !== 'SUPER_ADMIN') return;
-    setCargandoEliminacion(true);
-    try {
-      const { data } = await obtenerInventarioEliminacionAlumno(alumno.id);
-      setInventarioEliminacion(data.data);
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'No se pudo preparar la eliminación');
-      setDeleteModalOpen(false);
-    } finally {
-      setCargandoEliminacion(false);
-    }
   };
 
   const handleEliminar = async () => {
@@ -645,27 +601,6 @@ const Alumnos = () => {
     } finally { setReactivacionLoading(false); }
   };
 
-  const handleEliminarPermanentemente = async () => {
-    if (!alumnoAEliminar || !inventarioEliminacion) return;
-    setEliminandoPermanentemente(true);
-    try {
-      const { data } = await eliminarAlumnoPermanentemente(alumnoAEliminar.id, {
-        codigo_confirmacion: confirmacionEliminacion.codigo,
-        motivo: confirmacionEliminacion.motivo,
-        contrasena: confirmacionEliminacion.contrasena,
-      });
-      toast.success(data.data?.mensaje || 'Alumno eliminado permanentemente');
-      setDeleteModalOpen(false);
-      setAlumnoAEliminar(null);
-      setInventarioEliminacion(null);
-      fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'No se pudo eliminar al alumno');
-    } finally {
-      setEliminandoPermanentemente(false);
-    }
-  };
-
   const confirmarReactivacion = async () => {
     if (!reactivacionInfo || !reactivacionForm.primera_clave_cobro) return;
     setReactivacionGuardando(true);
@@ -699,12 +634,6 @@ const Alumnos = () => {
     { header: 'Nombre', accessor: 'nombre_completo' },
     { header: 'Aula', render: (r) => r.aula ? `${r.aula.grado?.nombre || ''} ${r.aula.seccion}` : '-' },
     { header: 'Estado', render: (r) => <Badge variant={r.estado === 'ACTIVO' ? 'success' : r.estado === 'RETIRADO' ? 'warning' : 'danger'}>{r.estado}</Badge> },
-    { header: 'SIAGIE', render: (r) => (
-      <label className="inline-flex items-center gap-2 cursor-pointer" title={r.siagie_actualizado_en ? `Actualizado: ${new Date(r.siagie_actualizado_en).toLocaleString('es-PE')}` : 'Pendiente de inscripción'}>
-        <input type="checkbox" checked={Boolean(r.siagie_inscrito)} disabled={siagieGuardando === r.id} onChange={() => handleSiagieChange(r)} className="w-5 h-5 accent-emerald-600 cursor-pointer disabled:opacity-50" aria-label={`${r.nombre_completo}: ${r.siagie_inscrito ? 'inscrito' : 'pendiente'} en SIAGIE`} />
-        <span className={`text-xs font-semibold ${r.siagie_inscrito ? 'text-emerald-700' : 'text-amber-700'}`}>{r.siagie_inscrito ? 'Inscrito' : 'Pendiente'}</span>
-      </label>
-    )},
     { header: 'Padre', render: (r) => r.padre_alumno?.[0]?.padre?.nombre_completo || 'Sin vincular' },
     { header: 'Acciones', render: (row) => (
       <div className="flex gap-1">
@@ -760,7 +689,7 @@ const Alumnos = () => {
       <Card>
         {/* Filtros */}
         <div className="p-4 border-b border-cream-200 bg-cream-50/50">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
               <label className="block text-xs font-medium text-primary-800/60 mb-1">Nivel Escolar</label>
               <select
@@ -807,16 +736,8 @@ const Alumnos = () => {
                 />
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-primary-800/60 mb-1">SIAGIE</label>
-              <select value={filtroSiagie} onChange={(e) => setFiltroSiagie(e.target.value)} className="w-full px-3 py-2 text-sm border border-cream-300 rounded-lg outline-none bg-white">
-                <option value="">Todos</option>
-                <option value="PENDIENTE">Pendientes</option>
-                <option value="INSCRITO">Inscritos</option>
-              </select>
-            </div>
           </div>
-          {(filtroNivel || filtroGrado || filtroSeccion || filtroCodigo || filtroSiagie) && (
+          {(filtroNivel || filtroGrado || filtroSeccion || filtroCodigo) && (
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-cream-200">
               <span className="text-xs text-primary-800/50">{alumnosFiltrados.length} de {alumnos.length} alumnos</span>
               <div className="flex items-center gap-3">
@@ -840,7 +761,7 @@ const Alumnos = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => { setFiltroNivel(''); setFiltroGrado(''); setFiltroSeccion(''); setFiltroCodigo(''); setFiltroSiagie(''); }}
+                  onClick={() => { setFiltroNivel(''); setFiltroGrado(''); setFiltroSeccion(''); setFiltroCodigo(''); }}
                   className="text-xs text-primary-600 hover:text-primary-800 font-medium"
                 >
                   Limpiar filtros
@@ -943,15 +864,51 @@ const Alumnos = () => {
 
           {editando && (
             <div className="border-b border-cream-200 pb-4">
-              <h4 className={sectionTitle}><HiExclamation className="w-4 h-4 text-red-600" /> Alerta especial de ingreso</h4>
-              <p className="text-xs text-primary-800/60 mb-3">Será visible para administración y portería después de registrar el ingreso. No bloquea la asistencia.</p>
-              {alertaLoading ? <div className="py-3"><LoadingSpinner /></div> : (
+              <h4 className={sectionTitle}>
+                <HiExclamation className="w-4 h-4 text-red-600" /> Alerta especial de ingreso
+              </h4>
+              <p className="text-xs text-primary-800/60 mb-3">
+                Será visible para administración y portería después de registrar el ingreso. No bloquea la asistencia.
+              </p>
+              {alertaLoading ? (
+                <div className="py-3"><LoadingSpinner /></div>
+              ) : (
                 <div className="rounded-xl border border-red-200 bg-red-50/60 p-4 space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-[1fr_170px] gap-3">
-                    <div><label className={labelClass}>Mensaje operativo</label><textarea value={alertaForm.mensaje} onChange={(e) => setAlertaForm({ ...alertaForm, mensaje: e.target.value })} className={`${inputClass} min-h-20 resize-y`} maxLength={250} placeholder="Ej.: FUM pendiente de entrega ¡Urgente!" /><p className="text-[11px] text-primary-800/45 mt-1">{alertaForm.mensaje.length}/250 caracteres</p></div>
-                    <div><label className={labelClass}>Prioridad</label><select value={alertaForm.prioridad} onChange={(e) => setAlertaForm({ ...alertaForm, prioridad: e.target.value })} className={inputClass}><option value="IMPORTANTE">Importante</option><option value="URGENTE">Urgente</option></select></div>
+                    <div>
+                      <label className={labelClass}>Mensaje operativo</label>
+                      <textarea
+                        value={alertaForm.mensaje}
+                        onChange={(e) => setAlertaForm({ ...alertaForm, mensaje: e.target.value })}
+                        className={`${inputClass} min-h-20 resize-y`}
+                        maxLength={250}
+                        placeholder="Ej.: FUM pendiente de entrega ¡Urgente!"
+                      />
+                      <p className="text-[11px] text-primary-800/45 mt-1">{alertaForm.mensaje.length}/250 caracteres</p>
+                    </div>
+                    <div>
+                      <label className={labelClass}>Prioridad</label>
+                      <select value={alertaForm.prioridad} onChange={(e) => setAlertaForm({ ...alertaForm, prioridad: e.target.value })} className={inputClass}>
+                        <option value="IMPORTANTE">Importante</option>
+                        <option value="URGENTE">Urgente</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-3"><span className={`text-xs font-semibold ${alertaOperativa ? 'text-red-700' : 'text-primary-700/60'}`}>{alertaOperativa ? 'Alerta activa en portería' : 'Sin alerta activa'}</span><div className="flex gap-2">{alertaOperativa && <button type="button" onClick={resolverAlerta} disabled={alertaGuardando} className="px-3 py-2 text-sm rounded-lg bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50">Marcar resuelta</button>}<button type="button" onClick={guardarAlerta} disabled={alertaGuardando || !alertaForm.mensaje.trim()} className="px-3 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50">{alertaGuardando ? 'Guardando...' : alertaOperativa ? 'Actualizar alerta' : 'Activar alerta'}</button></div></div>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className={`text-xs font-semibold ${alertaOperativa ? 'text-red-700' : 'text-primary-700/60'}`}>
+                      {alertaOperativa ? 'Alerta activa en portería' : 'Sin alerta activa'}
+                    </span>
+                    <div className="flex gap-2">
+                      {alertaOperativa && (
+                        <button type="button" onClick={resolverAlerta} disabled={alertaGuardando} className="px-3 py-2 text-sm rounded-lg bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50">
+                          Marcar resuelta
+                        </button>
+                      )}
+                      <button type="button" onClick={guardarAlerta} disabled={alertaGuardando || !alertaForm.mensaje.trim()} className="px-3 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50">
+                        {alertaGuardando ? 'Guardando...' : alertaOperativa ? 'Actualizar alerta' : 'Activar alerta'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -962,7 +919,7 @@ const Alumnos = () => {
             <h4 className={sectionTitle}>
               <HiPhotograph className="w-4 h-4 text-gold-500" /> Foto del Alumno
             </h4>
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-4">
               {fotoPreview ? (
                 <img src={fotoPreview} alt="Preview" className="w-20 h-20 rounded-full object-cover border-2 border-gold-400" />
               ) : (
@@ -982,7 +939,6 @@ const Alumnos = () => {
                 <p className="text-xs text-cream-500 mt-1">JPG, PNG o WEBP. Max 5MB.</p>
                 {fotoFile && <p className="text-xs text-green-600 mt-0.5">{fotoFile.name}</p>}
               </div>
-              {fotoPreview && <div className="border-l border-cream-200 pl-4"><p className="mb-1 text-xs font-semibold text-primary-800/70">Vista en el fotocheck</p><img src={fotoCarnetPreview || fotoPreview} alt="Encuadre del fotocheck" className="h-[84px] w-[118px] rounded-xl border-2 border-gold-400 object-cover"/><button type="button" onClick={() => { setCropSource(fotoPreview); setCropOpen(true); }} className="mt-2 block rounded-lg border border-primary-200 px-3 py-1.5 text-xs font-semibold text-primary-700 hover:bg-primary-50">Mover y centrar</button></div>}
             </div>
           </div>
 
@@ -1315,31 +1271,7 @@ const Alumnos = () => {
       </Modal>
 
       {/* ==================== MODAL CONFIRMAR ELIMINACION ==================== */}
-      <Modal isOpen={deleteModalOpen} onClose={() => !eliminandoPermanentemente && setDeleteModalOpen(false)} title={usuario?.rol_codigo === 'SUPER_ADMIN' ? 'Eliminar alumno permanentemente' : 'Eliminar alumno'} size="lg">
-        {usuario?.rol_codigo === 'SUPER_ADMIN' ? (
-          <div className="space-y-4">
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900">
-              <p className="font-bold">Esta acción es irreversible.</p>
-              <p>Se eliminará únicamente a <strong>{alumnoAEliminar?.nombre_completo}</strong> ({alumnoAEliminar?.codigo_alumno}) y sus registros exclusivos. El apoderado, sus credenciales y otros alumnos se conservarán.</p>
-            </div>
-            {cargandoEliminacion ? <div className="py-8"><LoadingSpinner /></div> : inventarioEliminacion ? <>
-              <div className="rounded-lg border border-cream-200 p-4">
-                <p className="mb-2 text-sm font-semibold text-primary-800">Inventario previo</p>
-                {inventarioEliminacion.registros.length ? <ul className="space-y-1 text-sm text-primary-800/75">
-                  {inventarioEliminacion.registros.map((item) => <li key={item.nombre} className="flex justify-between gap-4"><span>{item.nombre}</span><strong>{item.cantidad}</strong></li>)}
-                </ul> : <p className="text-sm text-primary-800/60">No se encontraron registros dependientes.</p>}
-                <div className="mt-3 border-t border-cream-200 pt-3 text-xs text-emerald-800">
-                  Se conservarán: {inventarioEliminacion.conserva.apoderado ? 'apoderado y credenciales' : 'no existe apoderado vinculado'}; otros alumnos del apoderado: {inventarioEliminacion.conserva.otros_alumnos_apoderado}.
-                </div>
-              </div>
-              {inventarioEliminacion.relaciones_no_contempladas?.length > 0 && <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">Operación bloqueada por relaciones no contempladas: {inventarioEliminacion.relaciones_no_contempladas.join(', ')}.</p>}
-              <div><label className={labelClass}>Motivo de la eliminación *</label><textarea className={inputClass} rows="2" maxLength="500" value={confirmacionEliminacion.motivo} onChange={(e) => setConfirmacionEliminacion({ ...confirmacionEliminacion, motivo: e.target.value })} placeholder="Ej.: registro de prueba creado por error" /></div>
-              <div><label className={labelClass}>Escriba el código exacto: {alumnoAEliminar?.codigo_alumno}</label><input className={inputClass} value={confirmacionEliminacion.codigo} onChange={(e) => setConfirmacionEliminacion({ ...confirmacionEliminacion, codigo: e.target.value })} autoComplete="off" /></div>
-              <div><label className={labelClass}>Confirme su contraseña de Super Admin</label><input type="password" className={inputClass} value={confirmacionEliminacion.contrasena} onChange={(e) => setConfirmacionEliminacion({ ...confirmacionEliminacion, contrasena: e.target.value })} autoComplete="current-password" /></div>
-              <div className="flex justify-end gap-3"><button type="button" disabled={eliminandoPermanentemente} onClick={() => setDeleteModalOpen(false)} className="px-4 py-2 text-sm bg-cream-100 text-primary-800 rounded-lg">Cancelar</button><button type="button" disabled={eliminandoPermanentemente || inventarioEliminacion.relaciones_no_contempladas?.length > 0 || confirmacionEliminacion.codigo !== alumnoAEliminar?.codigo_alumno || confirmacionEliminacion.motivo.trim().length < 10 || !confirmacionEliminacion.contrasena} onClick={handleEliminarPermanentemente} className="px-4 py-2 text-sm text-white bg-red-700 rounded-lg hover:bg-red-800 disabled:opacity-50">{eliminandoPermanentemente ? 'Eliminando...' : 'Eliminar permanentemente'}</button></div>
-            </> : null}
-          </div>
-        ) : (
+      <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Eliminar Alumno" size="sm">
         <div className="space-y-4">
           <p className="text-sm text-primary-800/80">
             ¿Está seguro que desea eliminar al alumno <strong>{alumnoAEliminar?.nombre_completo}</strong> ({alumnoAEliminar?.codigo_alumno})?
@@ -1364,7 +1296,6 @@ const Alumnos = () => {
             </button>
           </div>
         </div>
-        )}
       </Modal>
 
       {/* ==================== MODAL CARNET ==================== */}
@@ -1389,11 +1320,9 @@ const Alumnos = () => {
           <p className="text-center text-gold-600 py-8">No se pudo cargar el carnet</p>
         )}
       </Modal>
-      <PhotoCropperModal open={cropOpen} imageSrc={cropSource} onCancel={() => setCropOpen(false)} onSave={handleCropSave} />
     </div>
   );
 };
 
 export default Alumnos;
-
 
