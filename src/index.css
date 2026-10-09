@@ -182,3 +182,21 @@
     background: white !important;
   }
 }
+
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body * { visibility: hidden !important; }
+  .physical-sheet, .physical-sheet * { visibility: visible !important; }
+  .physical-sheet {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 8mm !important;
+    border: 1px solid #7f1d1d !important;
+    background: #fff !important;
+    break-inside: avoid;
+  }
+  .physical-sheet-header { display: flex !important; flex-wrap: nowrap !important; }
+  .physical-qr { width: 34mm !important; height: 34mm !important; min-width: 34mm !important; }
+}
