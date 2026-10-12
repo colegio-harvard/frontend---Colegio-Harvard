@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ROLES, API_URL } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -13,6 +13,12 @@ import toast from 'react-hot-toast';
 const nombreMes = (p) => p.nombre || p.clave;
 
 const formatMonto = (n) => `S/. ${Number(n || 0).toFixed(2)}`;
+
+// Permite buscar indistintamente con o sin tildes: "Ake" encuentra "Aké".
+const normalizarBusqueda = (valor) => String(valor ?? '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLocaleLowerCase('es-PE');
 
 const escapeHtml = (value) => String(value ?? '')
   .replaceAll('&', '&amp;')
@@ -421,13 +427,13 @@ const PensionAdmin = () => {
   // Busqueda client-side
   const cuadriculaFiltrada = useMemo(() => {
     if (!busqueda.trim()) return cuadricula;
-    const term = busqueda.toLowerCase();
+    const term = normalizarBusqueda(busqueda);
     return cuadricula.filter(a => {
-      const nombre = a.nombre_completo?.toLowerCase() || '';
-      const codigo = a.codigo_alumno?.toLowerCase() || '';
-      const dniAlumno = a.dni?.toLowerCase() || '';
-      const padreNombre = a.padre?.nombre_completo?.toLowerCase() || '';
-      const padreDni = a.padre?.dni?.toLowerCase() || '';
+      const nombre = normalizarBusqueda(a.nombre_completo);
+      const codigo = normalizarBusqueda(a.codigo_alumno);
+      const dniAlumno = normalizarBusqueda(a.dni);
+      const padreNombre = normalizarBusqueda(a.padre?.nombre_completo);
+      const padreDni = normalizarBusqueda(a.padre?.dni);
       return nombre.includes(term) || codigo.includes(term) || dniAlumno.includes(term) ||
              padreNombre.includes(term) || padreDni.includes(term);
     });
