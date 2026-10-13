@@ -633,6 +633,17 @@ const PensionAdmin = () => {
                   {plantilla.map(p => {
                     const est = alumno.pensiones?.find(e => e.clave_mes === p.clave);
                     const estado = est?.estado || 'PENDIENTE';
+                    const claveConcepto = `${p.clave || ''} ${p.nombre || ''}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+                    const montoConcepto = Number(est?.monto_total ?? p.monto ?? (claveConcepto.includes('MATRICULA') ? alumno.monto_matricula : claveConcepto.includes('MATERIAL') ? alumno.monto_materiales : alumno.monto_pension) ?? 0);
+                    const montoPagado = Number(est?.monto_pagado || 0);
+                    const saldoConcepto = Math.max(0, montoConcepto - montoPagado);
+                    const tituloEstado = estado === 'PAGO_PARCIAL'
+                      ? `Pagado: ${formatMonto(montoPagado)} / Saldo: ${formatMonto(saldoConcepto)} = ${formatMonto(montoConcepto)}`
+                      : estado === 'PENDIENTE'
+                        ? `PENDIENTE ${formatMonto(montoConcepto)}`
+                        : estado === 'PAGADO'
+                          ? `PAGADO ${formatMonto(montoConcepto)}`
+                          : estado;
 
                     const btnColors = {
                       PAGADO: 'bg-emerald-500 text-white hover:bg-emerald-600',
@@ -647,7 +658,7 @@ const PensionAdmin = () => {
                         <button
                           onClick={() => abrirModal(alumno, p)}
                           className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${btnColors[estado]}`}
-                          title={estado === 'PAGO_PARCIAL' && est ? `Pagado: ${formatMonto(est.monto_pagado)} / ${formatMonto(est.monto_total)}` : estado}
+                          title={tituloEstado}
                         >
                           <IconComp className="w-4 h-4" />
                         </button>
