@@ -4,6 +4,9 @@ export const obtenerResumenInventario = () => apiClient.get('/inventario/resumen
 export const listarProductosInventario = () => apiClient.get('/inventario/productos');
 export const crearProductoInventario = data => apiClient.post('/inventario/productos', data);
 export const actualizarProductoInventario = (id, data) => apiClient.put(`/inventario/productos/${id}`, data);
+export const archivarProductoInventario = id => apiClient.patch(`/inventario/productos/${id}/archivar`);
+export const eliminarProductoInventario = id => apiClient.delete(`/inventario/productos/${id}`);
+export const renombrarCategoriaInventario = (categoria, nombre) => apiClient.put(`/inventario/categorias/${encodeURIComponent(categoria)}`, { nombre });
 export const listarMovimientosInventario = () => apiClient.get('/inventario/movimientos');
 export const registrarMovimientoInventario = data => apiClient.post('/inventario/movimientos', data);
 export const listarVentasInventario = () => apiClient.get('/inventario/ventas');
