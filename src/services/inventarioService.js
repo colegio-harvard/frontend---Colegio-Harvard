@@ -1,10 +1,11 @@
 import apiClient from './apiClient';
 
 export const obtenerResumenInventario = () => apiClient.get('/inventario/resumen');
-export const listarProductosInventario = () => apiClient.get('/inventario/productos');
+export const listarProductosInventario = (params = {}) => apiClient.get('/inventario/productos', { params });
 export const crearProductoInventario = data => apiClient.post('/inventario/productos', data);
 export const actualizarProductoInventario = (id, data) => apiClient.put(`/inventario/productos/${id}`, data);
 export const archivarProductoInventario = id => apiClient.patch(`/inventario/productos/${id}/archivar`);
+export const restaurarProductoInventario = id => apiClient.patch(`/inventario/productos/${id}/restaurar`);
 export const eliminarProductoInventario = id => apiClient.delete(`/inventario/productos/${id}`);
 export const fusionarProductoInventario = (id, idDestino) => apiClient.post(`/inventario/productos/${id}/fusionar`, { id_destino: idDestino });
 export const renombrarCategoriaInventario = (categoria, nombre) => apiClient.put(`/inventario/categorias/${encodeURIComponent(categoria)}`, { nombre });
