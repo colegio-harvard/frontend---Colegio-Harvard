@@ -44,6 +44,8 @@ const Libretas = lazy(() => import('./pages/Libretas'));
 const ReciboPublico = lazy(() => import('./pages/ReciboPublico'));
 const Matriculas = lazy(() => import('./pages/Matriculas'));
 const MatriculaPublica = lazy(() => import('./pages/MatriculaPublica'));
+const Inventario = lazy(() => import('./pages/Inventario'));
+const ReciboInventarioPublico = lazy(() => import('./pages/ReciboInventarioPublico'));
 
 const { SUPER_ADMIN, ADMIN, TUTOR, DOCENTE, PADRE, PORTERIA, PSICOLOGIA } = ROLES;
 
@@ -68,6 +70,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/recibo/:codigo" element={<ReciboPublico />} />
+          <Route path="/recibo-inventario/:codigo" element={<ReciboInventarioPublico />} />
           <Route path="/matricula/:token" element={<MatriculaPublica />} />
 
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
@@ -148,6 +151,10 @@ function App() {
 
             <Route path="/cobranzas" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Cobranzas /></ProtectedRoute>
+            } />
+
+            <Route path="/inventario" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Inventario /></ProtectedRoute>
             } />
 
             <Route path="/reporte-pagos" element={
