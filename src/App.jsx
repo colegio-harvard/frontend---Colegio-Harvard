@@ -173,7 +173,7 @@ function App() {
             <Route path="/mi-horario" element={
               <ProtectedRoute roles={[PADRE]}><HorarioPadre /></ProtectedRoute>
             } />
-            <Route path="/mi-horario-docente" element={<ProtectedRoute roles={[DOCENTE]}><HorarioDocente /></ProtectedRoute>} />
+            <Route path="/mi-horario-docente" element={<ProtectedRoute roles={[DOCENTE]} capacidades={['ACADEMICO_DOCENTE']}><HorarioDocente /></ProtectedRoute>} />
 
             <Route path="/reporte-pagos" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><ReportePagos /></ProtectedRoute>

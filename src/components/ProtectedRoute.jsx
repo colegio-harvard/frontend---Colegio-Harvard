@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children, roles }) => {
+const ProtectedRoute = ({ children, roles, capacidades }) => {
   const { usuario, cargando } = useAuth();
 
   if (cargando) {
@@ -16,7 +16,10 @@ const ProtectedRoute = ({ children, roles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (roles && !roles.includes(usuario.rol_codigo)) {
+  const tieneRol = !roles || roles.includes(usuario.rol_codigo);
+  const tieneCapacidad = !capacidades || (usuario.capacidades || []).some(capacidad => capacidades.includes(capacidad));
+
+  if (!tieneRol && !tieneCapacidad) {
     return <Navigate to="/dashboard" replace />;
   }
 

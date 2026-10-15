@@ -103,7 +103,11 @@ const menuItems = {
 
 const Sidebar = ({ isOpen, onClose }) => {
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-  const items = menuItems[usuario.rol_codigo] || [];
+  const tieneCapacidadDocente = (usuario.capacidades || []).includes('ACADEMICO_DOCENTE');
+  const baseItems = menuItems[usuario.rol_codigo] || [];
+  const items = tieneCapacidadDocente && !baseItems.some(item => item.to === '/mi-horario-docente')
+    ? [...baseItems, { to: '/mi-horario-docente', icon: HiClock, label: 'Mi horario' }]
+    : baseItems;
 
   return (
     <>
