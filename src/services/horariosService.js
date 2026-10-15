@@ -18,3 +18,7 @@ export const listarAsignaciones = (params) => apiClient.get('/horarios/asignacio
 export const obtenerMisHorarios = () => apiClient.get('/horarios/padre/mis-horarios');
 export const obtenerCargaHoraria = (id) => apiClient.get(`/horarios/${id}/carga-horaria`);
 export const actualizarCargaHoraria = (id, horas_semanales) => apiClient.put(`/horarios/asignaciones/${id}/carga-horaria`, { horas_semanales });
+export const listarDocentesDisponibilidad = () => apiClient.get('/horarios/disponibilidad/docentes');
+export const obtenerDisponibilidad = (params) => apiClient.get('/horarios/disponibilidad', { params });
+export const guardarIndisponibilidad = (data) => apiClient.put('/horarios/disponibilidad', data);
+export const restaurarDisponibilidad = (data) => apiClient.delete('/horarios/disponibilidad', { data });
