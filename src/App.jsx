@@ -47,6 +47,7 @@ const MatriculaPublica = lazy(() => import('./pages/MatriculaPublica'));
 const Inventario = lazy(() => import('./pages/Inventario'));
 const ReciboInventarioPublico = lazy(() => import('./pages/ReciboInventarioPublico'));
 const Horarios = lazy(() => import('./pages/Horarios'));
+const GenerarHorario = lazy(() => import('./pages/GenerarHorario'));
 const DisponibilidadDocente = lazy(() => import('./pages/DisponibilidadDocente'));
 const HorarioPadre = lazy(() => import('./pages/HorarioPadre'));
 
@@ -162,6 +163,7 @@ function App() {
             <Route path="/horarios" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Horarios /></ProtectedRoute>
             } />
+            <Route path="/horarios/generar" element={<ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><GenerarHorario /></ProtectedRoute>} />
             <Route path="/horarios/disponibilidad" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><DisponibilidadDocente /></ProtectedRoute>
             } />

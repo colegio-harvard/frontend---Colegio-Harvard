@@ -22,3 +22,5 @@ export const listarDocentesDisponibilidad = () => apiClient.get('/horarios/dispo
 export const obtenerDisponibilidad = (params) => apiClient.get('/horarios/disponibilidad', { params });
 export const guardarIndisponibilidad = (data) => apiClient.put('/horarios/disponibilidad', data);
 export const restaurarDisponibilidad = (data) => apiClient.delete('/horarios/disponibilidad', { data });
+export const analizarGeneracion = (data) => apiClient.post('/horarios/generar/analizar', data);
+export const generarHorarioAutomatico = (data) => apiClient.post('/horarios/generar', data);
