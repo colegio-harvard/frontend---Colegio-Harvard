@@ -50,6 +50,7 @@ const Horarios = lazy(() => import('./pages/Horarios'));
 const GenerarHorario = lazy(() => import('./pages/GenerarHorario'));
 const DisponibilidadDocente = lazy(() => import('./pages/DisponibilidadDocente'));
 const HorarioPadre = lazy(() => import('./pages/HorarioPadre'));
+const HorarioDocente = lazy(() => import('./pages/HorarioDocente'));
 
 const { SUPER_ADMIN, ADMIN, TUTOR, DOCENTE, PADRE, PORTERIA, PSICOLOGIA } = ROLES;
 
@@ -170,6 +171,7 @@ function App() {
             <Route path="/mi-horario" element={
               <ProtectedRoute roles={[PADRE]}><HorarioPadre /></ProtectedRoute>
             } />
+            <Route path="/mi-horario-docente" element={<ProtectedRoute roles={[DOCENTE]}><HorarioDocente /></ProtectedRoute>} />
 
             <Route path="/reporte-pagos" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><ReportePagos /></ProtectedRoute>

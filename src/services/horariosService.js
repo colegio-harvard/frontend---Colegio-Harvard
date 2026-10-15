@@ -16,6 +16,7 @@ export const publicarHorario = (id) => apiClient.post(`/horarios/${id}/publicar`
 export const archivarHorario = (id) => apiClient.post(`/horarios/${id}/archivar`);
 export const listarAsignaciones = (params) => apiClient.get('/horarios/asignaciones', { params });
 export const obtenerMisHorarios = () => apiClient.get('/horarios/padre/mis-horarios');
+export const obtenerMiHorarioDocente = () => apiClient.get('/horarios/docente/mi-horario');
 export const obtenerCargaHoraria = (id) => apiClient.get(`/horarios/${id}/carga-horaria`);
 export const actualizarCargaHoraria = (id, horas_semanales) => apiClient.put(`/horarios/asignaciones/${id}/carga-horaria`, { horas_semanales });
 export const listarDocentesDisponibilidad = () => apiClient.get('/horarios/disponibilidad/docentes');

@@ -75,6 +75,7 @@ const menuItems = {
   [ROLES.DOCENTE]: [
     { to: '/dashboard', icon: HiHome, label: 'Dashboard' },
     { to: '/libretas', icon: HiAcademicCap, label: 'Mis notas' },
+    { to: '/mi-horario-docente', icon: HiClock, label: 'Mi horario' },
     { to: '/notificaciones', icon: HiBell, label: 'Notificaciones' },
   ],
   [ROLES.PADRE]: [
