@@ -46,6 +46,7 @@ const Matriculas = lazy(() => import('./pages/Matriculas'));
 const MatriculaPublica = lazy(() => import('./pages/MatriculaPublica'));
 const Inventario = lazy(() => import('./pages/Inventario'));
 const ReciboInventarioPublico = lazy(() => import('./pages/ReciboInventarioPublico'));
+const Horarios = lazy(() => import('./pages/Horarios'));
 
 const { SUPER_ADMIN, ADMIN, TUTOR, DOCENTE, PADRE, PORTERIA, PSICOLOGIA } = ROLES;
 
@@ -155,6 +156,9 @@ function App() {
 
             <Route path="/inventario" element={
               <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Inventario /></ProtectedRoute>
+            } />
+            <Route path="/horarios" element={
+              <ProtectedRoute roles={[SUPER_ADMIN, ADMIN]}><Horarios /></ProtectedRoute>
             } />
 
             <Route path="/reporte-pagos" element={
