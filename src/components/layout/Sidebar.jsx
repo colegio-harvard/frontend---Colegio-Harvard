@@ -74,6 +74,7 @@ const menuItems = {
   ],
   [ROLES.PADRE]: [
     { to: '/dashboard', icon: HiHome, label: 'Dashboard' },
+    { to: '/mi-horario', icon: HiClock, label: 'Horario de clases' },
     { to: '/asistencia', icon: HiClipboardCheck, label: 'Asistencia' },
     { to: '/agenda', icon: HiBookOpen, label: 'Agenda' },
     { to: '/reportes-semanales', icon: HiDocumentText, label: 'Reportes' },

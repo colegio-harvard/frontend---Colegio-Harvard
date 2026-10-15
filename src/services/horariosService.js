@@ -15,3 +15,4 @@ export const validarHorario = (id) => apiClient.post(`/horarios/${id}/validar`);
 export const publicarHorario = (id) => apiClient.post(`/horarios/${id}/publicar`);
 export const archivarHorario = (id) => apiClient.post(`/horarios/${id}/archivar`);
 export const listarAsignaciones = (params) => apiClient.get('/horarios/asignaciones', { params });
+export const obtenerMisHorarios = () => apiClient.get('/horarios/padre/mis-horarios');
