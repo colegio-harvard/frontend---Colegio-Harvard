@@ -1,7 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { HiPrinter } from 'react-icons/hi';
+import HorarioImprimible from '../components/horarios/HorarioImprimible';
+import HorarioExportActions from '../components/horarios/HorarioExportActions';
 import { obtenerMiHorarioDocente } from '../services/horariosService';
-import { colorTextoSecundario, estiloCursoHorario } from '../utils/horarioColor';
-const dias=['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES']; const etiquetas={LUNES:'Lunes',MARTES:'Martes',MIERCOLES:'Miércoles',JUEVES:'Jueves',VIERNES:'Viernes'}; const hora=v=>String(v||'').slice(0,5);
-export default function HorarioDocente(){const [data,setData]=useState(null),[cargando,setCargando]=useState(true);useEffect(()=>{obtenerMiHorarioDocente().then(r=>setData(r.data.data)).catch(e=>toast.error(e.response?.data?.error||'No se pudo cargar tu horario.')).finally(()=>setCargando(false));},[]);if(cargando)return <div className="card">Cargando horario…</div>;const clases=data?.clases||[];return <div className="space-y-6 print:p-0"><div className="flex justify-between gap-3 print:block"><div><h1 className="page-title">Mi horario de clases</h1><p className="page-subtitle">{data?.docente||'Docente'}{data?.anio&&` · Año escolar ${data.anio}`}</p></div><button className="btn-secondary flex gap-2 items-center print:hidden" onClick={()=>window.print()}><HiPrinter/>Imprimir</button></div>{!clases.length?<div className="card">No tienes clases publicadas actualmente.</div>:<div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">{dias.map(dia=><section key={dia} className="card"><h2 className="font-display text-lg text-primary-800 mb-3">{etiquetas[dia]}</h2>{clases.filter(c=>c.dia_semana===dia).sort((a,b)=>String(a.hora_inicio).localeCompare(String(b.hora_inicio))).map((c,i)=><div key={i} className="border-l-4 border-gold-500 pl-3 py-2 mb-2 rounded" style={estiloCursoHorario(c.color_horario)}><b>{hora(c.hora_inicio)}–{hora(c.hora_fin)}</b><span className="block font-medium">{c.curso}</span><span className="text-sm" style={{color:colorTextoSecundario(c.color_horario)}}>{c.nivel} · {c.grado} {c.seccion}</span>{c.espacio_fisico&&<span className="block text-xs" style={{color:colorTextoSecundario(c.color_horario)}}>{c.espacio_fisico}</span>}</div>)}{!clases.some(c=>c.dia_semana===dia)&&<p className="text-sm text-primary-700/60">Libre</p>}</section>)}</div>}</div>}
+
+const archivoHorarioDocente = (data = {}) => `Horario_Docente_${String(data.docente || 'Colegio_Harvard')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-zA-Z0-9]+/g, '_')
+  .replace(/^_|_$/g, '')}_${data.anio || ''}`;
+
+export default function HorarioDocente() {
+  const [data, setData] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const documentoImprimibleRef = useRef(null);
+
+  useEffect(() => {
+    obtenerMiHorarioDocente()
+      .then((respuesta) => setData(respuesta.data.data))
+      .catch((error) => toast.error(error.response?.data?.error || 'No se pudo cargar tu horario.'))
+      .finally(() => setCargando(false));
+  }, []);
+
+  if (cargando) return <div className="card">Cargando horario…</div>;
+  const clases = data?.clases || [];
+  const encabezado = { persona: data?.docente, anio: data?.anio };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap justify-between gap-3">
+        <div>
+          <h1 className="page-title">Mi horario de clases</h1>
+          <p className="page-subtitle">{data?.docente || 'Docente'}{data?.anio && ` · Año escolar ${data.anio}`}</p>
+        </div>
+        {!!clases.length && <HorarioExportActions documentRef={documentoImprimibleRef} archivoBase={archivoHorarioDocente(data)} />}
+      </div>
+      {!clases.length ? <div className="card">No tienes clases publicadas actualmente.</div> : <HorarioImprimible encabezado={encabezado} clases={clases} modo="agenda" mostrarDocente={false} />}
+      {!!clases.length && <HorarioImprimible ref={documentoImprimibleRef} className="horario-documento--origen" encabezado={encabezado} clases={clases} modo="agenda" mostrarDocente={false} />}
+    </div>
+  );
+}

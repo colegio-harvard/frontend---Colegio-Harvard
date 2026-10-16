@@ -1,0 +1,50 @@
+.horario-documento {
+  width: 1120px;
+  box-sizing: border-box;
+  background: #fffdf9;
+  color: #542022;
+  border: 1px solid #e6d6bb;
+  padding: 22px;
+  font-family: Arial, sans-serif;
+}
+
+.horario-documento * { box-sizing: border-box; }
+.horario-documento__encabezado { display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #c99a37; padding-bottom: 12px; margin-bottom: 16px; }
+.horario-documento__insignia { width: 66px; height: 66px; object-fit: contain; flex: 0 0 auto; }
+.horario-documento__colegio { margin: 0; color: #8c1019; font: 700 22px Georgia, serif; }
+.horario-documento h1 { margin: 2px 0; color: #542022; font: 700 25px Georgia, serif; }
+.horario-documento__persona, .horario-documento__datos { margin: 3px 0 0; font-size: 14px; }
+.horario-documento__persona { font-weight: 700; }
+.horario-documento__datos { color: #705450; }
+.horario-documento__tabla { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+.horario-documento__tabla th { padding: 9px 6px; background: #8c1019; color: #fff; font-weight: 700; }
+.horario-documento__tabla th:first-child { width: 128px; text-align: left; }
+.horario-documento__tabla td { border: 1px solid #e2d4bd; vertical-align: top; min-height: 70px; padding: 5px; }
+.horario-documento__hora { background: #fff8eb; font-size: 11px; }
+.horario-documento__hora strong, .horario-documento__hora span { display: block; }
+.horario-documento__hora span { margin-top: 3px; color: #705450; }
+.horario-documento__clase { min-height: 54px; border-radius: 5px; padding: 6px; background: #fff5d8; line-height: 1.25; }
+.horario-documento__clase strong, .horario-documento__clase span { display: block; }
+.horario-documento__clase span { margin-top: 3px; font-size: 10px; }
+.horario-documento__vacio { color: #c9b9a0; display: block; text-align: center; padding-top: 14px; }
+.horario-documento__recreo { background: #fff1be; color: #8a5d00; text-align: center; vertical-align: middle !important; font-weight: 700; letter-spacing: .04em; }
+.horario-documento__institucional { background: #eef2f7; color: #34455d; text-align: center; vertical-align: middle !important; font-weight: 700; font-size: 11px; }
+.horario-documento__agenda { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; }
+.horario-documento__dia-agenda { border: 1px solid #e2d4bd; min-height: 240px; }
+.horario-documento__dia-agenda h2 { margin: 0; background: #8c1019; color: #fff; padding: 8px; font: 700 15px Georgia, serif; text-align: center; }
+.horario-documento__agenda-clase { padding: 7px; border-bottom: 1px solid #eadfcd; }
+.horario-documento__agenda-clase > b, .horario-documento__agenda-clase small { display: block; }
+.horario-documento__agenda-clase small { margin-top: 3px; font-size: 10px; }
+.horario-documento__agenda-clase .horario-documento__clase { min-height: 0; padding: 3px 0; background: transparent !important; }
+.horario-documento__libre { color: #9b8b7c; padding: 9px; text-align: center; font-size: 12px; }
+.horario-documento--origen { position: fixed; left: -12000px; top: 0; z-index: -1; }
+
+@media print {
+  @page { size: A4 landscape; margin: 8mm; }
+  body.horario-imprimiendo * { visibility: hidden !important; }
+  body.horario-imprimiendo .horario-documento--origen,
+  body.horario-imprimiendo .horario-documento--origen * { visibility: visible !important; }
+  body.horario-imprimiendo .horario-documento--origen { position: fixed !important; inset: 0 auto auto 0 !important; z-index: 9999 !important; width: 100% !important; padding: 0 !important; }
+  .horario-documento { width: 100%; border: 0; padding: 0; }
+  .horario-documento, .horario-documento * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+}

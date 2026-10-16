@@ -1,28 +1,91 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { HiAcademicCap, HiClock, HiPrinter } from 'react-icons/hi';
+import { HiAcademicCap, HiClock } from 'react-icons/hi';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Badge from '../components/ui/Badge';
+import HorarioImprimible from '../components/horarios/HorarioImprimible';
+import HorarioExportActions from '../components/horarios/HorarioExportActions';
 import { obtenerMisHorarios } from '../services/horariosService';
-import { colorTextoSecundario, estiloCursoHorario } from '../utils/horarioColor';
 
-const dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES'];
-const etiquetas = { LUNES: 'Lunes', MARTES: 'Martes', MIERCOLES: 'Miércoles', JUEVES: 'Jueves', VIERNES: 'Viernes' };
-const hora = valor => String(valor || '').slice(0, 5);
-const textoError = e => e.response?.data?.error || 'No se pudo cargar el horario. Inténtelo nuevamente.';
-
-function HorarioGrid({ hijo }) {
-  const { bloques = [], clases = [] } = hijo;
-  if (!bloques.length) return <div className="rounded-xl border border-cream-200 bg-cream-50 p-8 text-center text-primary-700/70">El horario todavía no está disponible.</div>;
-  return <div className="overflow-x-auto rounded-xl border border-cream-200 bg-white horario-imprimible"><table className="min-w-[720px] w-full border-collapse text-sm"><thead><tr className="bg-gradient-to-r from-primary-800 to-primary-700 text-white"><th className="p-3 text-left min-w-28">Hora</th>{dias.map(d => <th key={d} className="p-3 text-center min-w-28">{etiquetas[d]}</th>)}</tr></thead><tbody>{bloques.map(b => <tr key={b.id} className="border-b border-cream-200 last:border-0"><td className="p-3 align-top bg-cream-50"><b>{hora(b.hora_inicio)} - {hora(b.hora_fin)}</b><span className="block text-xs text-primary-700/60 mt-1">{b.nombre}</span></td>{dias.map(d => { const clase = clases.find(c => c.dia_semana === d && Number(c.id_bloque_horario) === Number(b.id)); if (b.tipo === 'RECREO') return <td key={d} className="bg-amber-50 text-amber-800 text-center font-semibold tracking-wide">RECREO</td>; return <td key={d} className="p-2 align-top">{clase ? <div className="rounded-lg bg-gold-50 border border-gold-100 p-2" style={estiloCursoHorario(clase.color_horario)}><b className="block">{clase.curso || 'Curso'}</b>{clase.docente && <span className="block text-xs mt-1" style={{color:colorTextoSecundario(clase.color_horario)}}>{clase.docente}</span>}{clase.espacio_fisico && <span className="block text-xs mt-1" style={{color:colorTextoSecundario(clase.color_horario)}}>{clase.espacio_fisico}</span>}</div> : <span className="text-cream-300">—</span>}</td>; })}</tr>)}</tbody></table></div>;
-}
+const textoError = (error) => error.response?.data?.error || 'No se pudo cargar el horario. Inténtelo nuevamente.';
+const archivoHorario = (aula = {}) => `Horario_${[aula.nivel, aula.grado, aula.seccion, aula.anio]
+  .filter(Boolean)
+  .join('_')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-zA-Z0-9]+/g, '_')
+  .replace(/^_|_$/g, '')}`;
 
 export default function HorarioPadre() {
-  const [hijos, setHijos] = useState([]); const [seleccion, setSeleccion] = useState(0); const [loading, setLoading] = useState(true); const [fallo, setFallo] = useState('');
-  useEffect(() => { obtenerMisHorarios().then(r => setHijos(r.data.data || [])).catch(e => { setFallo(textoError(e)); toast.error(textoError(e)); }).finally(() => setLoading(false)); }, []);
+  const [hijos, setHijos] = useState([]);
+  const [seleccion, setSeleccion] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [fallo, setFallo] = useState('');
+  const documentoImprimibleRef = useRef(null);
+
+  useEffect(() => {
+    obtenerMisHorarios()
+      .then((respuesta) => setHijos(respuesta.data.data || []))
+      .catch((error) => {
+        const mensaje = textoError(error);
+        setFallo(mensaje);
+        toast.error(mensaje);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   const hijo = useMemo(() => hijos[seleccion] || null, [hijos, seleccion]);
+
   if (loading) return <div className="py-20"><LoadingSpinner /></div>;
-  if (fallo) return <div className="card text-center py-14"><HiClock className="mx-auto w-12 h-12 text-primary-300 mb-3"/><h1 className="page-title text-2xl">No fue posible cargar el horario</h1><p className="text-primary-700/70 mt-2">{fallo}</p></div>;
-  if (!hijos.length) return <div className="card text-center py-14"><HiAcademicCap className="mx-auto w-12 h-12 text-gold-500 mb-3"/><h1 className="page-title text-2xl">Sin estudiantes vinculados</h1><p className="text-primary-700/70 mt-2">No se encontraron estudiantes vinculados a esta cuenta.</p></div>;
-  return <div className="space-y-5"><style>{`@media print { body * { visibility:hidden } .horario-print, .horario-print * { visibility:visible } .horario-print { position:absolute; inset:0; padding:16px } .no-print { display:none!important } }`}</style><div className="flex flex-wrap items-start justify-between gap-3 no-print"><div><h1 className="page-title">Horario de clases</h1><p className="page-subtitle">Consulta el horario publicado por el colegio.</p></div><button className="btn-secondary flex gap-2 items-center" onClick={() => window.print()}><HiPrinter/>Imprimir</button></div>{hijos.length > 1 && <div className="flex gap-2 overflow-x-auto pb-1 no-print">{hijos.map((x, i) => <button key={x.alumno?.id || i} onClick={() => setSeleccion(i)} className={`shrink-0 text-left rounded-xl border px-4 py-3 transition-colors ${i === seleccion ? 'border-gold-400 bg-gold-50 text-primary-800' : 'border-cream-200 bg-white text-primary-700 hover:bg-cream-50'}`}><b className="block">{x.alumno?.nombre || 'Estudiante'}</b><span className="text-xs">{x.aula?.grado} {x.aula?.seccion}</span></button>)}</div>}<section className="card horario-print">{hijo && <><div className="flex flex-wrap justify-between gap-4 border-b border-cream-200 pb-4 mb-5"><div><h2 className="text-2xl font-display font-semibold text-primary-800">{hijo.alumno?.nombre || 'Estudiante'}</h2><p className="mt-1 text-primary-700/75">{hijo.aula?.nivel} · {hijo.aula?.grado} {hijo.aula?.seccion}</p><p className="text-sm text-primary-700/60">Año escolar {hijo.aula?.anio || '—'}</p></div>{hijo.horarioPublicado && <div><Badge variant="success">PUBLICADO</Badge>{hijo.horario?.publicado_en && <p className="mt-2 text-xs text-primary-700/60">Publicado: {new Date(hijo.horario.publicado_en).toLocaleDateString('es-PE')}</p>}</div>}</div>{hijo.horarioPublicado ? <HorarioGrid hijo={hijo} /> : <div className="rounded-xl border border-gold-200 bg-gold-50 p-8 text-center"><HiClock className="mx-auto w-10 h-10 text-gold-600 mb-3"/><h3 className="font-display text-xl text-primary-800">Horario aún no disponible</h3><p className="text-primary-700/70 mt-2">El horario de clases de este estudiante todavía no ha sido publicado por el colegio.</p></div>}</>}</section></div>;
+  if (fallo) return <div className="card py-14 text-center"><HiClock className="mx-auto mb-3 h-12 w-12 text-primary-300" /><h1 className="page-title text-2xl">No fue posible cargar el horario</h1><p className="mt-2 text-primary-700/70">{fallo}</p></div>;
+  if (!hijos.length) return <div className="card py-14 text-center"><HiAcademicCap className="mx-auto mb-3 h-12 w-12 text-gold-500" /><h1 className="page-title text-2xl">Sin estudiantes vinculados</h1><p className="mt-2 text-primary-700/70">No se encontraron estudiantes vinculados a esta cuenta.</p></div>;
+
+  const horarioPublicado = hijo?.horarioPublicado;
+  const encabezado = {
+    nivel: hijo?.aula?.nivel,
+    grado: hijo?.aula?.grado,
+    seccion: hijo?.aula?.seccion,
+    anio: hijo?.aula?.anio,
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="page-title">Horario de clases</h1>
+          <p className="page-subtitle">Consulta el horario publicado por el colegio.</p>
+        </div>
+        {horarioPublicado && <HorarioExportActions documentRef={documentoImprimibleRef} archivoBase={archivoHorario(hijo.aula)} />}
+      </div>
+
+      {hijos.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {hijos.map((item, indice) => (
+            <button key={item.alumno?.id || indice} type="button" onClick={() => setSeleccion(indice)} className={`shrink-0 rounded-xl border px-4 py-3 text-left transition-colors ${indice === seleccion ? 'border-gold-400 bg-gold-50 text-primary-800' : 'border-cream-200 bg-white text-primary-700 hover:bg-cream-50'}`}>
+              <b className="block">{item.alumno?.nombre || 'Estudiante'}</b>
+              <span className="text-xs">{item.aula?.grado} {item.aula?.seccion}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <section className="card">
+        <div className="mb-5 flex flex-wrap justify-between gap-4 border-b border-cream-200 pb-4">
+          <div>
+            <h2 className="font-display text-2xl font-semibold text-primary-800">{hijo?.alumno?.nombre || 'Estudiante'}</h2>
+            <p className="mt-1 text-primary-700/75">{hijo?.aula?.nivel} · {hijo?.aula?.grado} {hijo?.aula?.seccion}</p>
+            <p className="text-sm text-primary-700/60">Año escolar {hijo?.aula?.anio || '—'}</p>
+          </div>
+          {horarioPublicado && <div><Badge variant="success">PUBLICADO</Badge></div>}
+        </div>
+        {horarioPublicado ? (
+          <HorarioImprimible encabezado={encabezado} bloques={hijo.bloques || []} clases={hijo.clases || []} mostrarDocente />
+        ) : (
+          <div className="rounded-xl border border-gold-200 bg-gold-50 p-8 text-center"><HiClock className="mx-auto mb-3 h-10 w-10 text-gold-600" /><h3 className="font-display text-xl text-primary-800">Horario aún no disponible</h3><p className="mt-2 text-primary-700/70">El horario de clases de este estudiante todavía no ha sido publicado por el colegio.</p></div>
+        )}
+      </section>
+
+      {horarioPublicado && <HorarioImprimible ref={documentoImprimibleRef} className="horario-documento--origen" encabezado={encabezado} bloques={hijo.bloques || []} clases={hijo.clases || []} mostrarDocente />}
+    </div>
+  );
 }

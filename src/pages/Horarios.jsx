@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
   HiAcademicCap,
@@ -23,6 +23,8 @@ import Badge from "../components/ui/Badge";
 import DataTable from "../components/ui/DataTable";
 import ClaseModal from "../components/horarios/ClaseModal";
 import ClaseHorarioCell from "../components/horarios/ClaseHorarioCell";
+import HorarioImprimible from "../components/horarios/HorarioImprimible";
+import HorarioExportActions from "../components/horarios/HorarioExportActions";
 
 const dias = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"];
 const nombreDia = {
@@ -50,6 +52,7 @@ const nombreVisibleBloque = (bloque) => {
   const rango = `${hora(bloque.hora_inicio)} - ${hora(bloque.hora_fin)}`;
   return normalizar(bloque.nombre) === normalizar(rango) ? "" : bloque.nombre;
 };
+const archivoHorario = ({ nivel, grado, seccion, anio }) => `Horario_${[nivel, grado, seccion, anio].filter(Boolean).join("_").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "")}`;
 
 function Campo({ label, children }) {
   return (
@@ -654,6 +657,7 @@ export default function Horarios() {
   const [bloques, setBloques] = useState(false);
   const [disponibilidad, setDisponibilidad] = useState(false);
   const [actual, setActual] = useState(null);
+  const documentoImprimibleRef = useRef(null);
   const [asignaciones, setAsignaciones] = useState([]);
   const [celda, setCelda] = useState(null);
   const [detalle, setDetalle] = useState(null);
@@ -1003,6 +1007,12 @@ export default function Horarios() {
           <div className="flex justify-between mb-4">
             <Badge variant={estadoBadge(actual.estado)}>{actual.estado}</Badge>
             <div className="flex gap-2">
+              {actual.estado === "PUBLICADO" && (
+                <HorarioExportActions
+                  documentRef={documentoImprimibleRef}
+                  archivoBase={archivoHorario(encabezadoActual || {})}
+                />
+              )}
               {["BORRADOR", "VALIDADO"].includes(actual.estado) && (
                 <button
                   className="btn-secondary"
@@ -1095,6 +1105,15 @@ export default function Horarios() {
             </table>
           </div>
           <CargaHoraria horario={actual} recargar={refrescarActual} />
+          {actual.estado === "PUBLICADO" && (
+            <HorarioImprimible
+              ref={documentoImprimibleRef}
+              className="horario-documento--origen"
+              encabezado={encabezadoActual || {}}
+              bloques={actual.bloques || []}
+              clases={actual.detalles || []}
+            />
+          )}
         </Modal>
       )}
       <ClaseModal
