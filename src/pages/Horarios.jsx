@@ -1007,7 +1007,7 @@ export default function Horarios() {
           <div className="flex justify-between mb-4">
             <Badge variant={estadoBadge(actual.estado)}>{actual.estado}</Badge>
             <div className="flex gap-2">
-              {actual.estado === "PUBLICADO" && (
+              {["VALIDADO", "PUBLICADO"].includes(actual.estado) && (
                 <HorarioExportActions
                   documentRef={documentoImprimibleRef}
                   archivoBase={archivoHorario(encabezadoActual || {})}
@@ -1105,7 +1105,7 @@ export default function Horarios() {
             </table>
           </div>
           <CargaHoraria horario={actual} recargar={refrescarActual} />
-          {actual.estado === "PUBLICADO" && (
+          {["VALIDADO", "PUBLICADO"].includes(actual.estado) && (
             <HorarioImprimible
               ref={documentoImprimibleRef}
               className="horario-documento--origen"
