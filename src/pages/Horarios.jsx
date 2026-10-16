@@ -40,7 +40,10 @@ const estadoBadge = (estado) =>
     PUBLICADO: "success",
     ARCHIVADO: "warning",
   })[estado] || "default";
-const hora = (v) => String(v || "").slice(0, 5);
+const hora = (valor) => {
+  const coincidencia = String(valor ?? "").match(/(?:T|^)(\d{2}:\d{2})(?::\d{2})?/);
+  return coincidencia?.[1] || "";
+};
 
 function Campo({ label, children }) {
   return (
@@ -715,6 +718,20 @@ export default function Horarios() {
       !filtros.id_grado ||
       Number(a.id_grado || a.grado?.id) === Number(filtros.id_grado),
   );
+  const encabezadoActual = useMemo(() => {
+    if (!actual) return null;
+    const listado = lista.find((item) => Number(item.id) === Number(actual.id));
+    const aula = datos.aulas.find((item) => Number(item.id) === Number(actual.id_aula));
+    const grado = datos.grados.find((item) => Number(item.id) === Number(aula?.id_grado));
+    const nivel = datos.niveles.find((item) => Number(item.id) === Number(grado?.id_nivel || actual.id_nivel));
+    const anio = datos.anios.find((item) => Number(item.id) === Number(actual.id_anio_escolar));
+    return {
+      nivel: listado?.nivel || nivel?.nombre || "",
+      grado: listado?.grado || grado?.nombre || "",
+      seccion: listado?.seccion || aula?.seccion || "",
+      anio: listado?.anio || anio?.anio || "",
+    };
+  }, [actual, datos, lista]);
   const columns = [
     { header: "Año", render: (r) => r.anio },
     { header: "Nivel", render: (r) => r.nivel },
@@ -974,7 +991,7 @@ export default function Horarios() {
         <Modal
           isOpen
           onClose={() => setActual(null)}
-          title={`${actual.grado} ${actual.seccion} · Año escolar ${actual.anio}`}
+          title={`${[encabezadoActual?.nivel, encabezadoActual?.grado, encabezadoActual?.seccion].filter(Boolean).join(" ")} · Año escolar ${encabezadoActual?.anio || ""}`}
           size="full"
         >
           <div className="flex justify-between mb-4">
