@@ -44,6 +44,11 @@ const hora = (valor) => {
   const coincidencia = String(valor ?? "").match(/(?:T|^)(\d{2}:\d{2})(?::\d{2})?/);
   return coincidencia?.[1] || "";
 };
+const nombreVisibleBloque = (bloque) => {
+  const normalizar = (valor) => String(valor ?? "").trim().replace(/[–—]/g, "-").replace(/\s+/g, " ");
+  const rango = `${hora(bloque.hora_inicio)} - ${hora(bloque.hora_fin)}`;
+  return normalizar(bloque.nombre) === normalizar(rango) ? "" : bloque.nombre;
+};
 
 function Campo({ label, children }) {
   return (
@@ -183,8 +188,8 @@ function BloquesModal({ open, onClose, datos, onChanged }) {
             <span>
               <b>
                 {hora(b.hora_inicio)} - {hora(b.hora_fin)}
-              </b>{" "}
-              · {b.nombre}
+              </b>
+              {nombreVisibleBloque(b) && <> · {nombreVisibleBloque(b)}</>}
             </span>
             <span className="flex gap-2 items-center">
               <Badge variant={b.tipo === "RECREO" ? "warning" : "info"}>
@@ -1039,8 +1044,7 @@ export default function Horarios() {
                       <b>
                         {hora(b.hora_inicio)} - {hora(b.hora_fin)}
                       </b>
-                      <br />
-                      {b.nombre}
+                      {nombreVisibleBloque(b) && <><br />{nombreVisibleBloque(b)}</>}
                     </td>
                     {dias.map((d) => {
                       const x = actual.detalles.find(
