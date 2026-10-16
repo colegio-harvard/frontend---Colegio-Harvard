@@ -4,11 +4,46 @@ import { jsPDF } from 'jspdf';
 import { HiDownload, HiPhotograph, HiPrinter } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
-const capturar = (elemento) => toPng(elemento, {
-  backgroundColor: '#fffdf9',
-  cacheBust: true,
-  pixelRatio: 2,
-});
+const siguienteFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+
+const esperarImagen = (imagen) => {
+  if (imagen.complete) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    imagen.addEventListener('load', resolve, { once: true });
+    imagen.addEventListener('error', () => reject(new Error('No se pudo cargar una imagen del horario.')), { once: true });
+  });
+};
+
+const prepararCaptura = async (elemento) => {
+  await document.fonts?.ready;
+  await Promise.all([...elemento.querySelectorAll('img')].map(esperarImagen));
+  await siguienteFrame();
+  await siguienteFrame();
+
+  const { width, height } = elemento.getBoundingClientRect();
+  if (!width || !height) throw new Error('La plantilla del horario no tiene dimensiones para exportar.');
+};
+
+const capturar = async (elemento) => {
+  await prepararCaptura(elemento);
+  return toPng(elemento, {
+    backgroundColor: '#fffdf9',
+    cacheBust: true,
+    pixelRatio: 2,
+    // El origen permanece fuera de pantalla para imprimir limpio. Estas reglas
+    // se aplican al clon de html-to-image para que su SVG no quede desplazado.
+    style: {
+      position: 'static',
+      left: '0',
+      top: '0',
+      zIndex: 'auto',
+      transform: 'none',
+      visibility: 'visible',
+      display: 'block',
+      opacity: '1',
+    },
+  });
+};
 
 const descargar = (url, nombre) => {
   const enlace = document.createElement('a');
