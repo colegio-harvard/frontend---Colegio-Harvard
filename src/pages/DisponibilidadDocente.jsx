@@ -5,7 +5,10 @@ import { listarAños } from '../services/configEscolarService';
 
 const dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES'];
 const etiquetas = { LUNES: 'Lunes', MARTES: 'Martes', MIERCOLES: 'Miércoles', JUEVES: 'Jueves', VIERNES: 'Viernes' };
-const hora = valor => String(valor || '').slice(0, 5);
+const hora = valor => {
+  const coincidencia = String(valor ?? '').match(/(?:T|^)(\d{2}:\d{2})(?::\d{2})?/);
+  return coincidencia?.[1] || '';
+};
 const mensajeError = error => error.response?.data?.error || 'No se pudo completar la operación.';
 
 export default function DisponibilidadDocente() {
@@ -13,7 +16,7 @@ export default function DisponibilidadDocente() {
   const [docentes, setDocentes] = useState([]);
   const [anio, setAnio] = useState('');
   const [docente, setDocente] = useState('');
-  const [bloques, setBloques] = useState([]);
+  const [nivelesBloques, setNivelesBloques] = useState([]);
   const [restricciones, setRestricciones] = useState([]);
   const [cargando, setCargando] = useState(false);
 
@@ -30,14 +33,17 @@ export default function DisponibilidadDocente() {
     if (!anio || !docente) return;
     setCargando(true);
     try {
-      const [respuestaBloques, respuestaDisponibilidad] = await Promise.all([
-        horarios.listarBloques({ id_anio_escolar: anio }),
+      const [respuestaNiveles, respuestaDisponibilidad] = await Promise.all([
+        horarios.listarNivelesDocenteDisponibilidad({ id_docente: docente, id_anio_escolar: anio }),
         horarios.obtenerDisponibilidad({ id_docente: docente, id_anio_escolar: anio }),
       ]);
-      setBloques(respuestaBloques.data.data || []);
+      const niveles = respuestaNiveles.data.data || [];
+      const respuestasBloques = await Promise.all(niveles.map(nivel => horarios.listarBloques({ id_anio_escolar: anio, id_nivel: nivel.id })));
+      setNivelesBloques(niveles.map((nivel, indice) => ({ ...nivel, bloques: respuestasBloques[indice].data.data || [] })));
       setRestricciones(respuestaDisponibilidad.data.data || []);
     } catch (error) {
       toast.error(mensajeError(error));
+      setNivelesBloques([]);
     } finally {
       setCargando(false);
     }
@@ -84,17 +90,26 @@ export default function DisponibilidadDocente() {
         </label>
       </div>
       {anio && docente && <div className="overflow-x-auto">
-        <p className="text-sm text-primary-700/65 mb-3">Pulse una celda para marcarla como no disponible o restaurarla. Los recreos no son configurables.</p>
-        <table className="min-w-full text-sm">
-          <thead><tr className="bg-cream-50 text-left"><th className="p-3">Bloque</th>{dias.map(dia => <th key={dia} className="p-3 text-center">{etiquetas[dia]}</th>)}</tr></thead>
-          <tbody>{bloques.map(bloque => <tr key={bloque.id} className="border-b border-cream-100"><td className="p-3 whitespace-nowrap"><b>{hora(bloque.hora_inicio)} - {hora(bloque.hora_fin)}</b><span className="block text-xs text-primary-700/65">{bloque.nombre}</span></td>{dias.map(dia => {
-            const noDisponible = restricciones.some(item => Number(item.id_bloque_horario) === Number(bloque.id) && item.dia_semana === dia && !item.disponible);
-            return <td key={dia} className="p-2 text-center">{bloque.tipo === 'RECREO' ? <span className="text-xs text-amber-700">RECREO</span> : <button type="button" onClick={() => alternar(bloque, dia)} className={`rounded-md border px-3 py-2 text-xs font-semibold ${noDisponible ? 'border-red-300 bg-red-50 text-primary-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>{noDisponible ? 'NO DISPONIBLE' : 'DISPONIBLE'}</button>}</td>;
-          })}</tr>)}</tbody>
-        </table>
+        <p className="text-sm text-primary-700/65 mb-3">Pulse una celda para marcarla como no disponible o restaurarla. Los recreos no son configurables; los bloques institucionales sí pueden configurarse para reflejar la presencia del docente.</p>
+        <div className="space-y-6">
+          {nivelesBloques.map(nivel => <MatrizNivel key={nivel.id} nivel={nivel} restricciones={restricciones} alternar={alternar} />)}
+        </div>
         {cargando && <p className="p-3 text-sm text-primary-700">Cargando disponibilidad…</p>}
-        {!cargando && !bloques.length && <p className="p-3 text-sm text-primary-700">No hay bloques configurados para este año escolar.</p>}
+        {!cargando && !nivelesBloques.length && <p className="p-3 text-sm text-primary-700">El docente no tiene asignaciones académicas activas para este año escolar.</p>}
       </div>}
     </section>
   </div>;
+}
+
+function MatrizNivel({ nivel, restricciones, alternar }) {
+  return <section className="overflow-hidden rounded-xl border border-cream-200">
+    <div className="bg-cream-50 px-4 py-3"><h2 className="font-display font-bold text-primary-900">{nivel.nombre}</h2></div>
+    <table className="min-w-full text-sm">
+      <thead><tr className="text-left"><th className="p-3">Bloque</th>{dias.map(dia => <th key={dia} className="p-3 text-center">{etiquetas[dia]}</th>)}</tr></thead>
+      <tbody>{nivel.bloques.map(bloque => <tr key={bloque.id} className="border-t border-cream-100"><td className="p-3 whitespace-nowrap"><b>{hora(bloque.hora_inicio)} - {hora(bloque.hora_fin)}</b>{bloque.nombre && <span className="block text-xs text-primary-700/65">{bloque.nombre}</span>}</td>{dias.map(dia => {
+        const noDisponible = restricciones.some(item => Number(item.id_bloque_horario) === Number(bloque.id) && item.dia_semana === dia && !item.disponible);
+        return <td key={dia} className="p-2 text-center">{bloque.tipo === 'RECREO' ? <span className="text-xs font-semibold text-amber-700">RECREO</span> : <button type="button" onClick={() => alternar(bloque, dia)} className={`rounded-md border px-3 py-2 text-xs font-semibold ${noDisponible ? 'border-red-300 bg-red-50 text-primary-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>{noDisponible ? 'NO DISPONIBLE' : 'DISPONIBLE'}</button>}</td>;
+      })}</tr>)}</tbody>
+    </table>
+  </section>;
 }
