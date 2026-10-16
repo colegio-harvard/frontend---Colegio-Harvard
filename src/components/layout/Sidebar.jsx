@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ROLES } from '../../utils/constants';
 import {
@@ -33,10 +33,20 @@ const navigationSections = [
 ];
 
 const isPathActive = (pathname, path) => pathname === path || (path !== '/dashboard' && pathname.startsWith(`${path}/`));
+const entryContainsPath = (entry, pathname) => typeof entry === 'string'
+  ? isPathActive(pathname, entry)
+  : entry.items.some((item) => entryContainsPath(item, pathname));
+
+const getRouteHierarchy = (pathname) => {
+  const section = navigationSections.find((candidate) => candidate.items.some((entry) => entryContainsPath(entry, pathname)));
+  const group = section?.items.find((entry) => typeof entry !== 'string' && entryContainsPath(entry, pathname));
+  return { sectionId: section?.id || null, groupId: group?.id || null };
+};
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const [openSections, setOpenSections] = useState({});
+  const previousHierarchy = useRef(null);
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
   const tieneCapacidadDocente = (usuario.capacidades || []).includes('ACADEMICO_DOCENTE');
   const baseItems = menuItems[usuario.rol_codigo] || [];
@@ -46,16 +56,20 @@ const Sidebar = ({ isOpen, onClose }) => {
   const isEntryActive = (entry) => typeof entry === 'string' ? isPathActive(location.pathname, entry) : entry.items.some(isEntryActive);
 
   useEffect(() => {
-    setOpenSections((previous) => {
-      const next = { ...previous };
-      navigationSections.forEach((section) => {
-        if (section.items.some(isEntryActive)) next[section.id] = true;
-        section.items.filter((entry) => typeof entry !== 'string').forEach((group) => {
-          if (group.items.some(isEntryActive)) next[group.id] = true;
-        });
-      });
-      return next;
-    });
+    const hierarchy = getRouteHierarchy(location.pathname);
+    const changedHierarchy = !previousHierarchy.current
+      || previousHierarchy.current.sectionId !== hierarchy.sectionId
+      || previousHierarchy.current.groupId !== hierarchy.groupId;
+
+    if (changedHierarchy) {
+      setOpenSections((previous) => ({
+        ...previous,
+        ...(hierarchy.sectionId ? { [hierarchy.sectionId]: true } : {}),
+        ...(hierarchy.groupId ? { [hierarchy.groupId]: true } : {}),
+      }));
+    }
+
+    previousHierarchy.current = hierarchy;
   }, [location.pathname]);
 
   const toggle = (id) => setOpenSections((previous) => ({ ...previous, [id]: !previous[id] }));
@@ -70,7 +84,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     if (typeof entry === 'string') return renderLink(entry);
     if (!hasVisibleItem(entry)) return null;
     const groupIsActive = isEntryActive(entry);
-    const groupOpen = openSections[entry.id] || groupIsActive;
+    const groupOpen = Boolean(openSections[entry.id]);
     const Icon = entry.icon;
     return <div key={entry.id} className="space-y-0.5"><button type="button" onClick={() => toggle(entry.id)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${groupIsActive ? 'bg-white/10 text-gold-200' : 'text-primary-100 hover:bg-white/8 hover:text-white'}`} aria-expanded={groupOpen}><Icon className="w-5 h-5 flex-shrink-0" /><span className="flex-1 text-left">{entry.label}</span><HiChevronDown className={`w-4 h-4 transition-transform ${groupOpen ? 'rotate-180' : ''}`} /></button>{groupOpen && <div className="space-y-0.5">{entry.items.map((path) => renderLink(path, true))}</div>}</div>;
   };
@@ -84,7 +98,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           const visibleEntries = section.items.filter(hasVisibleItem);
           if (!visibleEntries.length) return null;
           const sectionIsActive = section.items.some(isEntryActive);
-          const sectionOpen = openSections[section.id] || sectionIsActive;
+          const sectionOpen = Boolean(openSections[section.id]);
           const Icon = section.icon;
           return <div key={section.id} className="rounded-xl border border-white/5 bg-black/5 overflow-hidden"><button type="button" onClick={() => toggle(section.id)} className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors ${sectionIsActive ? 'text-gold-200 bg-white/10' : 'text-white/90 hover:bg-white/8'}`} aria-expanded={sectionOpen}><Icon className="w-5 h-5 flex-shrink-0" /><span className="flex-1 text-left">{section.label}</span><HiChevronDown className={`w-4 h-4 transition-transform ${sectionOpen ? 'rotate-180' : ''}`} /></button>{sectionOpen && <div className="p-1.5 space-y-0.5">{visibleEntries.map(renderEntry)}</div>}</div>;
         })}
