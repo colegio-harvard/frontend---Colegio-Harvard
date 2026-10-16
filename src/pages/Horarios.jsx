@@ -5,6 +5,7 @@ import {
   HiArchive,
   HiCheckCircle,
   HiClock,
+  HiEye,
   HiPencil,
   HiPlus,
   HiTrash,
@@ -759,9 +760,9 @@ export default function Horarios() {
           <button
             className="text-gold-700"
             onClick={() => abrir(r.id)}
-            title="Ver / editar"
+            title="Ver horario"
           >
-            <HiPencil />
+            <HiEye />
           </button>
           {["BORRADOR", "VALIDADO"].includes(r.estado) && (
             <button
