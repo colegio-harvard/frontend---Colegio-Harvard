@@ -1054,12 +1054,14 @@ export default function Horarios() {
                           Number(q.id_bloque_horario) === Number(b.id),
                       );
                       const recreo = b.tipo === "RECREO";
+                      const institucional = b.tipo === "OTRO";
+                      const bloqueNoAcademico = recreo || institucional;
                       return (
                         <td
                           key={d}
-                          className={`min-w-40 p-2 border-l border-cream-200 ${recreo ? "bg-amber-50 text-amber-700 text-center font-semibold" : "hover:bg-gold-50 cursor-pointer"}`}
+                          className={`min-w-40 p-2 border-l border-cream-200 ${recreo ? "bg-amber-50 text-amber-700 text-center font-semibold" : institucional ? "bg-slate-50 text-slate-700 text-center font-semibold" : "hover:bg-gold-50 cursor-pointer"}`}
                           onClick={() =>
-                            !recreo &&
+                            !bloqueNoAcademico &&
                             !["PUBLICADO", "ARCHIVADO"].includes(
                               actual.estado,
                             ) &&
@@ -1068,6 +1070,8 @@ export default function Horarios() {
                         >
                           {recreo ? (
                             "RECREO"
+                          ) : institucional ? (
+                            <span className="text-sm">{nombreVisibleBloque(b) || b.nombre}</span>
                           ) : x ? (
                             <ClaseHorarioCell
                               clase={x}
