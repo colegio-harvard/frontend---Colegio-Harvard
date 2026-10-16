@@ -616,7 +616,7 @@ export default function Libretas() {
   const busquedaAlumnosSecuencia = useRef(0);
   const cargaNotasSecuencia = useRef(0);
   const [area, setArea] = useState("");
-  const [curso, setCurso] = useState({ nombre: "", id_area: "", nivel: "INICIAL" });
+  const [curso, setCurso] = useState({ nombre: "", id_area: "", nivel: "INICIAL", color_horario: "" });
   const [asignacion, setAsignacion] = useState({
     id_aula: "",
     id_curso: "",
@@ -1060,6 +1060,15 @@ export default function Libretas() {
       });
       await recargar();
       toast.success("Curso actualizado");
+    } catch (e) {
+      toast.error(errorText(e));
+    }
+  };
+  const guardarColorCurso = async (item, color_horario) => {
+    try {
+      await api.editarCurso(item.id, { nombre: item.nombre, id_area: item.id_area, orden: item.orden, color_horario });
+      await recargar();
+      toast.success(color_horario ? "Color de horario actualizado" : "Color de horario retirado");
     } catch (e) {
       toast.error(errorText(e));
     }
@@ -1519,12 +1528,21 @@ export default function Libretas() {
               onChange={(e) => setCurso({ ...curso, nombre: e.target.value })}
               placeholder="Curso"
             />
+            <label className="block text-sm text-primary-800">
+              Color para horario (opcional)
+              <input
+                type="color"
+                className="ml-3 align-middle h-9 w-12 cursor-pointer rounded border border-cream-300"
+                value={curso.color_horario || "#FFFFFF"}
+                onChange={(e) => setCurso({ ...curso, color_horario: e.target.value })}
+              />
+            </label>
             <button
               className="btn-primary"
               onClick={async () => {
                 try {
                   await api.crearCurso(curso);
-                  setCurso({ nombre: "", id_area: "", nivel: "INICIAL" });
+                  setCurso({ nombre: "", id_area: "", nivel: "INICIAL", color_horario: "" });
                   recargar();
                   toast.success("Curso guardado");
                 } catch (e) {
@@ -1605,6 +1623,16 @@ export default function Libretas() {
                   >
                     <span className="font-medium">{x.nombre}</span>
                     <div className="flex gap-2">
+                      <label title="Color para horario" className="flex items-center rounded-lg border border-cream-200 bg-white px-1">
+                        <input
+                          aria-label={`Color de horario ${x.nombre}`}
+                          type="color"
+                          className="h-7 w-7 cursor-pointer bg-transparent"
+                          value={x.color_horario || "#FFFFFF"}
+                          onChange={(e) => guardarColorCurso(x, e.target.value)}
+                        />
+                      </label>
+                      {x.color_horario && <button title="Quitar color de horario" className="p-2 rounded-lg text-primary-700 hover:bg-cream-100" onClick={() => guardarColorCurso(x, "")}>×</button>}
                       <button
                         title="Editar área"
                         className="p-2 rounded-lg text-gold-700 hover:bg-gold-100"
