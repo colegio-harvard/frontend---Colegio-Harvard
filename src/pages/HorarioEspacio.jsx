@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { HiArrowLeft } from 'react-icons/hi2';
 import toast from 'react-hot-toast';
 import HorarioEspacioImprimible from '../components/horarios/HorarioEspacioImprimible';
 import HorarioExportActions from '../components/horarios/HorarioExportActions';
@@ -45,9 +46,8 @@ export default function HorarioEspacio() {
   const cambiarAnio = (event) => setSearchParams({ anio: event.target.value });
 
   return <div className="space-y-6">
-    <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="page-title">Horario por espacio físico</h1><p className="page-subtitle">Uso vigente de ambientes en horarios publicados.</p></div>{data && <HorarioExportActions documentRef={documento} archivoBase={archivo(data)} />}</div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><h1 className="page-title">Horario por espacio físico</h1><p className="page-subtitle">Uso vigente de ambientes en horarios publicados.</p></div><div className="flex flex-wrap items-center justify-end gap-2"><Link className="inline-flex items-center gap-2 rounded-lg border border-primary-300 bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-800 shadow-sm transition hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-primary-300" to="/horarios/espacios"><HiArrowLeft className="h-4 w-4" />Volver a espacios físicos</Link>{data && <HorarioExportActions documentRef={documento} archivoBase={archivo(data)} />}</div></div>
     <div className="card-harvard grid gap-4 p-5 md:grid-cols-2"><label className="text-sm font-semibold text-primary-800">Año escolar<select className="input-field mt-1" value={idAnio || ''} onChange={cambiarAnio}>{anios.map((anio) => <option key={anio.id} value={anio.id}>{anio.anio}{anio.activo ? ' · Activo' : ''}</option>)}</select></label><label className="text-sm font-semibold text-primary-800">Espacio físico<select className="input-field mt-1" value={id} onChange={cambiarEspacio}>{espacios.map((espacio) => <option key={espacio.id} value={espacio.id}>{espacio.nombre}{espacio.activo ? '' : ' · Inactivo'}</option>)}</select></label></div>
     {cargando ? <div className="card">Cargando horario del espacio…</div> : data ? <><div className="overflow-x-auto"><HorarioEspacioImprimible data={data} /></div><HorarioEspacioImprimible ref={documento} data={data} className="horario-documento--origen" /></> : <div className="card">No hay información disponible para este espacio.</div>}
-    <Link className="btn-secondary inline-flex" to="/horarios/espacios">Volver a espacios físicos</Link>
   </div>;
 }
