@@ -32,7 +32,10 @@ function serve(filePath, res) {
 
   try {
     const data = fs.readFileSync(filePath);
-    res.writeHead(200, { 'Content-Type': mime + (ext === '.html' ? '; charset=utf-8' : '') });
+    const headers = { 'Content-Type': mime + (ext === '.html' ? '; charset=utf-8' : '') };
+    if (ext === '.html') headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+    else if (ext) headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+    res.writeHead(200, headers);
     res.end(data);
   } catch {
     return false;
@@ -58,6 +61,13 @@ const server = http.createServer((req, res) => {
   const exact = path.join(DIST, pathname);
   if (fs.existsSync(exact) && fs.statSync(exact).isFile()) {
     return serve(exact, res);
+  }
+
+  // Un archivo versionado que ya no existe no es una ruta SPA: devolver index.html
+  // haría que el navegador intente interpretar HTML como JavaScript y dejaría la app en blanco.
+  if (path.extname(pathname)) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end('Archivo no encontrado');
   }
 
   // SPA fallback: everything else → index.html
