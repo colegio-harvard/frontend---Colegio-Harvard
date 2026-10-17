@@ -27,6 +27,7 @@ export const restaurarDisponibilidad = (data) => apiClient.delete('/horarios/dis
 export const analizarGeneracion = (data) => apiClient.post('/horarios/generar/analizar', data);
 export const generarHorarioAutomatico = (data) => apiClient.post('/horarios/generar', data);
 export const listarEspacios = (params) => apiClient.get('/horarios/espacios', { params });
+export const obtenerOcupacionEspacio = (id, params) => apiClient.get(`/horarios/espacios/${id}/ocupacion`, { params });
 export const crearEspacio = (data) => apiClient.post('/horarios/espacios', data);
 export const actualizarEspacio = (id,data) => apiClient.put(`/horarios/espacios/${id}`,data);
 export const cambiarEstadoEspacio = (id,activo) => apiClient.patch(`/horarios/espacios/${id}/activo`,{activo});

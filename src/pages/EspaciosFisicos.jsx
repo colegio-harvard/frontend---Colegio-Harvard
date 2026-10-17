@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { HiCheckCircle, HiOfficeBuilding, HiPencil, HiPlus, HiSwitchHorizontal, HiUserGroup } from 'react-icons/hi';
+import { HiCalendar, HiCheckCircle, HiOfficeBuilding, HiPencil, HiPlus, HiSwitchHorizontal, HiUserGroup } from 'react-icons/hi';
 import * as s from '../services/horariosService';
 
 const nuevoEspacio = {
@@ -8,6 +9,7 @@ const nuevoEspacio = {
 };
 
 export default function EspaciosFisicos() {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(null);
   const activos = items.filter(item => item.activo).length;
@@ -71,7 +73,7 @@ export default function EspaciosFisicos() {
               <td className="px-4 py-4"><span className="inline-flex rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">{x.capacidad_simultanea || 1} {(x.capacidad_simultanea || 1) === 1 ? 'clase' : 'clases'}</span></td>
               <td className="px-4 py-4 text-cream-700">{x.ubicacion || 'Sin registrar'}</td>
               <td className="px-4 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${x.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>{x.activo ? 'Activo' : 'Inactivo'}</span></td>
-              <td className="px-5 py-4"><div className="flex justify-end gap-2"><button type="button" title="Editar espacio" aria-label={`Editar espacio ${x.nombre}`} className="rounded-lg border border-cream-300 p-2 text-primary-700 transition hover:border-primary-400 hover:bg-primary-50" onClick={() => setForm({ ...x, capacidad_simultanea: x.capacidad_simultanea || 1 })}><HiPencil /></button><button type="button" title={x.activo ? 'Desactivar espacio' : 'Activar espacio'} aria-label={`${x.activo ? 'Desactivar' : 'Activar'} espacio ${x.nombre}`} className="rounded-lg border border-cream-300 p-2 text-amber-700 transition hover:border-amber-300 hover:bg-amber-50" onClick={async () => { await s.cambiarEstadoEspacio(x.id, !x.activo); cargar(); }}><HiSwitchHorizontal /></button></div></td>
+              <td className="px-5 py-4"><div className="flex justify-end gap-2"><button type="button" title="Ver horario del espacio" aria-label={`Ver horario del espacio ${x.nombre}`} className="rounded-lg border border-cream-300 p-2 text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-50" onClick={() => navigate(`/horarios/espacios/${x.id}/horario`)}><HiCalendar /></button><button type="button" title="Editar espacio" aria-label={`Editar espacio ${x.nombre}`} className="rounded-lg border border-cream-300 p-2 text-primary-700 transition hover:border-primary-400 hover:bg-primary-50" onClick={() => setForm({ ...x, capacidad_simultanea: x.capacidad_simultanea || 1 })}><HiPencil /></button><button type="button" title={x.activo ? 'Desactivar espacio' : 'Activar espacio'} aria-label={`${x.activo ? 'Desactivar' : 'Activar'} espacio ${x.nombre}`} className="rounded-lg border border-cream-300 p-2 text-amber-700 transition hover:border-amber-300 hover:bg-amber-50" onClick={async () => { await s.cambiarEstadoEspacio(x.id, !x.activo); cargar(); }}><HiSwitchHorizontal /></button></div></td>
             </tr>)}
             {!items.length && <tr><td colSpan="7" className="px-5 py-12 text-center text-cream-600">No hay espacios físicos registrados.</td></tr>}
           </tbody>
