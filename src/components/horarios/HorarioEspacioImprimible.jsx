@@ -11,8 +11,12 @@ const rangoId = (bloque) => `${hora(bloque.hora_inicio)}-${hora(bloque.hora_fin)
 const HorarioEspacioImprimible = forwardRef(function HorarioEspacioImprimible({ data, className = '' }, ref) {
   if (!data) return null;
   const capacidad = Number(data.espacio?.capacidad_simultanea || 1);
-  const rangos = [...new Map((data.bloques || []).map((bloque) => [rangoId(bloque), bloque])).values()];
   const ocupaciones = data.ocupaciones || [];
+  const nivelesConUso = new Set(ocupaciones.map((uso) => String(uso.id_nivel)).filter(Boolean));
+  const bloquesPertinentes = nivelesConUso.size
+    ? (data.bloques || []).filter((bloque) => nivelesConUso.has(String(bloque.id_nivel)))
+    : (data.bloques || []);
+  const rangos = [...new Map(bloquesPertinentes.map((bloque) => [rangoId(bloque), bloque])).values()];
 
   return <section ref={ref} className={`horario-documento ${className}`} aria-label="Horario de uso del espacio físico">
     <header className="horario-documento__encabezado">
