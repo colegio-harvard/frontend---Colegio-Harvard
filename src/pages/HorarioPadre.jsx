@@ -81,14 +81,14 @@ export default function HorarioPadre() {
         </div>
         {horarioPublicado ? (
           <HorarioZoomable>
-            <HorarioImprimible encabezado={encabezado} bloques={hijo.bloques || []} clases={hijo.clases || []} mostrarDocente />
+            <HorarioImprimible encabezado={encabezado} bloques={hijo.bloques || []} clases={hijo.clases || []} usosInstitucionales={hijo.usos_institucionales || []} mostrarDocente />
           </HorarioZoomable>
         ) : (
           <div className="rounded-xl border border-gold-200 bg-gold-50 p-8 text-center"><HiClock className="mx-auto mb-3 h-10 w-10 text-gold-600" /><h3 className="font-display text-xl text-primary-800">Horario aún no disponible</h3><p className="mt-2 text-primary-700/70">El horario de clases de este estudiante todavía no ha sido publicado por el colegio.</p></div>
         )}
       </section>
 
-      {horarioPublicado && <HorarioImprimible ref={documentoImprimibleRef} className="horario-documento--origen" encabezado={encabezado} bloques={hijo.bloques || []} clases={hijo.clases || []} mostrarDocente />}
+      {horarioPublicado && <HorarioImprimible ref={documentoImprimibleRef} className="horario-documento--origen" encabezado={encabezado} bloques={hijo.bloques || []} clases={hijo.clases || []} usosInstitucionales={hijo.usos_institucionales || []} mostrarDocente />}
     </div>
   );
 }

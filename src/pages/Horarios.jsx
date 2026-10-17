@@ -1065,6 +1065,9 @@ export default function Horarios() {
                       );
                       const recreo = b.tipo === "RECREO";
                       const institucional = b.tipo === "OTRO";
+                      const usoInstitucional = actual.usos_institucionales?.find(
+                        (q) => q.dia_semana === d && Number(q.id_bloque_horario) === Number(b.id),
+                      );
                       const bloqueNoAcademico = recreo || institucional;
                       return (
                         <td
@@ -1081,7 +1084,14 @@ export default function Horarios() {
                           {recreo ? (
                             "RECREO"
                           ) : institucional ? (
-                            <span className="text-sm">{nombreVisibleBloque(b) || b.nombre}</span>
+                            <div className="text-sm">
+                              <span className="block">{nombreVisibleBloque(b) || b.nombre}</span>
+                              {usoInstitucional?.espacio_fisico && (
+                                <span className="block mt-1 text-xs font-normal text-slate-600">
+                                  {usoInstitucional.espacio_fisico}
+                                </span>
+                              )}
+                            </div>
                           ) : x ? (
                             <ClaseHorarioCell
                               clase={x}
@@ -1112,6 +1122,7 @@ export default function Horarios() {
               encabezado={encabezadoActual || {}}
               bloques={actual.bloques || []}
               clases={actual.detalles || []}
+              usosInstitucionales={actual.usos_institucionales || []}
             />
           )}
         </Modal>

@@ -44,6 +44,7 @@ const HorarioImprimible = forwardRef(function HorarioImprimible(
     encabezado = {},
     bloques = [],
     clases = [],
+    usosInstitucionales = [],
     modo = 'cuadricula',
     mostrarDocente = true,
     className = '',
@@ -107,8 +108,9 @@ const HorarioImprimible = forwardRef(function HorarioImprimible(
                   </td>
                   {dias.map((dia) => {
                     const clase = clases.find((item) => item.dia_semana === dia && Number(item.id_bloque_horario) === Number(bloque.id));
+                    const usoInstitucional = usosInstitucionales.find((item) => item.dia_semana === dia && Number(item.id_bloque_horario) === Number(bloque.id));
                     if (bloque.tipo === 'RECREO') return <td key={dia} className="horario-documento__recreo">RECREO</td>;
-                    if (bloque.tipo === 'OTRO') return <td key={dia} className="horario-documento__institucional">{textoBloque(bloque) || bloque.nombre}</td>;
+                    if (bloque.tipo === 'OTRO') return <td key={dia} className="horario-documento__institucional"><strong>{textoBloque(bloque) || bloque.nombre}</strong>{usoInstitucional?.espacio_fisico && <span>{usoInstitucional.espacio_fisico}</span>}</td>;
                     return <td key={dia}><TarjetaClase clase={clase} mostrarDocente={mostrarDocente} /></td>;
                   })}
                 </tr>
