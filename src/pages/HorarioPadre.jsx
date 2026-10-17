@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Badge from '../components/ui/Badge';
 import HorarioImprimible from '../components/horarios/HorarioImprimible';
 import HorarioExportActions from '../components/horarios/HorarioExportActions';
+import HorarioZoomable from '../components/horarios/HorarioZoomable';
 import { obtenerMisHorarios } from '../services/horariosService';
 
 const textoError = (error) => error.response?.data?.error || 'No se pudo cargar el horario. Inténtelo nuevamente.';
@@ -79,7 +80,9 @@ export default function HorarioPadre() {
           {horarioPublicado && <div><Badge variant="success">PUBLICADO</Badge></div>}
         </div>
         {horarioPublicado ? (
-          <HorarioImprimible encabezado={encabezado} bloques={hijo.bloques || []} clases={hijo.clases || []} mostrarDocente />
+          <HorarioZoomable>
+            <HorarioImprimible encabezado={encabezado} bloques={hijo.bloques || []} clases={hijo.clases || []} mostrarDocente />
+          </HorarioZoomable>
         ) : (
           <div className="rounded-xl border border-gold-200 bg-gold-50 p-8 text-center"><HiClock className="mx-auto mb-3 h-10 w-10 text-gold-600" /><h3 className="font-display text-xl text-primary-800">Horario aún no disponible</h3><p className="mt-2 text-primary-700/70">El horario de clases de este estudiante todavía no ha sido publicado por el colegio.</p></div>
         )}
