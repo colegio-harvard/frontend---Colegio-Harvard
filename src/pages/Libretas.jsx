@@ -722,6 +722,9 @@ export default function Libretas() {
         ),
     [asignacionesVisibles, aulaNotasId],
   );
+  const asigIdParaVista = asigId || (aulaNotasId ? String(cursosDelAula[0]?.id || "") : "");
+  const cursoSeleccionado = Boolean(asigId);
+  const columnasRegistro = 2 + (cursoSeleccionado ? (esNumericaSeleccionada ? 1 : 3) : 0) + (admin ? 1 : 0);
   const seleccionarAlumnoGlobal = (alumno) => {
     const asignacionesAula = asignacionesVisibles.filter(
       (a) => String(a.id_aula) === String(alumno.id_aula),
@@ -770,13 +773,13 @@ export default function Libretas() {
     periodoSeleccionadoParaImpresion = Number(periodo?.numero) || 1;
   }, [periodo?.numero]);
   const cargar = async () => {
-    if (!asigId || !periodoId) return;
+    if (!asigIdParaVista || !periodoId) return;
     const secuencia = ++cargaNotasSecuencia.current;
     setGradebook(null);
     setComentarios({});
     try {
       const r = await api.cargarNotas({
-        id_asignacion: asigId,
+        id_asignacion: asigIdParaVista,
         id_periodo: periodoId,
       });
       if (secuencia !== cargaNotasSecuencia.current) return;
@@ -807,8 +810,8 @@ export default function Libretas() {
     }
   };
   useEffect(() => {
-    if (asigId && periodoId) cargar();
-  }, [asigId, periodoId]);
+    if (asigIdParaVista && periodoId) cargar();
+  }, [asigIdParaVista, periodoId]);
   useEffect(() => {
     const termino = busquedaAlumno.trim();
     if (alumnoBusquedaSeleccionado || termino.length < 2) {
@@ -838,6 +841,7 @@ export default function Libretas() {
     return () => clearTimeout(temporizador);
   }, [busquedaAlumno, alumnoBusquedaSeleccionado]);
   const saveNotas = async () => {
+    if (!asigId) return toast.error("Seleccione un curso para registrar notas");
     try {
       let motivoGuardar = motivo.trim();
       const modificaNotaExistente = (gradebook?.alumnos || []).some((alumno) => {
@@ -1295,6 +1299,11 @@ export default function Libretas() {
           )}
           {gradebook && (
             <>
+              {!cursoSeleccionado && (
+                <p className="mb-4 rounded-xl border border-gold-200 bg-gold-50 px-4 py-3 text-sm text-primary-800">
+                  Mostrando los alumnos del aula. Seleccione un curso únicamente para registrar o editar notas.
+                </p>
+              )}
               <div className="relative z-20 mb-4 rounded-xl border border-cream-200 bg-cream-50 p-4">
                 <label className="text-sm font-medium text-primary-900">
                   Buscar alumno
@@ -1349,10 +1358,10 @@ export default function Libretas() {
                     <tr className="bg-primary-700 text-white">
                       <th className="p-3 text-left">Código</th>
                       <th className="p-3 text-left">Alumno</th>
-                      <th className="p-3">
+                      {cursoSeleccionado && <th className="p-3">
                         {esNumericaSeleccionada ? "Nota numérica / letra" : "Nota"}
-                      </th>
-                      {!esNumericaSeleccionada && (
+                      </th>}
+                      {cursoSeleccionado && !esNumericaSeleccionada && (
                         <>
                           <th className="p-3 text-left">Comentario propio</th>
                           <th></th>
@@ -1366,7 +1375,7 @@ export default function Libretas() {
                       <tr key={a.id} className="border-b border-cream-100">
                         <td className="p-3">{a.codigo_alumno}</td>
                         <td className="p-3 font-medium">{a.nombre_completo}</td>
-                        <td className="p-3">
+                        {cursoSeleccionado && <td className="p-3">
                           {esNumericaSeleccionada ? (
                             <div className="flex items-center justify-center gap-3">
                               <input
@@ -1400,8 +1409,8 @@ export default function Libretas() {
                               ))}
                             </select>
                           )}
-                        </td>
-                        {!esNumericaSeleccionada && (
+                        </td>}
+                        {cursoSeleccionado && !esNumericaSeleccionada && (
                           <>
                             <td className="p-3">
                               <select
@@ -1454,7 +1463,7 @@ export default function Libretas() {
                     {!alumnosFiltrados.length && (
                       <tr>
                         <td
-                          colSpan={esNumericaSeleccionada ? (admin ? 4 : 3) : admin ? 6 : 5}
+                          colSpan={columnasRegistro}
                           className="p-8 text-center text-primary-500"
                         >
                           No se encontraron alumnos con ese nombre o código.
@@ -1464,7 +1473,7 @@ export default function Libretas() {
                   </tbody>
                 </table>
               </div>
-              {admin && (
+              {cursoSeleccionado && admin && (
                 <input
                   className="input-field"
                   placeholder="Motivo obligatorio si modifica una nota existente"
@@ -1472,7 +1481,7 @@ export default function Libretas() {
                   onChange={(e) => setMotivo(e.target.value)}
                 />
               )}
-              <div className="flex justify-end">
+              {cursoSeleccionado && <div className="flex justify-end">
                 <button
                   disabled={!admin && periodo?.estado !== "ABIERTO"}
                   className="btn-primary"
@@ -1480,7 +1489,7 @@ export default function Libretas() {
                 >
                   {esNumericaSeleccionada ? "Guardar notas" : "Guardar notas y comentarios"}
                 </button>
-              </div>
+              </div>}
             </>
           )}
         </section>
