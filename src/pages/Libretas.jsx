@@ -790,12 +790,15 @@ export default function Libretas() {
       toast.error("El aula del alumno no tiene cursos disponibles");
       return;
     }
+    const responsablesAula = [...new Set(asignacionesAula.map((a) => String(a.id_docente)))];
+    const periodoAbierto = (data?.periodos || []).find((p) => p.estado === "ABIERTO");
     setAlumnoBusquedaSeleccionado(alumno);
     setResultadosBusqueda([]);
     setBusquedaAlumno(alumno.codigo_alumno);
-    setDocenteFiltro("TODOS");
+    setDocenteFiltro(responsablesAula.length === 1 ? responsablesAula[0] : "TODOS");
     setAulaNotasId(String(alumno.id_aula));
     setAsigId("");
+    if (periodoAbierto) setPeriodoId(String(periodoAbierto.id));
     setGradebook(null);
   };
   const aulasConducta = useMemo(() => {
