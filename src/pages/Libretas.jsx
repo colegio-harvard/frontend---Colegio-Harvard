@@ -868,7 +868,7 @@ export default function Libretas() {
   };
   useEffect(() => {
     if (asigIdParaVista && periodoId) cargar();
-  }, [asigIdParaVista, periodoId]);
+  }, [asigIdParaVista, periodoId, alumnoBusquedaSeleccionado?.id]);
   useEffect(() => {
     const termino = busquedaAlumno.trim();
     if (alumnoBusquedaSeleccionado || termino.length < 2) {
