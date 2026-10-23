@@ -637,12 +637,6 @@ export default function Libretas() {
     try {
       const r = await api.cargarLibretas();
       setData(r.data.data);
-      if (!asigId && r.data.data.asignaciones[0]) {
-        setAsigId(String(r.data.data.asignaciones[0].id));
-        setAulaNotasId(String(r.data.data.asignaciones[0].id_aula));
-      }
-      if (!periodoId && r.data.data.periodos[0])
-        setPeriodoId(String(r.data.data.periodos[0].id));
     } catch (e) {
       toast.error(errorText(e));
     } finally {
@@ -755,13 +749,20 @@ export default function Libretas() {
     return [...unicas.values()];
   }, [asignacionesVisibles]);
   useEffect(() => {
-    if (!asignacionesVisibles.some((a) => String(a.id) === String(asigId))) {
-      const primera = asignacionesVisibles[0];
-      setAsigId(primera ? String(primera.id) : "");
-      setAulaNotasId(primera ? String(primera.id_aula) : "");
+    const aulaSigueVisible = aulasNotas.some(
+      (a) => String(a.id_aula) === String(aulaNotasId),
+    );
+    const cursoSigueVisible = asignacionesVisibles.some(
+      (a) => String(a.id) === String(asigId),
+    );
+    if ((aulaNotasId && !aulaSigueVisible) || (asigId && !cursoSigueVisible)) {
+      setAulaNotasId("");
+      setAsigId("");
       setGradebook(null);
+      setNotas({});
+      setComentarios({});
     }
-  }, [docenteFiltro, data]);
+  }, [asigId, aulaNotasId, asignacionesVisibles, aulasNotas]);
   const periodo = data?.periodos.find(
     (p) => String(p.id) === String(periodoId),
   );
@@ -1209,7 +1210,17 @@ export default function Libretas() {
                 <select
                   className="input-field mt-1"
                   value={docenteFiltro}
-                  onChange={(e) => setDocenteFiltro(e.target.value)}
+                  onChange={(e) => {
+                    setDocenteFiltro(e.target.value);
+                    setAulaNotasId("");
+                    setAsigId("");
+                    setGradebook(null);
+                    setNotas({});
+                    setComentarios({});
+                    setBusquedaAlumno("");
+                    setAlumnoBusquedaSeleccionado(null);
+                    setResultadosBusqueda([]);
+                  }}
                 >
                   <option value="TODOS">Todos los responsables</option>
                   {responsables.map((r) => (
@@ -1267,6 +1278,7 @@ export default function Libretas() {
                 value={periodoId}
                 onChange={(e) => setPeriodoId(e.target.value)}
               >
+                <option value="">Seleccione bimestre</option>
                 {data?.periodos.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.nombre} · {p.estado}
