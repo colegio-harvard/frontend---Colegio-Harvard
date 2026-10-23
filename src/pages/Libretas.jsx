@@ -114,6 +114,63 @@ function SelectorCursos({ cursos, seleccionados, onChange }) {
   );
 }
 
+function BuscadorAlumnoGlobal({
+  busquedaAlumno,
+  setBusquedaAlumno,
+  setAlumnoBusquedaSeleccionado,
+  buscandoAlumnos,
+  resultadosBusqueda,
+  alumnoBusquedaSeleccionado,
+  onSeleccionar,
+}) {
+  return (
+    <div className="relative z-20 mb-4 rounded-xl border border-cream-200 bg-cream-50 p-4">
+      <label className="text-sm font-medium text-primary-900">
+        Buscar alumno
+        <div className="relative mt-1">
+          <HiSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gold-600" />
+          <input
+            type="search"
+            className="input-field pl-12"
+            placeholder="Busque por nombre o código en todos los grados"
+            value={busquedaAlumno}
+            onChange={(e) => {
+              setBusquedaAlumno(e.target.value);
+              setAlumnoBusquedaSeleccionado(null);
+            }}
+          />
+          {(buscandoAlumnos || resultadosBusqueda.length > 0) && (
+            <div className="absolute left-0 right-0 top-full mt-1 max-h-72 overflow-y-auto rounded-xl border border-cream-200 bg-white shadow-xl">
+              {buscandoAlumnos && <p className="p-4 text-sm text-primary-500">Buscando en todos los grados...</p>}
+              {!buscandoAlumnos && resultadosBusqueda.map((alumno) => (
+                <button
+                  type="button"
+                  key={alumno.id}
+                  className="flex w-full items-center justify-between gap-4 border-b border-cream-100 px-4 py-3 text-left last:border-0 hover:bg-cream-50"
+                  onClick={() => onSeleccionar(alumno)}
+                >
+                  <span>
+                    <strong className="block text-primary-900">{alumno.nombre_completo}</strong>
+                    <span className="text-xs text-primary-500">{alumno.codigo_alumno}</span>
+                  </span>
+                  <span className="text-right text-xs text-gold-700">
+                    {alumno.grado} {alumno.seccion}<br />{alumno.nivel}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </label>
+      <p className="mt-2 text-xs text-primary-600">
+        {alumnoBusquedaSeleccionado
+          ? `${alumnoBusquedaSeleccionado.nombre_completo} · ${alumnoBusquedaSeleccionado.grado} ${alumnoBusquedaSeleccionado.seccion}`
+          : "La búsqueda se realiza en todos los grados y aulas"}
+      </p>
+    </div>
+  );
+}
+
 function imprimirLibretaAnterior(data, ventana) {
   if (!ventana) {
     ventana = window.open("", "_blank", "width=1200,height=850");
@@ -726,22 +783,19 @@ export default function Libretas() {
   const cursoSeleccionado = Boolean(asigId);
   const columnasRegistro = 2 + (cursoSeleccionado ? (esNumericaSeleccionada ? 1 : 3) : 0) + (admin ? 1 : 0);
   const seleccionarAlumnoGlobal = (alumno) => {
-    const asignacionesAula = asignacionesVisibles.filter(
+    const asignacionesAula = (data?.asignaciones || []).filter(
       (a) => String(a.id_aula) === String(alumno.id_aula),
     );
-    const asignacionAlumno =
-      asignacionesAula.find(
-        (a) => String(a.id_curso) === String(seleccion?.id_curso),
-      ) || asignacionesAula[0];
-    if (!asignacionAlumno) {
+    if (!asignacionesAula.length) {
       toast.error("El aula del alumno no tiene cursos disponibles");
       return;
     }
     setAlumnoBusquedaSeleccionado(alumno);
     setResultadosBusqueda([]);
     setBusquedaAlumno(alumno.codigo_alumno);
+    setDocenteFiltro("TODOS");
     setAulaNotasId(String(alumno.id_aula));
-    setAsigId(String(asignacionAlumno.id));
+    setAsigId("");
     setGradebook(null);
   };
   const aulasConducta = useMemo(() => {
@@ -1297,6 +1351,15 @@ export default function Libretas() {
               la asignación.
             </p>
           )}
+          <BuscadorAlumnoGlobal
+            busquedaAlumno={busquedaAlumno}
+            setBusquedaAlumno={setBusquedaAlumno}
+            setAlumnoBusquedaSeleccionado={setAlumnoBusquedaSeleccionado}
+            buscandoAlumnos={buscandoAlumnos}
+            resultadosBusqueda={resultadosBusqueda}
+            alumnoBusquedaSeleccionado={alumnoBusquedaSeleccionado}
+            onSeleccionar={seleccionarAlumnoGlobal}
+          />
           {gradebook && (
             <>
               {!cursoSeleccionado && (
@@ -1304,54 +1367,6 @@ export default function Libretas() {
                   Mostrando los alumnos del aula. Seleccione un curso únicamente para registrar o editar notas.
                 </p>
               )}
-              <div className="relative z-20 mb-4 rounded-xl border border-cream-200 bg-cream-50 p-4">
-                <label className="text-sm font-medium text-primary-900">
-                  Buscar alumno
-                  <div className="relative mt-1">
-                    <HiSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl text-gold-600" />
-                    <input
-                      type="search"
-                      className="input-field pl-12"
-                      placeholder="Escriba el nombre o código del alumno"
-                      value={busquedaAlumno}
-                      onChange={(e) => {
-                        setBusquedaAlumno(e.target.value);
-                        setAlumnoBusquedaSeleccionado(null);
-                      }}
-                    />
-                    {(buscandoAlumnos || resultadosBusqueda.length > 0) && (
-                      <div className="absolute left-0 right-0 top-full mt-1 max-h-72 overflow-y-auto rounded-xl border border-cream-200 bg-white shadow-xl">
-                        {buscandoAlumnos && (
-                          <p className="p-4 text-sm text-primary-500">Buscando en todos los grados...</p>
-                        )}
-                        {!buscandoAlumnos && resultadosBusqueda.map((alumno) => (
-                          <button
-                            type="button"
-                            key={alumno.id}
-                            className="flex w-full items-center justify-between gap-4 border-b border-cream-100 px-4 py-3 text-left last:border-0 hover:bg-cream-50"
-                            onClick={() => seleccionarAlumnoGlobal(alumno)}
-                          >
-                            <span>
-                              <strong className="block text-primary-900">{alumno.nombre_completo}</strong>
-                              <span className="text-xs text-primary-500">{alumno.codigo_alumno}</span>
-                            </span>
-                            <span className="text-right text-xs text-gold-700">
-                              {alumno.grado} {alumno.seccion}<br />{alumno.nivel}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </label>
-                {busquedaAlumno.trim() && (
-                  <p className="mt-2 text-xs text-primary-600">
-                    {alumnoBusquedaSeleccionado
-                      ? `${alumnoBusquedaSeleccionado.nombre_completo} · ${alumnoBusquedaSeleccionado.grado} ${alumnoBusquedaSeleccionado.seccion}`
-                      : "La búsqueda se realiza en todos los grados y aulas"}
-                  </p>
-                )}
-              </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead>
