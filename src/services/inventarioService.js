@@ -2,6 +2,8 @@ import apiClient from './apiClient';
 
 export const obtenerResumenInventario = () => apiClient.get('/inventario/resumen');
 export const listarProductosInventario = (params = {}) => apiClient.get('/inventario/productos', { params });
+export const obtenerPlanReposicionInventario = () => apiClient.get('/inventario/reposicion');
+export const actualizarMetaReposicionInventario = (id, meta_reposicion) => apiClient.put(`/inventario/variantes/${id}/meta-reposicion`, { meta_reposicion });
 export const crearProductoInventario = data => apiClient.post('/inventario/productos', data);
 export const actualizarProductoInventario = (id, data) => apiClient.put(`/inventario/productos/${id}`, data);
 export const archivarProductoInventario = id => apiClient.patch(`/inventario/productos/${id}/archivar`);
