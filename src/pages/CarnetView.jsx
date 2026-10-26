@@ -100,7 +100,8 @@ const CarnetView = () => {
           fontEmbedCSS: fontCSS,
       });
 
-      const blob = await jpegDataUrlTo300DpiBlob(dataUrl);
+      // 591 × 969 px a 300 × 308 DPI conserva el tamaño físico de 5 × 8 cm.
+      const blob = await jpegDataUrlTo300DpiBlob(dataUrl, 300, 308);
       descargarBlob(blob, `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`);
     } catch {
       toast.error('Error al descargar el fotocheck');

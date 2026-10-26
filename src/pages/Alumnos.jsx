@@ -5,7 +5,7 @@ import DataTable from '../components/ui/DataTable';
 import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import CarnetCard from '../components/CarnetCard';
+import CarnetCard, { CARNET_EXPORT_HEIGHT, CARNET_EXPORT_WIDTH, CARNET_HEIGHT, CARNET_WIDTH } from '../components/CarnetCard';
 import { listarAlumnos, crearAlumno, actualizarAlumno, obtenerCarnet, eliminarAlumno, obtenerSiguienteCodigoAlumno, exportarAulasExcel, obtenerInfoRetiroAlumno, retirarAlumno, reactivarAlumno, obtenerAlertaOperativaAlumno, guardarAlertaOperativaAlumno, resolverAlertaOperativaAlumno } from '../services/alumnosService';
 import { listarAulas, listarNiveles } from '../services/configEscolarService';
 import { buscarPadres } from '../services/padresService';
@@ -15,6 +15,7 @@ import { fileUrl, studentPhotoUrl } from '../utils/constants';
 import { includesSearchText } from '../utils/textSearch';
 import { toJpeg } from 'html-to-image';
 import { getEmbeddedFontCSS, waitForCaptureImages } from './CarnetView';
+import { descargarBlob, jpegDataUrlTo300DpiBlob } from '../utils/jpegDpi';
 import JSZip from 'jszip';
 import toast from 'react-hot-toast';
 
@@ -181,31 +182,22 @@ const Alumnos = () => {
       const fontCSS = await getEmbeddedFontCSS();
       const el = carnetRef.current;
 
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:inline-block;padding:4px;';
-      el.parentNode.insertBefore(wrapper, el);
-      wrapper.appendChild(el);
-
-      let dataUrl;
-      try {
-        await waitForCaptureImages(wrapper);
-        dataUrl = await toJpeg(wrapper, {
+      await waitForCaptureImages(el);
+      const dataUrl = await toJpeg(el, {
           quality: 0.95,
-          pixelRatio: 3,
+          width: CARNET_WIDTH,
+          height: CARNET_HEIGHT,
+          canvasWidth: CARNET_EXPORT_WIDTH,
+          canvasHeight: CARNET_EXPORT_HEIGHT,
+          pixelRatio: 1,
           cacheBust: true,
           includeQueryParams: true,
           backgroundColor: '#ffffff',
           fontEmbedCSS: fontCSS,
-        });
-      } finally {
-        wrapper.parentNode.insertBefore(el, wrapper);
-        wrapper.remove();
-      }
-
-      const link = document.createElement('a');
-      link.download = `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`;
-      link.href = dataUrl;
-      link.click();
+      });
+      // 591 × 969 px con densidades independientes equivale a 5 × 8 cm en Word.
+      const blob = await jpegDataUrlTo300DpiBlob(dataUrl, 300, 308);
+      descargarBlob(blob, `fotocheck-${carnetData.alumno.codigo_alumno}.jpg`);
     } catch {
       toast.error('Error al descargar el fotocheck');
     }
@@ -274,29 +266,26 @@ const Alumnos = () => {
           continue;
         }
 
-        // Aplicar wrapper con padding (mismo que descarga individual)
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'display:inline-block;padding:4px;';
-        carnetEl.parentNode.insertBefore(wrapper, carnetEl);
-        wrapper.appendChild(carnetEl);
-
         try {
           // Esperar a que las imágenes se carguen
-          await waitForCaptureImages(wrapper);
+          await waitForCaptureImages(carnetEl);
 
-          // Generar JPEG con exactamente los mismos parámetros que la descarga individual
-          const dataUrl = await toJpeg(wrapper, {
+          // Generar el tamaño de impresión fijo: 5 cm × 8 cm a 300 DPI.
+          const dataUrl = await toJpeg(carnetEl, {
             quality: 0.95,
-            pixelRatio: 3,
+            width: CARNET_WIDTH,
+            height: CARNET_HEIGHT,
+            canvasWidth: CARNET_EXPORT_WIDTH,
+            canvasHeight: CARNET_EXPORT_HEIGHT,
+            pixelRatio: 1,
             cacheBust: true,
             includeQueryParams: true,
             backgroundColor: '#ffffff',
             fontEmbedCSS: fontCSS,
           });
 
-          // Convertir data URL a blob y agregar al ZIP
-          const base64 = dataUrl.split(',')[1];
-          zip.file(`fotocheck-${a.codigo_alumno}.jpg`, base64, { base64: true });
+          const carnetImprimible = await jpegDataUrlTo300DpiBlob(dataUrl, 300, 308);
+          zip.file(`fotocheck-${a.codigo_alumno}.jpg`, carnetImprimible);
         } finally {
           root.unmount();
           container.remove();
