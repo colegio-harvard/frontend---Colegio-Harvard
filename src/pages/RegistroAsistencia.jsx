@@ -23,8 +23,8 @@ class CameraErrorBoundary extends Component {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </div>
-          <p className="text-sm text-red-600 font-medium mb-1">Camara no disponible</p>
-          <p className="text-xs text-primary-800/40 mt-2">Use el modo manual para ingresar el codigo del alumno</p>
+          <p className="text-sm text-red-600 font-medium mb-1">Cámara no disponible</p>
+          <p className="text-xs text-primary-800/40 mt-2">Use el modo manual para ingresar el código del alumno</p>
         </div>
       );
     }
@@ -382,7 +382,7 @@ const RegistroAsistencia = () => {
               onClick={() => setModo('CODIGO')}
               className={`${btnBase} ${modo === 'CODIGO' ? btnActive : btnInactive}`}
             >
-              <HiKey className="w-5 h-5" /> Codigo Manual
+              <HiKey className="w-5 h-5" /> Código Manual
             </button>
           </div>
 
@@ -455,7 +455,7 @@ const RegistroAsistencia = () => {
             ) : (
               <div className="relative">
                 <form onSubmit={handleCodigoSubmit}>
-                  <label className="form-label">Ingrese el cÓdigo del alumno</label>
+                  <label className="form-label">Ingrese el código del alumno</label>
                   <input
                     ref={codigoRef}
                     type="text"
@@ -561,8 +561,8 @@ const RegistroAsistencia = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <p className="text-base text-cream-400 font-medium font-display">Informacion del Alumno</p>
-                <p className="text-sm text-cream-300 mt-1">Escanee un QR o ingrese un codigo</p>
+                <p className="text-base text-cream-400 font-medium font-display">Información del Alumno</p>
+                <p className="text-sm text-cream-300 mt-1">Escanee un QR o ingrese un código</p>
               </div>
             </Card>
           )}
@@ -578,7 +578,7 @@ const RegistroAsistencia = () => {
               type="text"
               value={busquedaHistorial}
               onChange={(e) => setBusquedaHistorial(e.target.value)}
-              placeholder="Buscar por codigo, DNI, nombre o apellido..."
+              placeholder="Buscar por código, DNI, nombre o apellido..."
               className="input-field"
             />
           </div>
@@ -613,7 +613,7 @@ const RegistroAsistencia = () => {
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-primary-800 truncate">{reg.alumno?.nombre_completo || 'Alumno'}</p>
                       <p className="text-xs text-primary-800/50 truncate">
-                        {reg.alumno?.codigo_alumno || 'Sin codigo'}{reg.alumno?.dni ? ` | DNI: ${reg.alumno.dni}` : ''}
+                        {reg.alumno?.codigo_alumno || 'Sin código'}{reg.alumno?.dni ? ` | DNI: ${reg.alumno.dni}` : ''}
                       </p>
                       <p className="text-xs text-gold-600 truncate">{reg.alumno?.aula || ''}</p>
                     </div>
