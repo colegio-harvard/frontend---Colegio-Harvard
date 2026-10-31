@@ -8,6 +8,7 @@ import { obtenerPlantilla, obtenerEstadoPension, cuadriculaPensiones, registrarP
 import { listarNiveles, listarGrados, listarAulas } from '../services/configEscolarService';
 import { HiCheck, HiX, HiMinus, HiSearch, HiClock, HiChevronLeft, HiChevronRight, HiPrinter, HiDownload, HiChatAlt2, HiDeviceMobile, HiExternalLink } from 'react-icons/hi';
 import { formatFecha } from '../utils/formatters';
+import { normalizarTelefonoWhatsAppPeru } from '../utils/phone';
 import toast from 'react-hot-toast';
 
 const nombreMes = (p) => p.nombre || p.clave;
@@ -117,9 +118,10 @@ const ConfirmacionRecibo = ({ ticket, onClose }) => {
   if (!ticket) return null;
   const pension = ticket.pension || {};
   const telefono = telefonoRecibo(ticket);
+  const telefonoWhatsApp = normalizarTelefonoWhatsAppPeru(telefono);
   const abrirWhatsApp = () => {
-    if (!telefono) return toast.error('El apoderado no tiene un celular registrado');
-    window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefono)}&text=${encodeURIComponent(mensajeReciboWhatsApp(ticket))}`;
+    if (!telefonoWhatsApp) return toast.error('El apoderado no tiene un celular peruano válido registrado');
+    window.location.href = `whatsapp://send?phone=${encodeURIComponent(telefonoWhatsApp)}&text=${encodeURIComponent(mensajeReciboWhatsApp(ticket))}`;
   };
   const abrirSms = () => {
     if (!telefono) return toast.error('El apoderado no tiene un celular registrado');
