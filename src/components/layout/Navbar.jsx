@@ -109,12 +109,12 @@ const Navbar = ({ onMenuClick }) => {
 
           <button
             onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-red-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            className="flex min-h-12 min-w-11 flex-col items-center justify-center gap-0.5 rounded-lg border border-red-700 bg-red-50 px-2 py-1 text-red-700 shadow-sm transition-all duration-200 hover:bg-red-100 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
           >
             <HiLogout className="w-5 h-5" />
-            <span>Cerrar sesión</span>
+            <span className="text-xs font-bold leading-none">Salir</span>
           </button>
         </div>
       </div>
